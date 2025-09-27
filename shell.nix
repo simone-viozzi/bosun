@@ -33,8 +33,11 @@ pkgs.mkShell {
     export PATH="$GOBIN:$PATH"
 
     # symlink dlv in .direnv to make it available to vscode
-    mkdir -p .direnv/go-tools
-    ln -sf "${pkgs.delve}/bin" .direnv/go-tools/delve
+    mkdir -p $PWD/.direnv/go-tools
+    if [ -d "$PWD/.direnv/go-tools/delve" ]; then
+      rm -rf $PWD/.direnv/go-tools/delve
+    fi
+    ln -sf "${pkgs.delve}/bin" $PWD/.direnv/go-tools/delve
 
     # Reproducible-ish builds and static-ish binaries by default
     export CGO_ENABLED=0

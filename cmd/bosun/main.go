@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"log"
+	"os"
+	"time"
+
+	"github.com/simone-viozzi/bosun/internal/app"
+)
 
 func main() {
-    fmt.Println("bosun up ⛵")
+	ctx, cancel := context.WithTimeout(context.Background(), 0) // no timeout by default
+	defer cancel()
+
+	a := app.New()
+	if err := a.Run(ctx, os.Args); err != nil {
+		log.Fatal(err)
+	}
 }
