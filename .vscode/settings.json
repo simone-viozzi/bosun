@@ -4,5 +4,10 @@
     },
     "gopls": {
         "ui.semanticTokens": true
-    }
+    },
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "file": ".github/instructions/commit-msg.instructions.md"
+        }
+    ]
 }
