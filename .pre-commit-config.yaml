@@ -1,0 +1,29 @@
+repos:
+  - repo: local
+    hooks:
+      - id: fmt
+        name: fmt
+        entry: make fmt
+        language: system
+        pass_filenames: false
+        types: [go]
+  - repo: local
+    hooks:
+      - id: vet
+        name: vet
+        entry: make vet
+        language: system
+        pass_filenames: false
+        types: [go]
+  - repo: https://github.com/simone-viozzi/rusty-todo-md-pre-commit.git
+    rev: v1.9.2
+    hooks:
+      - id: rusty-todo-md
+        args: ["--auto-add", "--markers", "TODO", "FIXME", "HACK", "--"]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
