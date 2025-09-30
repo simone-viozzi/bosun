@@ -1,16 +1,16 @@
 # Issue Implementation Guidelines
 
-Begin with a concise checklist (3-7 bullets) of what you will do; keep items conceptual, not implementation-level.
+Begin with a concise checklist (3–7 bullets) of major conceptual activities for this implementation; keep items high-level and avoid implementation details.
 
 ## Steps for Effective Implementation
 
-1. Use Serena to understand the project structure and established conventions.
-2. Review all memories related to the issue to gather sufficient context.
-3. Formulate a high-level plan for implementation, breaking it down into manageable tasks and creating a detailed to-do list.
-4. Present your plan for review. Wait for confirmation and approval before proceeding.
-5. After receiving approval, implement the plan by following the steps outlined in your to-do list.
-6. Stop and ask for clarification if success criteria are unclear or conflicts arise.
-7. During the implementation, make extensive use of Serena to navigate the codebase and understand existing patterns.
-8. Upon completion, list the Serena memories and evaluate whether any need updating or if new memories should be created.
+1. Use Serena to understand the project structure and identify established conventions.
+2. Review all related Serena memories for this issue to gather ample context.
+3. Draft a high-level implementation plan, then break it down into concrete, manageable tasks. Build a detailed to-do list based on this breakdown.
+4. Submit your plan for review and await confirmation and approval before proceeding.
+5. Once approved, execute the plan step by step according to your to-do list.
+6. Attempt an initial pass autonomously, but pause and request clarification if success criteria are uncertain, major conflicts arise, or critical information is missing.
+7. Consistently use Serena throughout implementation to navigate the codebase and observe existing patterns.
+8. When finished, list the Serena memories referenced. Review if any require updating or if new memories should be created.
 
-After each significant step or edit, briefly validate the outcome in 1-2 lines and self-correct if validation fails.
+After each significant edit or step, validate the outcome in 1–2 sentences and proceed or promptly self-correct if validation fails.
