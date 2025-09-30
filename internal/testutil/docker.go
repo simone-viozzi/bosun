@@ -73,7 +73,6 @@ func DumpLogs(t *testing.T, ctx context.Context, project, outDir string) {
 	err = os.MkdirAll(outDir, 0o755)
 	if err != nil {
 		t.Fatalf("failed to create output directory %s: %v", outDir, err)
-		return
 	}
 
 	for _, c := range ctrs {
