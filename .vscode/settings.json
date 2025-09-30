@@ -3,7 +3,8 @@
         "dlv": "${workspaceFolder}/.direnv/go-tools/delve/dlv"
     },
     "gopls": {
-        "ui.semanticTokens": true
+        "ui.semanticTokens": true,
+        "build.buildFlags": ["-tags=integration"]
     },
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
