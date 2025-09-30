@@ -39,6 +39,10 @@ func HostPort(t *testing.T, ctx context.Context, project, service string, contai
 	)
 	ctrs, err := cli.ContainerList(ctx, container.ListOptions{All: true, Filters: args})
 	if err != nil || len(ctrs) == 0 {
+		t.Logf("found %d containers for project %s service %s", len(ctrs), project, service)
+		for _, c := range ctrs {
+			t.Logf("container: %s, labels: %v", c.Names, c.Labels)
+		}
 		t.Fatalf("list containers for %s/%s: %v", project, service, err)
 	}
 

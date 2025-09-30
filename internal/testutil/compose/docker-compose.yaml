@@ -4,10 +4,3 @@ services:
     image: nginx:alpine
     ports:
       - "8080:80"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      - TEST_PROJECT=${TEST_PROJECT:-default}

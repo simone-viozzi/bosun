@@ -4,17 +4,17 @@
 package testutil
 
 import (
+	"bytes"
 	"context"
 	"embed"
 	"fmt"
-	"log"
-	"os"
+	"io"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	tccompose "github.com/testcontainers/testcontainers-go/modules/compose"
+	"github.com/testcontainers/testcontainers-go/modules/compose"
 )
 
 //go:embed compose/*.yaml
@@ -23,53 +23,58 @@ var ComposeFS embed.FS
 type Stack struct {
 	Project string
 	Files   []string
-	Cmp     *tccompose.LocalDockerCompose
+	Cmp     compose.ComposeStack // NOTE: interface, not LocalDockerCompose
 	T       *testing.T
 }
 
 func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 	t.Helper()
 
-	project := sanitize(fmt.Sprintf("bosun_%s_%d", t.Name(), time.Now().UnixNano()))
-	tmpDir := t.TempDir()
+	project := sanitize(fmt.Sprintf("bosun-%s-%d", t.Name(), time.Now().UnixNano()))
 
-	var paths []string
+	// Feed compose from embedded files via readers (no temp files needed)
+	var readers []io.Reader
 	for _, f := range files {
 		b, err := ComposeFS.ReadFile(filepath.Join("compose", f))
 		if err != nil {
 			t.Fatalf("read compose %s: %v", f, err)
 		}
-		p := filepath.Join(tmpDir, f)
-		if err := os.WriteFile(p, b, 0o644); err != nil {
-			t.Fatalf("write %s: %v", p, err)
-		}
-		paths = append(paths, p)
+		readers = append(readers, bytes.NewReader(b))
 	}
 
-	log.Printf("Starting compose stack with project: %s, files: %v", project, files)
-	cmp := tccompose.NewLocalDockerCompose(paths, project)
+	stack, err := compose.NewDockerComposeWith(
+		compose.StackIdentifier(project),
+		compose.WithStackReaders(readers...),
+	)
+	if err != nil {
+		t.Fatalf("compose create: %v", err)
+	}
 
-	if err := cmp.Invoke().Error; err != nil {
+	// Optional: declare readiness for critical services if they lack HEALTHCHECK
+	// stack = stack.WaitForService("db", wait.ForListeningPort("5432/tcp"))
+
+	if err := stack.Up(ctx, compose.Wait(true)); err != nil { // waits for running/healthy
 		t.Fatalf("compose up: %v", err)
 	}
-	log.Printf("Compose stack %s started successfully", project)
 
-	st := &Stack{Project: project, Files: paths, Cmp: cmp, T: t}
+	st := &Stack{Project: project, Files: files, Cmp: stack, T: t}
 	t.Cleanup(func() {
-		log.Printf("Stopping compose stack: %s", project)
-		_ = st.Cmp.Down()
-		log.Printf("Compose stack %s stopped", project)
+		_ = st.Cmp.Down(
+			context.Background(),
+			compose.RemoveOrphans(true),
+			compose.RemoveVolumes(true),
+			// compose.RemoveImagesLocal, // add if you really want images removed
+		)
 	})
 	return st
 }
 
 func sanitize(s string) string {
 	s = strings.ToLower(s)
-	s = strings.Map(func(r rune) rune {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' || r == '-' {
+	return strings.Map(func(r rune) rune {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '-' {
 			return r
 		}
 		return '-'
 	}, s)
-	return s
 }
