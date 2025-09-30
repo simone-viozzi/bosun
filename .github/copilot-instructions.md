@@ -26,8 +26,7 @@ make tidy          # go mod tidy
 - **Commit Messages**: See `.github/instructions/commit-msg.instructions.md` for detailed conventional commits format
 - **Branching**: Semi-linear history enforced - rebase PRs, no merge commits
 - **Testing**: Integration tests use build tag `//go:build integration`
-- **Dependencies**: Managed via Renovate with standard config
-- **CI**: Tests + golangci-lint on PRs to main
+- **Tools**: Use serena as main tool, use context7 to get updated dependencies
 
 ## Development Environment
 Use the provided `shell.nix` for consistent tooling:
