@@ -1,7 +1,7 @@
 APP := bosun
 PKG := github.com/simone-viozzi/bosun
 
-.PHONY: build run test tidy fmt vet
+.PHONY: build run test test-integration tidy fmt vet
 build:
 	go build -o bin/$(APP) ./cmd/$(APP)
 
@@ -10,6 +10,9 @@ run:
 
 test:
 	go test ./...
+
+test-integration:
+	go test ./integration -tags=integration
 
 tidy:
 	go mod tidy

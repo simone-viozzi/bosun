@@ -9,5 +9,6 @@
         {
             "file": ".github/instructions/commit-msg.instructions.md"
         }
-    ]
+    ],
+    "makefile.configureOnOpen": false
 }
