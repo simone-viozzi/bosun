@@ -11,6 +11,4 @@ package tools
 
 import (
 	_ "github.com/docker/docker/client"
-	_ "github.com/testcontainers/testcontainers-go"
-	_ "github.com/testcontainers/testcontainers-go/modules/compose"
 )
