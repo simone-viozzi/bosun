@@ -18,7 +18,7 @@ import (
 // start and stop a Docker Compose stack with unique project naming and automatic cleanup.
 // This serves as a basic smoke test for the integration testing infrastructure.
 func Test_Integration_Smoke_Placeholder(t *testing.T) {
-	// t.Parallel() // disabled for debugging
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
@@ -35,6 +35,7 @@ func Test_Integration_Smoke_Placeholder(t *testing.T) {
 		t.Fatal("expected at least one compose file")
 	}
 
+	// TODO find a more robust way to ensure containers are ready
 	// Give containers time to start and be labeled
 	time.Sleep(5 * time.Second)
 

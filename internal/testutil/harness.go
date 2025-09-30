@@ -50,6 +50,9 @@ func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 		t.Fatalf("compose create: %v", err)
 	}
 
+	// TODO study wait.Strategy options
+	//stack.WaitForService("test-service", )
+
 	// Optional: declare readiness for critical services if they lack HEALTHCHECK
 	// stack = stack.WaitForService("db", wait.ForListeningPort("5432/tcp"))
 
