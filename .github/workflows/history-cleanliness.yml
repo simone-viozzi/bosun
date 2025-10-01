@@ -1,4 +1,4 @@
-name: semi-linear-history
+name: history-cleanliness
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check:
-    name: Enforce semi-linear history
+    name: Enforce history cleanliness
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git fetch --no-tags --prune origin +refs/heads/*:refs/remotes/origin/*
 
-      - name: Run semi-linear checks
+      - name: Run history cleanliness checks
         shell: bash
         run: |
           set -euo pipefail
@@ -57,4 +57,13 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Semi-linear checks passed: head is rebased on base tip and contains no merge commits."
+          # 3) Ensure the PR branch has NO fixup commits since base tip
+          FIXUPS="$(git rev-list --oneline --grep="^fixup!" "$BASE_SHA..$HEAD_SHA" || true)"
+          if [[ -n "$FIXUPS" ]]; then
+            echo "::error::Fixup commits detected in $HEAD_REF. Please squash fixup commits before merging."
+            echo "         Fixup commits found:"
+            echo "$FIXUPS"
+            exit 1
+          fi
+
+          echo "✅ History cleanliness checks passed: head is rebased on base tip and contains no merge or fixup commits."
