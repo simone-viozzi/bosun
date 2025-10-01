@@ -7,8 +7,6 @@ repos:
         language: system
         pass_filenames: false
         types: [go]
-  - repo: local
-    hooks:
       - id: vet
         name: vet
         entry: make vet
