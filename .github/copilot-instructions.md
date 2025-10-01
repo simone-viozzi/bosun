@@ -28,11 +28,15 @@ make tidy          # go mod tidy
 - **Testing**: Integration tests use build tag `//go:build integration`
 - **Tools**: Use serena as main tool, use context7 to get updated dependencies
 
-## Development Environment
-Use the provided `shell.nix` for consistent tooling:
-- Go 1.24.6 with gopls, delve, gofumpt
-- Docker/Colima for container development
-- Pre-commit hooks for quality gates
-
 ## Project State
 Early-stage project with hexagonal architecture scaffolding. Focus on implementing domain logic, ports, and adapters following the established structure.
+
+### Testing Infrastructure
+The project includes a comprehensive testing setup:
+- **Unit Tests**: Standard Go tests in package-specific `_test.go` files
+- **Integration Tests**: Docker Compose-based end-to-end tests in `integration/` package
+- **Test Utilities**: `internal/testutil/` provides harness for starting Docker Compose stacks with unique project names and automatic cleanup
+- **Test Execution**: Use `make test` for unit tests, `make test-integration` for integration tests (requires Docker)
+
+### Label Discovery Module
+The `dockerlabels` adapter provides filtered label discovery for containers, volumes, and networks. It uses `bosun.*` prefix filtering, excludes stopped entities by default, and ignores image labels in v1.
