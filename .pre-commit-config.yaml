@@ -13,12 +13,6 @@ repos:
         language: system
         pass_filenames: false
         types: [go]
-      - id: expand-tabs
-        name: expand tabs to 4 spaces
-        entry: sed -i 's/\t/    /g'
-        language: system
-        pass_filenames: true
-        types: [text]
   - repo: https://github.com/simone-viozzi/rusty-todo-md-pre-commit.git
     rev: v1.9.2
     hooks:
