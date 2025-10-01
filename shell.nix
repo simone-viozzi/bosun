@@ -13,8 +13,6 @@ pkgs.mkShell {
     uv
     pre-commit
 
-
-    # Docker + Compose + Colima
     docker
     docker-compose    # so `docker compose` works in your shell
   ];
