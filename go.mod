@@ -5,6 +5,7 @@ go 1.24.6
 require (
 	github.com/docker/docker v28.4.0+incompatible
 	github.com/docker/go-connections v0.6.0
+	github.com/gosimple/slug v1.15.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.39.0
 )
 
@@ -83,6 +84,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

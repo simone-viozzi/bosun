@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
+    "github.com/gosimple/slug"
 
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 )
@@ -30,7 +30,7 @@ type Stack struct {
 func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 	t.Helper()
 
-	project := sanitize(fmt.Sprintf("bosun-%s-%d", t.Name(), time.Now().UnixNano()))
+	project := slug.Make(fmt.Sprintf("bosun-%s-%d", t.Name(), time.Now().UnixNano()))
 
 	// Feed compose from embedded files via readers (no temp files needed)
 	var readers []io.Reader
@@ -66,14 +66,4 @@ func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 		)
 	})
 	return st
-}
-
-func sanitize(s string) string {
-	s = strings.ToLower(s)
-	return strings.Map(func(r rune) rune {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '-' {
-			return r
-		}
-		return '-'
-	}, s)
 }

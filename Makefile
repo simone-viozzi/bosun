@@ -18,7 +18,7 @@ tidy:
 	go mod tidy
 
 fmt:
-	go fmt ./... ./integration/...
+	go fmt ./... ./integration/
 
 vet:
 	go vet ./...
