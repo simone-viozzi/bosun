@@ -35,10 +35,6 @@ func Test_Integration_Smoke_Placeholder(t *testing.T) {
 		t.Fatal("expected at least one compose file")
 	}
 
-	// TODO find a more robust way to ensure containers are ready
-	// Give containers time to start and be labeled
-	time.Sleep(5 * time.Second)
-
 	// Test HostPort utility
 	port := testutil.HostPort(t, ctx, stack.Project, "test-service", 80)
 	log.Printf("Service available on port %d", port)
