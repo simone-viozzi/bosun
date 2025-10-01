@@ -4,12 +4,14 @@ import (
 	"context"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/simone-viozzi/bosun/internal/app"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 0) // no timeout by default
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
 	a := app.New()
