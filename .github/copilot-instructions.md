@@ -14,7 +14,8 @@ Bosun follows **hexagonal/clean architecture** principles:
 make build          # Builds to bin/bosun
 make run           # Runs from source
 make test          # Unit tests
-make test-integration  # Integration tests (requires -tags=integration)
+make it            # Integration tests (requires -tags=integration)
+make itv           # Integration tests with verbose output
 
 # Code quality
 make fmt           # go fmt
