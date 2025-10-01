@@ -17,7 +17,6 @@ pkgs.mkShell {
     # Docker + Compose + Colima
     docker
     docker-compose    # so `docker compose` works in your shell
-    colima
   ];
 
   uv = pkgs.uv;
@@ -43,12 +42,6 @@ pkgs.mkShell {
     export CGO_ENABLED=0
     export GOFLAGS="-trimpath"
 
-    # Spin up an isolated Docker daemon via Colima (profile: bosun-go-dev)
-    colima start -p bosun-go-dev --cpu 2 --memory 4 --activate
-
-    # Point Docker CLI/SDK to Colima socket
-    export DOCKER_HOST="unix://$HOME/.config/colima/bosun-go-dev/docker.sock"
-
-    echo "Bosun Go dev shell ready. DOCKER_HOST=$DOCKER_HOST"
+    echo "Bosun Go dev shell ready."
   '';
 }
