@@ -3,7 +3,7 @@ module github.com/simone-viozzi/bosun
 go 1.24.6
 
 require (
-	github.com/docker/docker v28.4.0+incompatible
+	github.com/docker/docker v28.5.0+incompatible
 	github.com/docker/go-connections v0.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.39.0
