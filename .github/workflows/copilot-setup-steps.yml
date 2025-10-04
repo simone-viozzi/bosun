@@ -49,8 +49,15 @@ jobs:
           python-version: 3.11
           enable-cache: true
 
-      - name: Install pre-commit
-        run: uv tool install pre-commit
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-
 
-      - name: Install pre-commit hooks
-        run: pre-commit install --install-hooks
+      - name: Install pre-commit & pre-commit hooks
+        run: |
+          uv tool install pre-commit
+          pre-commit install --install-hooks
