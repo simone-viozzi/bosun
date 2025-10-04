@@ -11,5 +11,10 @@
             "file": ".github/instructions/commit-msg.instructions.md"
         }
     ],
-    "makefile.configureOnOpen": false
+    "makefile.configureOnOpen": false,
+    "gitlens.plusFeatures.enabled": false,
+    "gitlens.gitkraken.mcp.autoEnabled": false,
+    "gitlens.graph.statusBar.enabled": false,
+    "gitlens.telemetry.enabled": false,
+    "gitlens.ai.enabled": false,
 }
