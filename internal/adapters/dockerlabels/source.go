@@ -23,7 +23,7 @@ func NewFromEnv() (*DockerLabelSource, error) {
 
 // Snapshot implements the LabelSource interface
 func (d *DockerLabelSource) Snapshot(ctx context.Context, sel ports.Selector) (dlabels.Snapshot, error) {
-	// TODO: Implement full snapshot logic
+	// TODO: Implement full snapshot logic (#23, #24, #25)
 	//    For now, return empty snapshot
 	return dlabels.Snapshot{
 		Entities: []dlabels.LabeledEntity{},
