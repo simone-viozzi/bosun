@@ -61,3 +61,7 @@ jobs:
         run: |
           uv tool install pre-commit
           pre-commit install --install-hooks
+
+      - name: install serena
+        run: |
+          uv tool install --from git+https://github.com/oraios/serena serena
