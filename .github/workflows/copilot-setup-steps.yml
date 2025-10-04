@@ -64,4 +64,4 @@ jobs:
 
       - name: install serena
         run: |
-          uv tool install --from git+https://github.com/oraios/serena serena
+          uv tool install --from git+https://github.com/oraios/serena serena-agent
