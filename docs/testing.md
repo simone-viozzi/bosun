@@ -170,22 +170,13 @@ Each test gets a unique Docker Compose project name to enable parallel execution
 
 **Error:** `Cannot connect to the Docker daemon`
 
-**Solution:** Start Docker:
-```bash
-# On Linux with systemd
-sudo systemctl start docker
-
-# On macOS/Windows
-# Start Docker Desktop application
-```
+**Solution:** Ensure Docker is installed and running. See the [Docker installation guide](https://docs.docker.com/get-docker/) for your platform.
 
 ### Port Collisions
 
 **Error:** `Bind for 0.0.0.0:XXXX failed: port is already allocated`
 
-**Solution:** The test harness assigns random host ports to avoid collisions. If you see this error:
-1. Check for other services using the port: `lsof -i :XXXX` (macOS/Linux)
-2. Ensure the compose file doesn't specify fixed host ports (use `"80"` not `"8080:80"`)
+**Solution:** The test harness assigns random host ports to avoid collisions. Ensure the compose file doesn't specify fixed host ports (use `"80"` not `"8080:80"`). See [Docker port binding documentation](https://docs.docker.com/network/#published-ports) for details.
 
 ### Integration Test Timeouts
 
@@ -200,28 +191,11 @@ sudo systemctl start docker
    docker logs <container-id>
    ```
 
-### Tests Not Found
-
-**Error:** `no tests found` when running integration tests
-
-**Solution:** Ensure you include the `-tags=integration` flag:
-```bash
-# Wrong - tests are skipped
-go test ./integration/...
-
-# Correct
-go test -tags=integration ./integration/...
-```
-
 ### Permission Denied (Linux)
 
 **Error:** `permission denied while trying to connect to Docker daemon`
 
-**Solution:** Add your user to the docker group:
-```bash
-sudo usermod -aG docker $USER
-# Log out and back in for changes to take effect
-```
+**Solution:** Add your user to the docker group. See the [Docker post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) for instructions.
 
 ### Stale Docker Resources
 
