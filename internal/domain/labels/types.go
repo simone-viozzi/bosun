@@ -6,7 +6,7 @@ import "time"
 const DefaultLabelPrefix = "bosun."
 
 // LabelInstance is the label key for instance identification.
-const LabelInstance = "bosun.instance"
+const LabelInstance = DefaultLabelPrefix + "instance"
 
 type Kind string
 
