@@ -52,6 +52,13 @@ To add path-specific instructions:
 
 The main Copilot instructions are in `.github/copilot-instructions.md` and apply to all files. Path-specific instructions supplement these with file-type-specific guidance.
 
+## Validation
+
+To verify the instructions are working:
+1. Edit a file matching a pattern (e.g., a `.go` file)
+2. Check that Copilot provides relevant suggestions based on the instructions
+3. Run the copilot-setup-steps workflow to ensure environment setup works
+
 ## References
 
 - [GitHub Copilot for Business Documentation](https://docs.github.com/en/copilot)
