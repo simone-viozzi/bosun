@@ -12,6 +12,7 @@ import (
 	"github.com/docker/docker/client"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
+	"golang.org/x/sync/errgroup"
 )
 
 type DockerLabelSource struct {
@@ -113,18 +114,29 @@ func (s *DockerLabelSource) snapshotNetworks(ctx context.Context, sel ports.Sele
 
 // Snapshot implements the LabelSource interface
 func (d *DockerLabelSource) Snapshot(ctx context.Context, sel ports.Selector) (dlabels.Snapshot, error) {
-	containers, err := d.snapshotContainers(ctx, sel)
-	if err != nil {
-		return dlabels.Snapshot{}, err
-	}
+	g, ctx := errgroup.WithContext(ctx)
 
-	volumes, err := d.snapshotVolumes(ctx, sel)
-	if err != nil {
-		return dlabels.Snapshot{}, err
-	}
+	var containers, volumes, networks []dlabels.LabeledEntity
 
-	networks, err := d.snapshotNetworks(ctx, sel)
-	if err != nil {
+	g.Go(func() error {
+		var err error
+		containers, err = d.snapshotContainers(ctx, sel)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		volumes, err = d.snapshotVolumes(ctx, sel)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		networks, err = d.snapshotNetworks(ctx, sel)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
 		return dlabels.Snapshot{}, err
 	}
 
