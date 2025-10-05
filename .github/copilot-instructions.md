@@ -25,7 +25,6 @@ make tidy          # go mod tidy
 
 ## Key Conventions
 - **Commit Messages**: See `.github/instructions/commit-msg.instructions.md` for detailed conventional commits format
-- **Branching**: Semi-linear history enforced - rebase PRs, no merge commits
 - **Testing**: Integration tests use build tag `//go:build integration`
 - **Tools**: Use serena as main tool, use context7 to get updated dependencies. Do not use the terminal tools directly unless absolutely necessary. Prefer using serena to navigate the codebase.
 - **Memories**: Always list and read memories upon starting a task. Then create and update Serena memories for important concepts, patterns, and decisions.
