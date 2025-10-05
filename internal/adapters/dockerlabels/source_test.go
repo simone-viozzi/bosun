@@ -207,7 +207,6 @@ func TestSnapshotNetworks_MetaEnrichment(t *testing.T) {
 		t.Errorf("Expected no instance field for network2, but got %s", n2.Meta["instance"])
 	}
 }
-	
 
 func TestEntitySorting(t *testing.T) {
 	entities := []dlabels.LabeledEntity{
