@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
@@ -18,7 +17,7 @@ import (
 
 // dockerClient defines the subset of Docker client methods we use
 type dockerClient interface {
-	ContainerList(ctx context.Context, opts container.ListOptions) ([]types.Container, error)
+	ContainerList(ctx context.Context, opts container.ListOptions) ([]container.Summary, error)
 	VolumeList(ctx context.Context, opts volume.ListOptions) (volume.ListResponse, error)
 	NetworkList(ctx context.Context, opts network.ListOptions) ([]network.Summary, error)
 }

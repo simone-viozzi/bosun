@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
@@ -16,8 +15,8 @@ import (
 // These tests validate the Meta enrichment logic without requiring Docker
 type mockDockerClient struct{}
 
-func (m *mockDockerClient) ContainerList(ctx context.Context, opts container.ListOptions) ([]types.Container, error) {
-	return []types.Container{
+func (m *mockDockerClient) ContainerList(ctx context.Context, opts container.ListOptions) ([]container.Summary, error) {
+	return []container.Summary{
 		{
 			ID:    "container1",
 			Names: []string{"/test-container"},
