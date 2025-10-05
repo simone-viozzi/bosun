@@ -104,10 +104,13 @@ func Test_Integration_DockerLabels_VolumeAndNetworkDiscovery(t *testing.T) {
 		if len(entity.Labels) == 0 {
 			t.Errorf("Entity %s (%s) has no labels but should have been filtered", entity.Name, entity.Kind)
 		}
-		// Verify all labels match the prefix
-		for key := range entity.Labels {
+		// Verify all labels match the prefix and have non-empty values
+		for key, value := range entity.Labels {
 			if len(key) < 6 || key[:6] != "bosun." {
 				t.Errorf("Entity %s (%s) has label %s that doesn't start with bosun.", entity.Name, entity.Kind, key)
+			}
+			if value == "" {
+				t.Errorf("Entity %s (%s) has label %s with empty value", entity.Name, entity.Kind, key)
 			}
 		}
 	}
