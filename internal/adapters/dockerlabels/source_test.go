@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types/volume"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
+	"sort"
 )
 
 // mockDockerClient is a minimal mock that doesn't actually connect to Docker
@@ -204,5 +205,34 @@ func TestSnapshotNetworks_MetaEnrichment(t *testing.T) {
 	}
 	if _, hasInstance := n2.Meta["instance"]; hasInstance {
 		t.Errorf("Expected no instance field for network2, but got %s", n2.Meta["instance"])
+	}
+}
+	
+
+func TestEntitySorting(t *testing.T) {
+	entities := []dlabels.LabeledEntity{
+		{Kind: dlabels.KindNetwork, Name: "net-b"},
+		{Kind: dlabels.KindContainer, Name: "ctr-b"},
+		{Kind: dlabels.KindVolume, Name: "vol-a"},
+		{Kind: dlabels.KindContainer, Name: "ctr-a"},
+	}
+
+	kindOrder := map[dlabels.Kind]int{
+		dlabels.KindContainer: 0,
+		dlabels.KindVolume:    1,
+		dlabels.KindNetwork:   2,
+	}
+	sort.Slice(entities, func(i, j int) bool {
+		if entities[i].Kind != entities[j].Kind {
+			return kindOrder[entities[i].Kind] < kindOrder[entities[j].Kind]
+		}
+		return entities[i].Name < entities[j].Name
+	})
+
+	want := []string{"ctr-a", "ctr-b", "vol-a", "net-b"}
+	for i, name := range want {
+		if entities[i].Name != name {
+			t.Errorf("entities[%d].Name = %s, want %s", i, entities[i].Name, name)
+		}
 	}
 }
