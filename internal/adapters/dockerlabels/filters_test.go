@@ -3,6 +3,8 @@ package dockerlabels
 import (
 	"reflect"
 	"testing"
+
+	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 )
 
 func TestFilterByPrefixes(t *testing.T) {
@@ -21,25 +23,25 @@ func TestFilterByPrefixes(t *testing.T) {
 		{
 			name:     "single prefix filters correctly",
 			input:    map[string]string{"bosun.key1": "value1", "bosun.key2": "value2", "other.key": "value3"},
-			prefixes: []string{"bosun."},
+			prefixes: []string{dlabels.DefaultLabelPrefix},
 			expected: map[string]string{"bosun.key1": "value1", "bosun.key2": "value2"},
 		},
 		{
 			name:     "multiple prefixes filter correctly",
 			input:    map[string]string{"bosun.key": "value1", "docker.key": "value2", "other.key": "value3"},
-			prefixes: []string{"bosun.", "docker."},
+			prefixes: []string{dlabels.DefaultLabelPrefix, "docker."},
 			expected: map[string]string{"bosun.key": "value1", "docker.key": "value2"},
 		},
 		{
 			name:     "empty values are dropped",
 			input:    map[string]string{"bosun.key1": "value1", "bosun.key2": "", "bosun.key3": "value3"},
-			prefixes: []string{"bosun."},
+			prefixes: []string{dlabels.DefaultLabelPrefix},
 			expected: map[string]string{"bosun.key1": "value1", "bosun.key3": "value3"},
 		},
 		{
 			name:     "whitespace values are dropped",
 			input:    map[string]string{"bosun.key1": "value1", "bosun.key2": "   ", "bosun.key3": "\t\n"},
-			prefixes: []string{"bosun."},
+			prefixes: []string{dlabels.DefaultLabelPrefix},
 			expected: map[string]string{"bosun.key1": "value1"},
 		},
 		{

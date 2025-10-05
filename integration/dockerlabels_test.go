@@ -55,7 +55,7 @@ func Test_Integration_DockerLabels_VolumeAndNetworkDiscovery(t *testing.T) {
 
 	// Take a snapshot with bosun. prefix filter
 	sel := ports.Selector{
-		Prefixes:       []string{"bosun."},
+		Prefixes:       []string{dlabels.DefaultLabelPrefix},
 		IncludeStopped: false,
 	}
 
