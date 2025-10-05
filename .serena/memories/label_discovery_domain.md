@@ -12,12 +12,19 @@ Core business entities for representing labeled entities:
   - `KindVolume = "volume"`
   - `KindNetwork = "network"`
 
+- **`DefaultLabelPrefix`**: Constant `"bosun."` for standard Bosun-managed labels
+
+- **`LabelInstance`**: Constant `"bosun.instance"` (TODO: relocate this constant as it's currently misplaced in domain layer)
+
 - **`LabeledEntity`**: Represents a single labeled Docker entity
   - `Kind Kind`: Type of entity (container/volume/network)
   - `ID string`: Unique identifier
   - `Name string`: Human-readable name
   - `Labels map[string]string`: Docker labels (case-sensitive keys)
-  - `Meta map[string]string`: Additional metadata (e.g., compose.project, compose.service, image, networks)
+  - `Meta map[string]string`: Additional metadata enriched by adapters:
+    - Containers: `image`, `compose.project`, `compose.service`, `instance` (if label present)
+    - Volumes: `driver`, `instance` (if label present)
+    - Networks: `driver`, `scope`, `instance` (if label present)
 
 - **`Snapshot`**: Point-in-time collection of labeled entities
   - `Entities []LabeledEntity`: List of entities
@@ -45,7 +52,8 @@ type LabelSource interface {
 - Domain types are vendor-agnostic (no Docker SDK dependencies)
 - Ports enable easy testing with mocks and swapping implementations
 - Future adapters (e.g., Docker, Kubernetes) will implement `LabelSource`
+- `LabelInstance` constant provides standardized access to instance labels
 
 ## Testing
-Unit tests verify compilation and basic functionality. Integration with actual label sources will be tested in adapter implementations.</content>
+Unit tests verify compilation and basic functionality. Integration with actual label sources will be tested in adapter implementations. Recent updates include validation of Meta enrichment in integration tests.</content>
 <parameter name="memory_name">label_discovery_domain
