@@ -6,6 +6,7 @@ require (
 	github.com/docker/docker v28.5.0+incompatible
 	github.com/docker/go-connections v0.6.0
 	github.com/gosimple/slug v1.15.0
+	github.com/spf13/cobra v1.10.1
 	github.com/testcontainers/testcontainers-go/modules/compose v0.39.0
 	golang.org/x/sync v0.17.0
 )
@@ -150,7 +151,6 @@ require (
 	github.com/shirou/gopsutil/v4 v4.25.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
-	github.com/spf13/cobra v1.10.1 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/testcontainers/testcontainers-go v0.39.0 // indirect
