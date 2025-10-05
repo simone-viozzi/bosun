@@ -25,9 +25,20 @@ make tidy          # go mod tidy
 
 ## Key Conventions
 - **Commit Messages**: See `.github/instructions/commit-msg.instructions.md` for detailed conventional commits format
-- **Testing**: Integration tests use build tag `//go:build integration`
-- **Tools**: Use serena as main tool, use context7 to get updated dependencies. Do not use the terminal tools directly unless absolutely necessary. Prefer using serena to navigate the codebase.
-- **Memories**: Always list and read memories upon starting a task. Then create and update Serena memories for important concepts, patterns, and decisions.
+- **Issue Implementation**: Follow `.github/instructions/issue-implementation.instructions.md` for structured issue handling
+
+## Serena-first workflow (MANDATORY)
+
+**Always do this at the start of any task, issue, PR review, or chat reply:**
+1) Activate Serena on this repo/project → `serena.activate(project="bosun")`.
+2) List memories → `serena.memories.list()` and read the most relevant.
+3) Update or create memories as needed to save relevant context for future reference.
+4) Prefer Serena’s navigation/edit tools for all code work. Only use terminal tools when Serena can’t do it.
+
+**Tool policy**
+- Primary: `serena` (code navigation/edits, context).
+- Secondary: `context7` (check/lookup updated dependencies or APIs).
+- Avoid direct terminal commands unless absolutely necessary; prefer Serena for file ops, search, refactors.
 
 ## Project State
 Early-stage project with hexagonal architecture scaffolding. Domain logic, ports, and adapters for label discovery are fully implemented. Focus on expanding functionality and integrating additional features.
