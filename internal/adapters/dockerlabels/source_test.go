@@ -23,7 +23,7 @@ func (m *mockDockerClient) ContainerList(ctx context.Context, opts container.Lis
 			Image: "test:latest",
 			Labels: map[string]string{
 				"bosun.test":                 "true",
-				"bosun.instance":             "prod-01",
+				dlabels.LabelInstance:        "prod-01",
 				"com.docker.compose.project": "myproject",
 				"com.docker.compose.service": "web",
 			},
@@ -48,8 +48,8 @@ func (m *mockDockerClient) VolumeList(ctx context.Context, opts volume.ListOptio
 				Name:   "test-volume",
 				Driver: "local",
 				Labels: map[string]string{
-					"bosun.test":     "true",
-					"bosun.instance": "prod-01",
+					"bosun.test":          "true",
+					dlabels.LabelInstance: "prod-01",
 				},
 			},
 			{
@@ -71,8 +71,8 @@ func (m *mockDockerClient) NetworkList(ctx context.Context, opts network.ListOpt
 			Driver: "bridge",
 			Scope:  "local",
 			Labels: map[string]string{
-				"bosun.test":     "true",
-				"bosun.instance": "prod-01",
+				"bosun.test":          "true",
+				dlabels.LabelInstance: "prod-01",
 			},
 		},
 		{

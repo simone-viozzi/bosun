@@ -11,6 +11,11 @@ func TestTypes(t *testing.T) {
 		t.Errorf("Expected DefaultLabelPrefix to be 'bosun.', got %s", DefaultLabelPrefix)
 	}
 
+	// Test LabelInstance constant
+	if LabelInstance != "bosun.instance" {
+		t.Errorf("Expected LabelInstance to be 'bosun.instance', got %s", LabelInstance)
+	}
+
 	// Test Kind constants
 	if KindContainer != "container" {
 		t.Errorf("Expected KindContainer to be 'container', got %s", KindContainer)

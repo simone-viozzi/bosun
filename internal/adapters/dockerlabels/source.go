@@ -64,7 +64,7 @@ func (s *DockerLabelSource) snapshotContainers(ctx context.Context, sel ports.Se
 				"image":           c.Image,
 			},
 		}
-		if instance := c.Labels["bosun.instance"]; instance != "" {
+		if instance := c.Labels[dlabels.LabelInstance]; instance != "" {
 			ent.Meta["instance"] = instance
 		}
 		out = append(out, ent)
@@ -95,7 +95,7 @@ func (s *DockerLabelSource) snapshotVolumes(ctx context.Context, sel ports.Selec
 				"driver": v.Driver,
 			},
 		}
-		if instance := v.Labels["bosun.instance"]; instance != "" {
+		if instance := v.Labels[dlabels.LabelInstance]; instance != "" {
 			ent.Meta["instance"] = instance
 		}
 		out = append(out, ent)
@@ -127,7 +127,7 @@ func (s *DockerLabelSource) snapshotNetworks(ctx context.Context, sel ports.Sele
 				"scope":  n.Scope,
 			},
 		}
-		if instance := n.Labels["bosun.instance"]; instance != "" {
+		if instance := n.Labels[dlabels.LabelInstance]; instance != "" {
 			ent.Meta["instance"] = instance
 		}
 		out = append(out, ent)
