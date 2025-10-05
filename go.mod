@@ -7,7 +7,7 @@ require (
 	github.com/docker/go-connections v0.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.39.0
-	golang.org/x/sync v0.13.0
+	golang.org/x/sync v0.17.0
 )
 
 require (
