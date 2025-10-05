@@ -57,4 +57,4 @@ The `dockerlabels` adapter provides filtered label discovery for containers, vol
 - Networks may require manual label application
 - Only entities with matching labels are included
 
-See `internal/adapters/dockerlabels/README.md` for comprehensive documentation, examples, and gotchas. Serena memories `dockerlabels_adapter` and `label_discovery_domain` contain implementation details.
+See `docs/label-discovery.md` for comprehensive documentation, examples, and gotchas. Serena memories `dockerlabels_adapter` and `label_discovery_domain` contain implementation details.

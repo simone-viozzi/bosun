@@ -2,11 +2,12 @@
 
 ## Documentation Location
 Comprehensive documentation for the `dockerlabels` adapter is available in:
-- **Primary**: `internal/adapters/dockerlabels/README.md` (297 lines, 8.1KB)
+- **Primary**: `docs/label-discovery.md` - Full documentation with examples and gotchas
 - **Quick Reference**: `.github/copilot-instructions.md` (Project State > Label Discovery Module section)
+- **Main README**: `README.md` includes link to documentation
 
-## README Contents
-The README provides complete documentation including:
+## Documentation Contents
+The documentation provides complete coverage including:
 
 ### Overview & Features
 - Entity discovery for containers, volumes, and networks
@@ -36,7 +37,7 @@ The README provides complete documentation including:
 4. **Empty Label Values**: Automatically filtered out
 
 ### Architecture
-- File structure overview
+- File structure overview (code located in `internal/adapters/dockerlabels/`)
 - Key components (DockerLabelSource, NewFromEnv, Snapshot, FilterByPrefixes)
 - Testing infrastructure (unit tests, integration tests, test compose files)
 
@@ -44,14 +45,8 @@ The README provides complete documentation including:
 - `dlabels.DefaultLabelPrefix = "bosun."`
 - `dlabels.LabelInstance = "bosun.instance"`
 
-## Copilot Instructions Update
-`.github/copilot-instructions.md` now includes:
-- Reference to the README for comprehensive documentation
-- Key conventions (case sensitivity, image labels ignored, network manual labeling)
-- Links to Serena memories for implementation details
-
 ## Usage for Onboarding
-The README is designed for fast onboarding:
+The documentation in `/docs` is designed for fast onboarding:
 1. Developers can start with the Overview section
 2. Jump to Examples for quick-start code
 3. Review Gotchas to avoid common pitfalls

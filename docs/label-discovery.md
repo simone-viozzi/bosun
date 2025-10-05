@@ -1,8 +1,10 @@
-# dockerlabels Adapter
+# Label Discovery
 
-The `dockerlabels` adapter provides label discovery for Docker entities (containers, volumes, networks) following hexagonal architecture principles. It implements the `ports.LabelSource` interface to enable querying Docker resources by label prefixes.
+The label discovery system in Bosun enables querying and managing Docker entities (containers, volumes, networks) through labels. This document covers the `dockerlabels` adapter implementation.
 
 ## Overview
+
+The `dockerlabels` adapter (located in `internal/adapters/dockerlabels/`) provides label discovery for Docker entities following hexagonal architecture principles. It implements the `ports.LabelSource` interface to enable querying Docker resources by label prefixes.
 
 This adapter discovers and filters Docker entities based on label prefixes, enriching them with relevant metadata. It is designed for the Bosun orchestration system to identify and manage labeled Docker resources.
 
@@ -261,8 +263,7 @@ internal/adapters/dockerlabels/
 ├── filters.go         # FilterByPrefixes utility
 ├── filters_test.go    # Unit tests for filtering
 ├── source.go          # DockerLabelSource implementation
-├── source_test.go     # Unit tests for source
-└── README.md          # This file
+└── source_test.go     # Unit tests for source
 ```
 
 **Key Components:**
@@ -272,7 +273,7 @@ internal/adapters/dockerlabels/
 - `FilterByPrefixes()`: Pure utility function for label filtering
 
 **Testing:**
-- Unit tests for filtering logic
+- Unit tests for filtering logic in `internal/adapters/dockerlabels/`
 - Integration tests in `integration/dockerlabels_test.go`
 - Test compose files in `internal/testutil/compose/`
 
