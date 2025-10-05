@@ -2,6 +2,7 @@ package dockerlabels
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"time"
 
@@ -127,8 +128,7 @@ func (d *DockerLabelSource) Snapshot(ctx context.Context, sel ports.Selector) (d
 		return dlabels.Snapshot{}, err
 	}
 
-	entities := append(containers, volumes...)
-	entities = append(entities, networks...)
+	entities := slices.Concat(containers, volumes, networks)
 
 	return dlabels.Snapshot{
 		Entities: entities,
