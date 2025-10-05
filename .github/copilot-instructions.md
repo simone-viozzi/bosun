@@ -25,12 +25,23 @@ make tidy          # go mod tidy
 
 ## Key Conventions
 - **Commit Messages**: See `.github/instructions/commit-msg.instructions.md` for detailed conventional commits format
-- **Branching**: Semi-linear history enforced - rebase PRs, no merge commits
-- **Testing**: Integration tests use build tag `//go:build integration`
-- **Tools**: Use serena as main tool, use context7 to get updated dependencies
+- **Issue Implementation**: Follow `.github/instructions/issue-implementation.instructions.md` for structured issue handling
+
+## Serena-first workflow (MANDATORY)
+
+**Always do this at the start of any task, issue, PR review, or chat reply:**
+1) Activate Serena on this repo/project → `serena.activate(project="bosun")`.
+2) List memories → `serena.memories.list()` and read the most relevant.
+3) Update or create memories as needed to save relevant context for future reference.
+4) Prefer Serena’s navigation/edit tools for all code work. Only use terminal tools when Serena can’t do it.
+
+**Tool policy**
+- Primary: `serena` (code navigation/edits, context).
+- Secondary: `context7` (check/lookup updated dependencies or APIs).
+- Avoid direct terminal commands unless absolutely necessary; prefer Serena for file ops, search, refactors.
 
 ## Project State
-Early-stage project with hexagonal architecture scaffolding. Focus on implementing domain logic, ports, and adapters following the established structure.
+Early-stage project with hexagonal architecture scaffolding. Domain logic, ports, and adapters for label discovery are fully implemented. Focus on expanding functionality and integrating additional features.
 
 ### Testing Infrastructure
 The project includes a comprehensive testing setup:
@@ -40,4 +51,4 @@ The project includes a comprehensive testing setup:
 - **Test Execution**: Use `make test` for unit tests, `make test-integration` for integration tests (requires Docker)
 
 ### Label Discovery Module
-The `dockerlabels` adapter provides filtered label discovery for containers, volumes, and networks. It uses `bosun.*` prefix filtering, excludes stopped entities by default, and ignores image labels in v1.
+The `dockerlabels` adapter provides filtered label discovery for containers, volumes, and networks. It uses `bosun.*` prefix filtering, excludes stopped entities by default, and enriches entities with metadata (containers: image, compose info; volumes: driver; networks: driver, scope). See Serena memories `dockerlabels_adapter` and `label_discovery_domain` for detailed implementation.
