@@ -119,5 +119,29 @@ func Test_Integration_DockerLabels_VolumeAndNetworkDiscovery(t *testing.T) {
 		}
 	}
 
+	// Verify Meta enrichment
+	for _, entity := range snapshot.Entities {
+		switch entity.Kind {
+		case dlabels.KindContainer:
+			// Containers should have image in Meta
+			if _, hasImage := entity.Meta["image"]; !hasImage {
+				t.Errorf("Container %s missing 'image' in Meta", entity.Name)
+			}
+		case dlabels.KindVolume:
+			// Volumes should have driver in Meta
+			if _, hasDriver := entity.Meta["driver"]; !hasDriver {
+				t.Errorf("Volume %s missing 'driver' in Meta", entity.Name)
+			}
+		case dlabels.KindNetwork:
+			// Networks should have driver and scope in Meta
+			if _, hasDriver := entity.Meta["driver"]; !hasDriver {
+				t.Errorf("Network %s missing 'driver' in Meta", entity.Name)
+			}
+			if _, hasScope := entity.Meta["scope"]; !hasScope {
+				t.Errorf("Network %s missing 'scope' in Meta", entity.Name)
+			}
+		}
+	}
+
 	t.Logf("Integration test completed successfully with project: %s", stack.Project)
 }

@@ -7,6 +7,7 @@ require (
 	github.com/docker/go-connections v0.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.39.0
+	golang.org/x/sync v0.13.0
 )
 
 require (
@@ -189,7 +190,6 @@ require (
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.28.0 // indirect
-	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/term v0.31.0 // indirect
 	golang.org/x/text v0.24.0 // indirect

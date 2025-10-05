@@ -15,8 +15,15 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// dockerClient defines the subset of Docker client methods we use
+type dockerClient interface {
+	ContainerList(ctx context.Context, opts container.ListOptions) ([]container.Summary, error)
+	VolumeList(ctx context.Context, opts volume.ListOptions) (volume.ListResponse, error)
+	NetworkList(ctx context.Context, opts network.ListOptions) ([]network.Summary, error)
+}
+
 type DockerLabelSource struct {
-	CLI *client.Client
+	CLI dockerClient
 }
 
 func NewFromEnv() (*DockerLabelSource, error) {
@@ -57,6 +64,9 @@ func (s *DockerLabelSource) snapshotContainers(ctx context.Context, sel ports.Se
 				"image":           c.Image,
 			},
 		}
+		if instance := c.Labels[dlabels.LabelInstance]; instance != "" {
+			ent.Meta["instance"] = instance
+		}
 		out = append(out, ent)
 	}
 	return out, nil
@@ -76,13 +86,19 @@ func (s *DockerLabelSource) snapshotVolumes(ctx context.Context, sel ports.Selec
 		if len(fl) == 0 {
 			continue
 		}
-		out = append(out, dlabels.LabeledEntity{
+		ent := dlabels.LabeledEntity{
 			Kind:   dlabels.KindVolume,
 			ID:     v.Name,
 			Name:   v.Name,
 			Labels: fl,
-			Meta:   map[string]string{},
-		})
+			Meta: map[string]string{
+				"driver": v.Driver,
+			},
+		}
+		if instance := v.Labels[dlabels.LabelInstance]; instance != "" {
+			ent.Meta["instance"] = instance
+		}
+		out = append(out, ent)
 	}
 	return out, nil
 }
@@ -101,13 +117,20 @@ func (s *DockerLabelSource) snapshotNetworks(ctx context.Context, sel ports.Sele
 		if len(fl) == 0 {
 			continue
 		}
-		out = append(out, dlabels.LabeledEntity{
+		ent := dlabels.LabeledEntity{
 			Kind:   dlabels.KindNetwork,
 			ID:     n.ID,
 			Name:   n.Name,
 			Labels: fl,
-			Meta:   map[string]string{},
-		})
+			Meta: map[string]string{
+				"driver": n.Driver,
+				"scope":  n.Scope,
+			},
+		}
+		if instance := n.Labels[dlabels.LabelInstance]; instance != "" {
+			ent.Meta["instance"] = instance
+		}
+		out = append(out, ent)
 	}
 	return out, nil
 }
