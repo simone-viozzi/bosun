@@ -5,6 +5,7 @@ import "time"
 // DefaultLabelPrefix is the standard prefix for Bosun-managed labels.
 const DefaultLabelPrefix = "bosun."
 
+// TODO this cannot be here, we need a better way of handling this
 // LabelInstance is the label key for instance identification.
 const LabelInstance = DefaultLabelPrefix + "instance"
 
