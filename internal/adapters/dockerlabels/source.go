@@ -3,6 +3,7 @@ package dockerlabels
 import (
 	"context"
 	"slices"
+	"sort"
 	"strings"
 	"time"
 
@@ -164,6 +165,19 @@ func (d *DockerLabelSource) Snapshot(ctx context.Context, sel ports.Selector) (d
 	}
 
 	entities := slices.Concat(containers, volumes, networks)
+
+	// Sort entities by Kind (container < volume < network), then by Name
+	kindOrder := map[dlabels.Kind]int{
+		dlabels.KindContainer: 0,
+		dlabels.KindVolume:    1,
+		dlabels.KindNetwork:   2,
+	}
+	sort.Slice(entities, func(i, j int) bool {
+		if entities[i].Kind != entities[j].Kind {
+			return kindOrder[entities[i].Kind] < kindOrder[entities[j].Kind]
+		}
+		return entities[i].Name < entities[j].Name
+	})
 
 	return dlabels.Snapshot{
 		Entities: entities,

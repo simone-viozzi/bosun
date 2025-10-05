@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types/volume"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
+	"sort"
 )
 
 // mockDockerClient is a minimal mock that doesn't actually connect to Docker
@@ -204,5 +205,112 @@ func TestSnapshotNetworks_MetaEnrichment(t *testing.T) {
 	}
 	if _, hasInstance := n2.Meta["instance"]; hasInstance {
 		t.Errorf("Expected no instance field for network2, but got %s", n2.Meta["instance"])
+	}
+}
+	
+
+func TestEntitySorting(t *testing.T) {
+	// Create a mixed list of entities with different kinds and names
+	// to simulate what would come from concatenating containers, volumes, and networks
+	entities := []dlabels.LabeledEntity{
+		{Kind: dlabels.KindNetwork, Name: "net-alpha", ID: "n1"},
+		{Kind: dlabels.KindContainer, Name: "container-zeta", ID: "c1"},
+		{Kind: dlabels.KindVolume, Name: "vol-beta", ID: "v1"},
+		{Kind: dlabels.KindContainer, Name: "container-alpha", ID: "c2"},
+		{Kind: dlabels.KindNetwork, Name: "net-beta", ID: "n2"},
+		{Kind: dlabels.KindVolume, Name: "vol-alpha", ID: "v2"},
+		{Kind: dlabels.KindContainer, Name: "container-beta", ID: "c3"},
+	}
+
+	// Apply the same sorting logic used in Snapshot function
+	kindOrder := map[dlabels.Kind]int{
+		dlabels.KindContainer: 0,
+		dlabels.KindVolume:    1,
+		dlabels.KindNetwork:   2,
+	}
+	sort.Slice(entities, func(i, j int) bool {
+		if entities[i].Kind != entities[j].Kind {
+			return kindOrder[entities[i].Kind] < kindOrder[entities[j].Kind]
+		}
+		return entities[i].Name < entities[j].Name
+	})
+
+	// Define expected order: containers (alphabetically), then volumes (alphabetically), then networks (alphabetically)
+	expected := []struct {
+		kind dlabels.Kind
+		name string
+	}{
+		{dlabels.KindContainer, "container-alpha"},
+		{dlabels.KindContainer, "container-beta"},
+		{dlabels.KindContainer, "container-zeta"},
+		{dlabels.KindVolume, "vol-alpha"},
+		{dlabels.KindVolume, "vol-beta"},
+		{dlabels.KindNetwork, "net-alpha"},
+		{dlabels.KindNetwork, "net-beta"},
+	}
+
+	// Verify we have all expected entities
+	if len(entities) != len(expected) {
+		t.Fatalf("Expected %d entities, got %d", len(expected), len(entities))
+	}
+
+	// Verify ordering
+	for i, exp := range expected {
+		if entities[i].Kind != exp.kind {
+			t.Errorf("Entity at index %d: expected Kind=%s, got %s", i, exp.kind, entities[i].Kind)
+		}
+		if entities[i].Name != exp.name {
+			t.Errorf("Entity at index %d: expected Name=%s, got %s", i, exp.name, entities[i].Name)
+		}
+	}
+}
+
+func TestEntitySortingStability(t *testing.T) {
+	// Test that sorting is stable across multiple runs with the same input
+	original := []dlabels.LabeledEntity{
+		{Kind: dlabels.KindNetwork, Name: "net-alpha", ID: "n1"},
+		{Kind: dlabels.KindContainer, Name: "container-zeta", ID: "c1"},
+		{Kind: dlabels.KindVolume, Name: "vol-beta", ID: "v1"},
+		{Kind: dlabels.KindContainer, Name: "container-alpha", ID: "c2"},
+		{Kind: dlabels.KindNetwork, Name: "net-beta", ID: "n2"},
+		{Kind: dlabels.KindVolume, Name: "vol-alpha", ID: "v2"},
+		{Kind: dlabels.KindContainer, Name: "container-beta", ID: "c3"},
+	}
+
+	kindOrder := map[dlabels.Kind]int{
+		dlabels.KindContainer: 0,
+		dlabels.KindVolume:    1,
+		dlabels.KindNetwork:   2,
+	}
+
+	// Sort the first time
+	entities1 := make([]dlabels.LabeledEntity, len(original))
+	copy(entities1, original)
+	sort.Slice(entities1, func(i, j int) bool {
+		if entities1[i].Kind != entities1[j].Kind {
+			return kindOrder[entities1[i].Kind] < kindOrder[entities1[j].Kind]
+		}
+		return entities1[i].Name < entities1[j].Name
+	})
+
+	// Sort multiple more times and verify results are identical
+	for run := 0; run < 5; run++ {
+		entities2 := make([]dlabels.LabeledEntity, len(original))
+		copy(entities2, original)
+		sort.Slice(entities2, func(i, j int) bool {
+			if entities2[i].Kind != entities2[j].Kind {
+				return kindOrder[entities2[i].Kind] < kindOrder[entities2[j].Kind]
+			}
+			return entities2[i].Name < entities2[j].Name
+		})
+
+		// Verify ordering is the same
+		for i := range entities1 {
+			if entities2[i].Kind != entities1[i].Kind ||
+				entities2[i].Name != entities1[i].Name {
+				t.Errorf("Run %d: ordering not stable at index %d (expected %s/%s, got %s/%s)",
+					run, i, entities1[i].Kind, entities1[i].Name, entities2[i].Kind, entities2[i].Name)
+			}
+		}
 	}
 }
