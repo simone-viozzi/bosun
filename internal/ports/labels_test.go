@@ -29,7 +29,7 @@ func (m *mockLabelSource) Snapshot(ctx context.Context, sel Selector) (dlabels.S
 func TestInterfaces(t *testing.T) {
 	// Test Selector struct
 	selector := Selector{
-		Prefixes:       []string{"bosun."},
+		Prefixes:       []string{dlabels.DefaultLabelPrefix},
 		IncludeStopped: false,
 		ProjectFilter:  []string{"test"},
 	}

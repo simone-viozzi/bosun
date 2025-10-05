@@ -2,6 +2,9 @@ package labels
 
 import "time"
 
+// DefaultLabelPrefix is the standard prefix for Bosun-managed labels.
+const DefaultLabelPrefix = "bosun."
+
 type Kind string
 
 const (

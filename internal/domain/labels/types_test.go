@@ -6,6 +6,11 @@ import (
 )
 
 func TestTypes(t *testing.T) {
+	// Test DefaultLabelPrefix constant
+	if DefaultLabelPrefix != "bosun." {
+		t.Errorf("Expected DefaultLabelPrefix to be 'bosun.', got %s", DefaultLabelPrefix)
+	}
+
 	// Test Kind constants
 	if KindContainer != "container" {
 		t.Errorf("Expected KindContainer to be 'container', got %s", KindContainer)
