@@ -2,10 +2,13 @@ package dockerlabels
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
@@ -58,12 +61,75 @@ func (s *DockerLabelSource) snapshotContainers(ctx context.Context, sel ports.Se
 	return out, nil
 }
 
+// snapshotVolumes collects volumes from Docker, filters by label prefixes,
+// and returns labeled entities for volumes with matching labels.
+func (s *DockerLabelSource) snapshotVolumes(ctx context.Context, sel ports.Selector) ([]dlabels.LabeledEntity, error) {
+	vl, err := s.CLI.VolumeList(ctx, volume.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	var out []dlabels.LabeledEntity
+	for _, v := range vl.Volumes {
+		fl := FilterByPrefixes(v.Labels, sel.Prefixes)
+		if len(fl) == 0 {
+			continue
+		}
+		out = append(out, dlabels.LabeledEntity{
+			Kind:   dlabels.KindVolume,
+			ID:     v.Name,
+			Name:   v.Name,
+			Labels: fl,
+			Meta:   map[string]string{},
+		})
+	}
+	return out, nil
+}
+
+// snapshotNetworks collects networks from Docker, filters by label prefixes,
+// and returns labeled entities for networks with matching labels.
+func (s *DockerLabelSource) snapshotNetworks(ctx context.Context, sel ports.Selector) ([]dlabels.LabeledEntity, error) {
+	nets, err := s.CLI.NetworkList(ctx, network.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	var out []dlabels.LabeledEntity
+	for _, n := range nets {
+		fl := FilterByPrefixes(n.Labels, sel.Prefixes)
+		if len(fl) == 0 {
+			continue
+		}
+		out = append(out, dlabels.LabeledEntity{
+			Kind:   dlabels.KindNetwork,
+			ID:     n.ID,
+			Name:   n.Name,
+			Labels: fl,
+			Meta:   map[string]string{},
+		})
+	}
+	return out, nil
+}
+
 // Snapshot implements the LabelSource interface
 func (d *DockerLabelSource) Snapshot(ctx context.Context, sel ports.Selector) (dlabels.Snapshot, error) {
-	entities, err := d.snapshotContainers(ctx, sel)
+	containers, err := d.snapshotContainers(ctx, sel)
 	if err != nil {
 		return dlabels.Snapshot{}, err
 	}
+
+	volumes, err := d.snapshotVolumes(ctx, sel)
+	if err != nil {
+		return dlabels.Snapshot{}, err
+	}
+
+	networks, err := d.snapshotNetworks(ctx, sel)
+	if err != nil {
+		return dlabels.Snapshot{}, err
+	}
+
+	entities := slices.Concat(containers, volumes, networks)
+
 	return dlabels.Snapshot{
 		Entities: entities,
 		TakenAt:  time.Now(),

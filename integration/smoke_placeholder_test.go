@@ -14,6 +14,8 @@ import (
 	"github.com/simone-viozzi/bosun/internal/testutil"
 )
 
+// Deprecated: This test was used to establish the integration testing structure.
+// Real integration tests should be added instead. This will be removed once proper tests are in place.
 // Test_Integration_Smoke_Placeholder verifies that the testutil harness can successfully
 // start and stop a Docker Compose stack with unique project naming and automatic cleanup.
 // This serves as a basic smoke test for the integration testing infrastructure.

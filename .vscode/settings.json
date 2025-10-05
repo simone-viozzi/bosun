@@ -1,20 +1,75 @@
 {
-    "go.alternateTools": {
-        "dlv": "${workspaceFolder}/.direnv/go-tools/delve/dlv"
-    },
-    "gopls": {
-        "ui.semanticTokens": true,
-        "build.buildFlags": ["-tags=integration"]
-    },
+    "git.blame.editorDecoration.enabled": true,
+    "git.blame.editorDecoration.template": "${subject}, ${authorName} (${authorDateAgo})",
+    "git.blame.statusBarItem.enabled": true,
+    "github.copilot.chat.codesearch.enabled": true,
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
             "file": ".github/instructions/commit-msg.instructions.md"
         }
     ],
-    "makefile.configureOnOpen": false,
-    "gitlens.plusFeatures.enabled": false,
-    "gitlens.gitkraken.mcp.autoEnabled": false,
-    "gitlens.graph.statusBar.enabled": false,
-    "gitlens.telemetry.enabled": false,
+    "github.copilot.chat.editor.temporalContext.enabled": true,
+    "github.copilot.chat.edits.temporalContext.enabled": true,
+    "github.copilot.enable": {
+        "*": true,
+        "markdown": false,
+        "plaintext": false,
+        "scminput": false
+    },
+    "github.copilot.nextEditSuggestions.enabled": true,
     "gitlens.ai.enabled": false,
+    "gitlens.ai.model": "vscode",
+    "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+    "gitlens.defaultDateFormat": "YYYY-MM-DD HH:MM",
+    "gitlens.defaultDateShortFormat": "YYYY-MM-DD",
+    "gitlens.defaultTimeFormat": "HH:MM",
+    "gitlens.gitkraken.cli.integration.enabled": false,
+    "gitlens.gitkraken.mcp.autoEnabled": false,
+    "gitlens.graph.avatars": false,
+    "gitlens.graph.dateStyle": "absolute",
+    "gitlens.graph.highlightRowsOnRefHover": false,
+    "gitlens.graph.issues.enabled": false,
+    "gitlens.graph.layout": "editor",
+    "gitlens.graph.pullRequests.enabled": false,
+    "gitlens.graph.scrollMarkers.enabled": false,
+    "gitlens.graph.showDetailsView": false,
+    "gitlens.graph.showGhostRefsOnRowHover": false,
+    "gitlens.graph.showUpstreamStatus": false,
+    "gitlens.graph.sidebar.enabled": false,
+    "gitlens.graph.statusBar.enabled": false,
+    "gitlens.hovers.currentLine.over": "line",
+    "gitlens.menus": {
+        "editor": false,
+        "editorGroup": {
+            "blame": true,
+            "compare": true
+        },
+        "editorGutter": false,
+        "editorTab": false,
+        "explorer": false,
+        "ghpr": false,
+        "scm": false,
+        "scmGroup": false,
+        "scmGroupInline": false,
+        "scmItem": false,
+        "scmItemInline": false,
+        "scmRepository": false,
+        "scmRepositoryInline": false
+    },
+    "gitlens.plusFeatures.enabled": false,
+    "gitlens.statusBar.enabled": false,
+    "gitlens.telemetry.enabled": false,
+    "gitlens.terminalLinks.enabled": false,
+    "go.alternateTools": {
+        "dlv": "${workspaceFolder}/.direnv/go-tools/delve/dlv"
+    },
+    "gopls": {
+        "build.buildFlags": [
+            "-tags=integration"
+        ],
+        "ui.semanticTokens": true
+    },
+    "makefile.configureOnOpen": false,
+    "editor.stickyScroll.enabled": true,
+    "editor.suggest.matchOnWordStartOnly": false
 }

@@ -1,0 +1,22 @@
+services:
+  test-app:
+    image: nginx:alpine
+    labels:
+      bosun.test: "true"
+      bosun.role: "webserver"
+    volumes:
+      - test-data:/data
+    networks:
+      - test-net
+
+volumes:
+  test-data:
+    labels:
+      bosun.test: "true"
+      bosun.purpose: "storage"
+
+networks:
+  test-net:
+    labels:
+      bosun.test: "true"
+      bosun.type: "internal"
