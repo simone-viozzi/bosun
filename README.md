@@ -35,6 +35,20 @@ make build    # Builds to bin/bosun
 make run      # Runs from source
 ```
 
+### Usage
+
+Bosun provides a CLI for inspecting Docker labels:
+
+```bash
+# View all Docker entities with bosun.* labels
+bosun labels snapshot
+
+# Include stopped containers in the snapshot
+bosun labels snapshot --stopped
+```
+
+The snapshot command outputs pretty-printed JSON showing containers, volumes, and networks with their Bosun labels.
+
 ## Testing
 
 Bosun includes comprehensive unit and integration tests. See [Testing Guide](docs/testing.md) for detailed instructions.
