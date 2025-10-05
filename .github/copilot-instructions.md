@@ -51,4 +51,10 @@ The project includes a comprehensive testing setup:
 - **Test Execution**: Use `make test` for unit tests, `make test-integration` for integration tests (requires Docker)
 
 ### Label Discovery Module
-The `dockerlabels` adapter provides filtered label discovery for containers, volumes, and networks. It uses `bosun.*` prefix filtering, excludes stopped entities by default, and enriches entities with metadata (containers: image, compose info; volumes: driver; networks: driver, scope). See Serena memories `dockerlabels_adapter` and `label_discovery_domain` for detailed implementation.
+The `dockerlabels` adapter provides filtered label discovery for containers, volumes, and networks with `bosun.*` prefix filtering, stopped container exclusion by default, and metadata enrichment. **Key conventions:**
+- Labels are case-sensitive
+- Image labels are intentionally ignored in v1
+- Networks may require manual label application
+- Only entities with matching labels are included
+
+See `internal/adapters/dockerlabels/README.md` for comprehensive documentation, examples, and gotchas. Serena memories `dockerlabels_adapter` and `label_discovery_domain` contain implementation details.
