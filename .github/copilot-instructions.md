@@ -31,7 +31,7 @@ make tidy          # go mod tidy
 - **Memories**: Always list and read memories upon starting a task. Then create and update Serena memories for important concepts, patterns, and decisions.
 
 ## Project State
-Early-stage project with hexagonal architecture scaffolding. Focus on implementing domain logic, ports, and adapters following the established structure.
+Early-stage project with hexagonal architecture scaffolding. Domain logic, ports, and adapters for label discovery are fully implemented. Focus on expanding functionality and integrating additional features.
 
 ### Testing Infrastructure
 The project includes a comprehensive testing setup:
@@ -41,4 +41,4 @@ The project includes a comprehensive testing setup:
 - **Test Execution**: Use `make test` for unit tests, `make test-integration` for integration tests (requires Docker)
 
 ### Label Discovery Module
-The `dockerlabels` adapter provides filtered label discovery for containers, volumes, and networks. It uses `bosun.*` prefix filtering, excludes stopped entities by default, and ignores image labels in v1.
+The `dockerlabels` adapter provides filtered label discovery for containers, volumes, and networks. It uses `bosun.*` prefix filtering, excludes stopped entities by default, and enriches entities with metadata (containers: image, compose info; volumes: driver; networks: driver, scope). See Serena memories `dockerlabels_adapter` and `label_discovery_domain` for detailed implementation.
