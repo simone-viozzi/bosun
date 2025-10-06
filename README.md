@@ -84,6 +84,7 @@ make tidy     # Tidy dependencies
 ## Documentation
 
 - [Testing Guide](docs/testing.md) - How to run and write tests
+- [Label Discovery](docs/label-discovery.md) - Docker label discovery system and usage
 
 ## License
 
