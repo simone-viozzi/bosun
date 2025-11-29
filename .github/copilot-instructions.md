@@ -34,7 +34,7 @@ make tidy          # go mod tidy
 2) List memories → `serena.memories.list()` and read the most relevant.
 3) Update or create memories as needed to save relevant context for future reference.
 4) Prefer Serena’s navigation/edit tools for all code work.
-5) Avoid terminal tools unless there is no other option.
+5) Avoid terminal tools unless there is no other option. **DO NOT USE TERMINAL COMMANDS LIKE READING FILES, SEARCHING, OR EDITING FILES.**
 
 
 **Tool policy**
