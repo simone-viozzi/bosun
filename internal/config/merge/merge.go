@@ -114,7 +114,7 @@ func isZeroValue(v reflect.Value) bool {
 		// This is a known limitation - see the contract documentation.
 		// In practice, users who want to override to false should rely on
 		// the default being true and not setting the label at all.
-		return !v.Bool() && v.Bool() == false // Always treat false as zero for now
+		return !v.Bool() // Always treat false as zero for now
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return v.Int() == 0
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
