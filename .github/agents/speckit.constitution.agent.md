@@ -1,6 +1,6 @@
 ---
 description: Create or update the project constitution from interactive or provided principle inputs, ensuring all dependent templates stay in sync.
-tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'serena/*', 'tavily/*', 'problems', 'changes', 'testFailure', 'todos', 'runSubagent']
+tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'serena/*', 'tavily/*', 'problems', 'changes', 'testFailure', 'todos', 'runSubagent', 'runTests']
 handoffs:
   - label: Build Specification
     agent: speckit.specify

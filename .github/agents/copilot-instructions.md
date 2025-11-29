@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-29
 
 ## Active Technologies
 - N/A (in-memory config) (002-label-parser-merger)
+- Go 1.24.6 + Cobra (CLI), Docker SDK, go-units, existing config packages (003-cli-config-validate)
+- N/A (read-only command, no persistence) (003-cli-config-validate)
 
 - Go 1.24.6 + Standard library (`reflect`, `strings`, `strconv`, `time`), `github.com/docker/go-units` (for byte size parsing) (001-config-schema)
 
@@ -23,6 +25,7 @@ tests/
 Go 1.24.6: Follow standard conventions
 
 ## Recent Changes
+- 003-cli-config-validate: Added Go 1.24.6 + Cobra (CLI), Docker SDK, go-units, existing config packages
 - 002-label-parser-merger: Added Go 1.24.6
 
 - 001-config-schema: Added Go 1.24.6 + Standard library (`reflect`, `strings`, `strconv`, `time`), `github.com/docker/go-units` (for byte size parsing)

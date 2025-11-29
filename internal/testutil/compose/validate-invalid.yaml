@@ -1,0 +1,21 @@
+# Docker Compose file for testing invalid configuration
+# Used by integration tests for bosun config validate
+
+services:
+  invalid-app:
+    image: nginx:alpine
+    labels:
+      # Error 1: Unknown key (typo)
+      bosun.container.stopGracPeriod: "60s"
+      # Error 2: Invalid duration format
+      bosun.container.healthCheckInterval: "notaduration"
+      # Error 3: Invalid enum value
+      bosun.container.logLevel: "verbose"
+    volumes:
+      - invalid-data:/data
+
+volumes:
+  invalid-data:
+    labels:
+      # Error 4: Scope mismatch - container label on volume
+      bosun.container.autoRestart: "true"
