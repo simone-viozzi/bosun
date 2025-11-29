@@ -73,7 +73,11 @@ func applyDefaults(v reflect.Value, t reflect.Type) error {
 		// Extract enum values if present (pipe-separated).
 		var enumValues []string
 		if enumStr, ok := tagParts["enum"]; ok && enumStr != "" {
-			enumValues = strings.Split(enumStr, "|")
+			parts := strings.Split(enumStr, "|")
+			enumValues = make([]string, 0, len(parts))
+			for _, p := range parts {
+				enumValues = append(enumValues, strings.TrimSpace(p))
+			}
 		}
 
 		// Parse and set the default value.
