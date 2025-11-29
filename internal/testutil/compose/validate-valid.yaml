@@ -1,0 +1,29 @@
+# Docker Compose file for testing valid configuration
+# Used by integration tests for bosun config validate
+
+services:
+  valid-app:
+    image: nginx:alpine
+    labels:
+      # Valid container-scoped labels
+      bosun.container.stopGracePeriod: "60s"
+      bosun.container.healthCheckInterval: "10s"
+      bosun.container.autoRestart: "true"
+      bosun.container.logLevel: "info"
+    volumes:
+      - valid-data:/data
+    networks:
+      - valid-net
+
+volumes:
+  valid-data:
+    labels:
+      # Valid volume-scoped labels
+      bosun.volume.backupEnabled: "true"
+      bosun.volume.maxSize: "1GB"
+
+networks:
+  valid-net:
+    labels:
+      # Valid network-scoped labels
+      bosun.network.priority: "10"

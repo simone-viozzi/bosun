@@ -14,6 +14,7 @@ func NewRootCmd() *cobra.Command {
 
 	// Add subcommands
 	cmd.AddCommand(NewLabelsCmd())
+	cmd.AddCommand(NewConfigCmd())
 
 	return cmd
 }

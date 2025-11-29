@@ -1,0 +1,33 @@
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Development
+.direnv/
+.envrc
+shell.nix
+
+# Build artifacts
+bin/
+*.test
+*.out
+
+# Documentation and specs
+docs/
+specs/
+*.md
+
+# Test utilities
+internal/testutil/
+
+# Integration tests
+integration/
+integration.test
+
+# Serena/specify config
+.serena/
+.specify/
