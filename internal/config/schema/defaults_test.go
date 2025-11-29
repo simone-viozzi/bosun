@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -216,6 +217,10 @@ type invalidDefaultSize struct {
 	MaxSize int64 `bosun:"key=bosun.maxSize,scope=volume,type=size,default=invalid"`
 }
 
+type invalidDefaultEnum struct {
+	Level string `bosun:"key=bosun.level,scope=container,type=enum,enum=debug|info|warn|error,default=invalid"`
+}
+
 func TestDefaultOf(t *testing.T) {
 	t.Run("basic types with defaults", func(t *testing.T) {
 		cfg, err := DefaultOf[testDefaultsConfig]()
@@ -337,6 +342,16 @@ func TestDefaultOf(t *testing.T) {
 		_, err := DefaultOf[invalidDefaultSize]()
 		if err == nil {
 			t.Error("DefaultOf() expected error for invalid size")
+		}
+	})
+
+	t.Run("error on invalid enum default", func(t *testing.T) {
+		_, err := DefaultOf[invalidDefaultEnum]()
+		if err == nil {
+			t.Error("DefaultOf() expected error for invalid enum default")
+		}
+		if err != nil && !strings.Contains(err.Error(), "must be one of") {
+			t.Errorf("error message should mention allowed values, got: %v", err)
 		}
 	})
 
