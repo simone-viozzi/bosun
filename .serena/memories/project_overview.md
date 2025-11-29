@@ -1,6 +1,6 @@
 # Project Overview
 
-Bosun is a Go CLI application designed with hexagonal architecture. The project is currently in its initial development phase, with the main application logic yet to be implemented. It includes adapters for Docker, HTTP, and storage operations, suggesting it may be a tool for managing or orchestrating containerized services or data handling.
+Bosun is a Go CLI application designed with hexagonal architecture. The project follows hexagonal architecture with domain logic and Docker label discovery fully implemented. It includes adapters for Docker, HTTP, and storage operations, suggesting it may be a tool for managing or orchestrating containerized services or data handling.
 
 ## Tech Stack
 - **Language**: Go 1.24.6
@@ -28,9 +28,9 @@ Bosun is a Go CLI application designed with hexagonal architecture. The project 
 - `.pre-commit-config.yaml`: Pre-commit hooks for code quality
 - `.github/workflows/ci.yml`: CI pipeline for testing and linting
 
-## Current Implementation Status
+## Implementation Status
 - **Domain & Ports**: Label discovery domain and ports fully implemented
-- **Adapters**: Docker labels adapter with container (#23), volume (#24), and network (#24) discovery implemented; utility functions, and Docker client; placeholder directories for docker, http, and storage
+- **Adapters**: Docker labels adapter with container, volume, and network discovery implemented; utility functions and Docker client; placeholder directories for docker, http, and storage
 - **Application**: Basic wiring in place, TODO for full integration
 
 ## Testing Infrastructure
@@ -43,8 +43,8 @@ Bosun is a Go CLI application designed with hexagonal architecture. The project 
   - Automatic cleanup via `t.Cleanup()`
 - **Test Execution**:
   - Unit tests: `make test`
-  - Integration tests: `make test-integration` (requires Docker)
-  - All tests: `make test && make test-integration`
+  - Integration tests: `make it` (requires Docker), or `make itv` for verbose
+  - All tests: `make test && make it`
 
 ## Development Guidelines
 - Follow hexagonal architecture principles

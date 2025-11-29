@@ -20,6 +20,8 @@ Bosun follows the **Hexagonal Architecture** (also known as Ports and Adapters) 
 - Maintainable: Clear separation of concerns
 - Framework independent: Domain logic doesn't depend on external libraries
 
-## Current State
-The domain and ports have been implemented for label discovery functionality. The adapters include placeholder directories for docker, http, and storage integrations, plus a dockerlabels adapter with utility functions. The main application in `internal/app/app.go` has a TODO to wire everything together.</content>
+## Implementation Notes
+- **Domain & Ports**: Label discovery domain models and ports fully implemented
+- **Adapters**: `dockerlabels` adapter with full container/volume/network discovery; placeholder directories for docker, http, and storage integrations
+- **Application**: `internal/app/app.go` contains App struct with basic Run method (wiring TODO exists)</content>
 <parameter name="memory_name">architecture

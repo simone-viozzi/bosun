@@ -51,19 +51,18 @@ The snapshot command outputs pretty-printed JSON showing containers, volumes, an
 
 ## Testing
 
-Bosun includes comprehensive unit and integration tests. See [Testing Guide](docs/testing.md) for detailed instructions.
+Bosun includes comprehensive unit and integration tests.
 
 **Quick start:**
 ```bash
 make test     # Run unit tests
+make it       # Run integration tests
 make itv      # Run integration tests (verbose)
 ```
 
 **Prerequisites for integration tests:**
 - Docker must be installed and running
-- Integration tests use the `integration` build tag
-
-For detailed testing instructions, troubleshooting, and test-writing guidelines, see [docs/testing.md](docs/testing.md).
+- Integration tests use the `integration` build tag (`//go:build integration`)
 
 ## Development
 
@@ -80,11 +79,6 @@ make tidy     # Tidy dependencies
 - **Commit Messages**: Follow [Conventional Commits](https://www.conventionalcommits.org/)
 - **Branching**: Semi-linear history enforced - rebase PRs, no merge commits
 - **Testing**: Integration tests use build tag `//go:build integration`
-
-## Documentation
-
-- [Testing Guide](docs/testing.md) - How to run and write tests
-- [Label Discovery](docs/label-discovery.md) - Docker label discovery system and usage
 
 ## License
 

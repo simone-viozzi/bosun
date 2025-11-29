@@ -30,6 +30,7 @@ Core utilities for integration testing:
 ### Compose Files (`internal/testutil/compose/`)
 Embedded Docker Compose configurations:
 - `docker-compose.yaml`: Basic nginx service on port 80 for smoke testing
+- `dockerlabels-compose.yaml`: Labeled containers, volumes, and networks for integration testing
 
 ### Integration Tests (`integration/`)
 - Located in `integration/` package
@@ -43,10 +44,10 @@ Embedded Docker Compose configurations:
 make test
 
 # Integration tests only (requires Docker)
-make test-integration
+make it       # or make itv for verbose
 
 # All tests
-make test && make test-integration
+make test && make it
 ```
 
 ## Test Patterns
@@ -69,5 +70,30 @@ Integration tests follow this pattern:
 Tests use standard `log` package for visibility into:
 - Test start/completion
 - Compose stack operations
-- Project names and ports</content>
+- Project names and ports
+
+## Troubleshooting
+
+### Common Issues
+- **Docker Not Running**: Error `Cannot connect to the Docker daemon` - ensure Docker is running
+- **Port Collisions**: Use dynamic ports in compose files (e.g., `"80"` not `"8080:80"`)
+- **Test Timeouts**: Increase with `-timeout=30m` flag if needed
+- **Permission Denied (Linux)**: Add user to docker group
+- **Stale Resources**: Clean up with `docker container/network/volume prune -f`
+
+### Writing Integration Tests
+Integration tests follow this pattern:
+```go
+//go:build integration
+
+func Test_Integration_Feature(t *testing.T) {
+    t.Parallel()
+    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+    defer cancel()
+
+    stack := testutil.StartCompose(t, ctx, "compose-file.yaml")
+    port := testutil.HostPort(t, ctx, stack.Project, "service", 80)
+    // Test logic...
+}
+```</content>
 <parameter name="memory_name">testing_structure

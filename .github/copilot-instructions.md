@@ -33,7 +33,9 @@ make tidy          # go mod tidy
 1) Activate Serena on this repo/project → `serena.activate(project="bosun")`.
 2) List memories → `serena.memories.list()` and read the most relevant.
 3) Update or create memories as needed to save relevant context for future reference.
-4) Prefer Serena’s navigation/edit tools for all code work. Only use terminal tools when Serena can’t do it.
+4) Prefer Serena’s navigation/edit tools for all code work.
+5) Avoid terminal tools unless there is no other option.
+
 
 **Tool policy**
 - Primary: `serena` (code navigation/edits, context).
@@ -57,4 +59,4 @@ The `dockerlabels` adapter provides filtered label discovery for containers, vol
 - Networks may require manual label application
 - Only entities with matching labels are included
 
-See `docs/label-discovery.md` for comprehensive documentation, examples, and gotchas. Serena memories `dockerlabels_adapter` and `label_discovery_domain` contain implementation details.
+Serena memories `dockerlabels_adapter` and `label_discovery_domain` contain full implementation details, gotchas, and usage patterns.

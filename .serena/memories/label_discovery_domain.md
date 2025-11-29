@@ -1,7 +1,7 @@
 # Label Discovery Domain and Ports
 
 ## Overview
-Issue #20 implemented the foundational domain models and ports for label discovery in Bosun. This follows hexagonal architecture principles, providing clean interfaces for querying Docker labels (and potentially other sources) while keeping domain logic decoupled from external systems.
+The foundational domain models and ports for label discovery in Bosun. This follows hexagonal architecture principles, providing clean interfaces for querying Docker labels (and potentially other sources) while keeping domain logic decoupled from external systems.
 
 ## Domain Models (`internal/domain/labels`)
 Core business entities for representing labeled entities:
@@ -14,7 +14,7 @@ Core business entities for representing labeled entities:
 
 - **`DefaultLabelPrefix`**: Constant `"bosun."` for standard Bosun-managed labels
 
-- **`LabelInstance`**: Constant `"bosun.instance"` (TODO: relocate this constant as it's currently misplaced in domain layer)
+- **`LabelInstance`**: Constant `"bosun.instance"` for identifying Bosun instances
 
 - **`LabeledEntity`**: Represents a single labeled Docker entity
   - `Kind Kind`: Type of entity (container/volume/network)
@@ -55,5 +55,5 @@ type LabelSource interface {
 - `LabelInstance` constant provides standardized access to instance labels
 
 ## Testing
-Unit tests verify compilation and basic functionality. Integration with actual label sources will be tested in adapter implementations. Recent updates include validation of Meta enrichment in integration tests.</content>
+Unit tests verify compilation and basic functionality. Integration tests in `integration/dockerlabels_test.go` validate full snapshot functionality with Docker Compose stacks, including Meta enrichment for all entity types.</content>
 <parameter name="memory_name">label_discovery_domain
