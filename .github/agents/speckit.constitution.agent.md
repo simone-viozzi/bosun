@@ -1,5 +1,6 @@
 ---
 description: Create or update the project constitution from interactive or provided principle inputs, ensuring all dependent templates stay in sync.
+tools: ['edit', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'github/create_issue', 'github/get_issue', 'github/get_issue_comments', 'github/list_issues', 'github/search_issues', 'github/update_issue', 'serena/*', 'tavily/*', 'changes', 'testFailure', 'todos', 'runSubagent']
 handoffs:
   - label: Build Specification
     agent: speckit.specify

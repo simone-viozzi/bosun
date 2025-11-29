@@ -1,5 +1,6 @@
 ---
 description: Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.
+tools: ['edit', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'github/create_issue', 'github/get_issue', 'github/get_issue_comments', 'github/list_issues', 'github/search_issues', 'github/update_issue', 'serena/*', 'tavily/*', 'changes', 'testFailure', 'todos', 'runSubagent']
 handoffs:
   - label: Build Technical Plan
     agent: speckit.plan

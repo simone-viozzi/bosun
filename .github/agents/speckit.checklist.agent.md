@@ -1,5 +1,6 @@
 ---
 description: Generate a custom checklist for the current feature based on user requirements.
+tools: ['edit', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'github/create_issue', 'github/get_issue', 'github/get_issue_comments', 'github/list_issues', 'github/search_issues', 'github/update_issue', 'serena/*', 'tavily/*', 'changes', 'testFailure', 'todos', 'runSubagent']
 ---
 
 ## Checklist Purpose: "Unit Tests for English"
