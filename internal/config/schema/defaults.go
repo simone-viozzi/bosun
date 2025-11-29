@@ -70,8 +70,14 @@ func applyDefaults(v reflect.Value, t reflect.Type) error {
 
 		configType := ConfigType(tagParts["type"])
 
+		// Extract enum values if present (pipe-separated).
+		var enumValues []string
+		if enumStr, ok := tagParts["enum"]; ok && enumStr != "" {
+			enumValues = strings.Split(enumStr, "|")
+		}
+
 		// Parse and set the default value.
-		if err := setDefaultValue(fieldVal, field.Type, configType, defaultStr); err != nil {
+		if err := setDefaultValue(fieldVal, field.Type, configType, defaultStr, enumValues); err != nil {
 			return fmt.Errorf("field %s: %w", field.Name, err)
 		}
 	}
@@ -80,7 +86,7 @@ func applyDefaults(v reflect.Value, t reflect.Type) error {
 }
 
 // setDefaultValue parses the default string and sets it on the field.
-func setDefaultValue(fieldVal reflect.Value, fieldType reflect.Type, configType ConfigType, defaultStr string) error {
+func setDefaultValue(fieldVal reflect.Value, fieldType reflect.Type, configType ConfigType, defaultStr string, enumValues []string) error {
 	if !fieldVal.CanSet() {
 		return fmt.Errorf("cannot set field value")
 	}
@@ -118,7 +124,19 @@ func setDefaultValue(fieldVal reflect.Value, fieldType reflect.Type, configType 
 		fieldVal.SetInt(s)
 
 	case TypeEnum:
-		// Enum is stored as a string.
+		// Validate that the default value is one of the allowed enum values.
+		if len(enumValues) > 0 {
+			valid := false
+			for _, v := range enumValues {
+				if v == defaultStr {
+					valid = true
+					break
+				}
+			}
+			if !valid {
+				return fmt.Errorf("invalid enum default %q: must be one of %v", defaultStr, enumValues)
+			}
+		}
 		fieldVal.SetString(defaultStr)
 
 	case TypeList:
