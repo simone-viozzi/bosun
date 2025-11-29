@@ -33,7 +33,7 @@ make tidy          # go mod tidy
 1) Activate Serena on this repo/project → `serena.activate(project="bosun")`.
 2) List memories → `serena.memories.list()` and read the most relevant.
 3) Update or create memories as needed to save relevant context for future reference.
-4) Prefer Serena’s navigation/edit tools for all code work.
+4) Prefer Serena's navigation/edit tools for all code work.
 5) Avoid terminal tools unless there is no other option. **DO NOT USE TERMINAL COMMANDS LIKE READING FILES, SEARCHING, OR EDITING FILES.**
 
 
@@ -41,6 +41,8 @@ make tidy          # go mod tidy
 - Primary: `serena` (code navigation/edits, context).
 - Secondary: `context7` (check/lookup updated dependencies or APIs).
 - Avoid direct terminal commands unless absolutely necessary; prefer Serena for file ops, search, refactors.
+- **NEVER use terminal commands (cat, echo, heredocs) to create or edit files** - use `create_file` or `replace_string_in_file` tools instead.
+- Terminal is acceptable for: running tests, builds, git commands, and other non-file-editing operations.
 
 ## Project State
 Early-stage project with hexagonal architecture scaffolding. Domain logic, ports, and adapters for label discovery are fully implemented. Focus on expanding functionality and integrating additional features.
