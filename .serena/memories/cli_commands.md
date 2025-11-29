@@ -9,6 +9,62 @@ Bosun uses the Cobra CLI framework for command-line interface. Commands are defi
 
 ## Available Commands
 
+### `bosun config validate`
+Validates Bosun configuration from Docker labels and files. Checks for typos, type errors, and scope mismatches.
+
+**Usage**: `bosun config validate [--from <source>] [--scope <type>] [--print] [--stopped]`
+
+**Flags**:
+- `-f, --from <source>`: Config source: `auto` (default), `labels`, `file`
+- `-s, --scope <type>`: Filter by entity type: `container`, `volume`, `network`, `global` (default: all)
+- `-p, --print`: Print merged config as JSON instead of just validating
+- `-c, --config <path>`: Path to config file (future)
+- `--stopped`: Include stopped containers (default: false)
+
+**Exit Codes**:
+- `0`: Validation passed
+- `1`: Validation failed (invalid config)
+- `2`: Runtime error (Docker unavailable)
+
+**Output Examples**:
+
+Success:
+```
+Configuration valid
+```
+
+Failure:
+```
+Validation errors:
+
+Container "myapp" (abc123def456):
+  - unknown key: bosun.container.gracePeriod
+  - invalid duration for key 'bosun.container.stopGracePeriod': time: invalid duration "30"
+
+Found 2 error(s) in 1 entity(ies)
+```
+
+With `--print`:
+```json
+{
+  "Instance": "",
+  "StopGracePeriod": 30000000000,
+  "HealthCheckInterval": 30000000000,
+  "AutoRestart": true,
+  "LogLevel": "info",
+  "BackupEnabled": false,
+  "MaxSize": 10737418240,
+  "Priority": 100
+}
+```
+
+**Implementation Details**:
+- Uses `dockerlabels.NewFromEnv()` to create Docker client
+- Uses `loader.FromLabels()` to validate labels per entity
+- Uses `merge.Merge()` to combine defaults + file (future) + labels
+- Filters entities by `--scope` flag
+- Reports all validation errors, not just the first one
+
 ### `bosun labels snapshot`
 Captures a snapshot of all Docker entities (containers, volumes, networks) with Bosun labels and prints as JSON.
 
