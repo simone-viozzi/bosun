@@ -6,7 +6,8 @@
 - **Build and run in Docker**: `docker build -t bosun . && docker run bosun`
 
 ## Testing and Quality
-- **Run all tests**: `make test` - Executes `go test ./...`
+- **Run unit tests**: `make test` - Executes `go test ./...`
+- **Run integration tests**: `make it` - Runs integration tests with Docker (or `make itv` for verbose)
 - **Run tests with coverage**: `go test -v ./... -coverprofile=coverage.out`
 - **Format code**: `make fmt` - Applies `go fmt ./...`
 - **Static analysis**: `make vet` - Runs `go vet ./...`
