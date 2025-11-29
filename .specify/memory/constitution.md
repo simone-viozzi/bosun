@@ -1,50 +1,118 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+==================
+Version change: 0.0.0 → 1.0.0 (MAJOR - initial constitution)
+Modified principles: N/A (initial version)
+Added sections:
+  - Core Principles (5 principles)
+  - Technology Stack section
+  - Development Workflow section
+  - Governance section
+Removed sections: N/A
+Templates requiring updates:
+  - .specify/templates/plan-template.md: ✅ Compatible (Constitution Check section exists)
+  - .specify/templates/spec-template.md: ✅ Compatible (no constitution-specific references)
+  - .specify/templates/tasks-template.md: ✅ Compatible (no constitution-specific references)
+Follow-up TODOs: None
+-->
+
+# Bosun Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Hexagonal Architecture (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Bosun MUST follow hexagonal (ports and adapters) architecture principles:
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- **Domain Independence**: Business logic in `internal/domain/` MUST NOT depend on external systems or frameworks
+- **Ports Define Contracts**: All external interactions MUST be defined as interfaces in `internal/ports/`
+- **Adapters Implement Ports**: Concrete implementations in `internal/adapters/` MUST implement port interfaces
+- **Dependency Direction**: Dependencies MUST point inward (adapters → ports → domain)
+- **Application Orchestration**: `internal/app/` wires together ports and adapters
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: Enables testability, technology swapping, and clear separation of concerns.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Label-Driven Configuration
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Configuration MUST be primarily driven by Docker labels:
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Primary Source of Truth**: `bosun.*` labels on containers, volumes, and networks define behavior
+- **Schema-First Design**: All label keys MUST be defined in the schema package with type, scope, and documentation
+- **Strict Validation**: Unknown label keys MUST cause validation failures (no silent ignoring)
+- **Precedence Chain**: defaults < file < env < labels (labels always win)
+- **Introspectable**: `bosun config validate` MUST show effective configuration from labels
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: Users understand system behavior by inspecting labels, enabling GitOps and declarative configuration.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Test-First Development
+
+All features MUST be developed with tests:
+
+- **Unit Tests**: Standard Go tests (`*_test.go`) for individual components
+- **Integration Tests**: Docker Compose-based tests using testcontainers-go for end-to-end validation
+- **Build Tags**: Integration tests MUST use `//go:build integration` tag
+- **Test Utilities**: Use `internal/testutil/` harness for consistent integration test patterns
+- **Coverage Targets**: Aim for meaningful coverage; avoid testing trivial code paths
+
+**Rationale**: Tests document behavior, prevent regressions, and enable confident refactoring.
+
+### IV. CLI-First Interface
+
+All Bosun functionality MUST be accessible via CLI:
+
+- **Cobra Framework**: Use `github.com/spf13/cobra` for command structure
+- **Output Protocol**: stdout for results, stderr for errors; support JSON output for scripting
+- **Subcommand Hierarchy**: Logical grouping (e.g., `bosun labels snapshot`, `bosun config validate`)
+- **Flags Over Prompts**: Prefer flags for automation; interactive prompts only when essential
+- **Graceful Errors**: Return friendly error messages with actionable guidance
+
+**Rationale**: CLI enables automation, scripting, and integration with existing DevOps workflows.
+
+### V. Code Quality & Simplicity
+
+Code MUST be idiomatic Go and maintainable:
+
+- **Go Standards**: `go fmt`, `go vet`, and golangci-lint MUST pass
+- **Naming Conventions**: Exported identifiers start with capital letters; use camelCase
+- **YAGNI**: Don't build features until needed; start simple
+- **Documentation**: Exported functions and types MUST have doc comments
+- **Pre-commit Hooks**: Run hooks before committing to catch issues early
+
+**Rationale**: Maintainable code enables long-term velocity and onboarding of contributors.
+
+## Technology Stack
+
+Bosun development MUST use these technologies and conventions:
+
+| Category | Technology | Notes |
+|----------|------------|-------|
+| Language | Go 1.24+ | Module at `github.com/simone-viozzi/bosun` |
+| CLI | Cobra | `github.com/spf13/cobra` |
+| Docker | Docker SDK | `github.com/docker/docker` |
+| Testing | testcontainers-go | Integration tests with Docker Compose |
+| Build | Makefile | `make build`, `make test`, `make it` |
+| Linting | golangci-lint | Pre-commit hook enforced |
+| CI/CD | GitHub Actions | `.github/workflows/ci.yml` |
+
+## Development Workflow
+
+All contributions MUST follow this workflow:
+
+1. **Spec-Driven**: Features start with specs in `specs/###-feature-name/`
+2. **Branch Naming**: Use `###-feature-name` pattern matching spec directory
+3. **Pre-commit Hooks**: MUST pass before committing
+4. **Test Execution**: Run `make test` for unit tests, `make it` for integration tests
+5. **Code Review**: PRs require review and CI passing
+6. **Serena-First**: Use Serena tools for code navigation and editing when available
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other development practices for Bosun.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- **Amendments**: Changes to this constitution require documentation of rationale and impact assessment
+- **Versioning**: Constitution follows semantic versioning (MAJOR.MINOR.PATCH)
+- **Compliance**: All PRs MUST verify compliance with these principles
+- **Exceptions**: Any deviation MUST be documented with justification in the PR description
+- **Guidance**: See `.github/copilot-instructions.md` for runtime AI development guidance
+
+**Version**: 1.0.0 | **Ratified**: 2025-11-30 | **Last Amended**: 2025-11-30
