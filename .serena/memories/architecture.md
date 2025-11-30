@@ -22,6 +22,8 @@ Bosun follows the **Hexagonal Architecture** (also known as Ports and Adapters) 
 
 ## Implementation Notes
 - **Domain & Ports**: Label discovery domain models and ports fully implemented
+- **Config System**: Schema, loader, and merger packages under `internal/config/`
+- **CLI**: Commands defined in `internal/cmd/`, entry point wires Cobra commands
 - **Adapters**: `dockerlabels` adapter with full container/volume/network discovery; placeholder directories for docker, http, and storage integrations
-- **Application**: `internal/app/app.go` contains App struct with basic Run method (wiring TODO exists)</content>
+- **Application**: `internal/app/app.go` contains App struct with basic Run method; main CLI flow uses Cobra commands directly</content>
 <parameter name="memory_name">architecture

@@ -3,7 +3,7 @@
 Bosun is a Go CLI application designed with hexagonal architecture. The project follows hexagonal architecture with domain logic and Docker label discovery fully implemented. It includes adapters for Docker, HTTP, and storage operations, suggesting it may be a tool for managing or orchestrating containerized services or data handling.
 
 ## Tech Stack
-- **Language**: Go 1.24.6 (go.mod), but README states 1.25+ as prerequisite
+- **Language**: Go 1.24.6 (go.mod requires 1.24.6+, README suggests 1.25+ for best compatibility)
 - **Architecture**: Hexagonal (Ports and Adapters)
 - **Dependencies**: Testcontainers for integration testing
 - **Build Tool**: Makefile
@@ -30,8 +30,11 @@ Bosun is a Go CLI application designed with hexagonal architecture. The project 
 
 ## Implementation Status
 - **Domain & Ports**: Label discovery domain and ports fully implemented
+- **Config System**: Code-first schema, label loader, source merger all implemented
+- **CLI**: `bosun config validate` and `bosun labels snapshot` commands available
+- **Documentation**: Auto-generated `docs/config.md` and `docs/config.schema.json`
 - **Adapters**: Docker labels adapter with container, volume, and network discovery implemented; utility functions and Docker client; placeholder directories for docker, http, and storage
-- **Application**: Basic wiring in place, TODO for full integration
+- **Application**: Basic wiring in place
 
 ## Testing Infrastructure
 - **Unit Tests**: Standard Go testing with `go test`

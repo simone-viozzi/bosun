@@ -1,7 +1,6 @@
 # Config Schema Package
 
 **Location**: `internal/config/schema/`
-**Issue**: #57
 
 ## Overview
 
@@ -94,8 +93,8 @@ All tests in `*_test.go` files alongside source. Key test files:
 - `defaults_test.go` - Value parsers, DefaultOf tests
 - `config_v1_test.go` - Integration tests
 
-## Usage by Downstream Issues
+## Usage by Downstream Packages
 
-- #58 (loader) - Uses Spec for label→config mapping
-- #59 (merger) - Uses Spec for multi-source merging
-- #61 (docs) - Uses Spec for documentation generation
+- `config/loader` - Uses Spec for label→config mapping
+- `config/merge` - Uses Spec for multi-source merging
+- `tools/configdoc` - Uses Spec for documentation generation
