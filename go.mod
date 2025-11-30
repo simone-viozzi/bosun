@@ -8,7 +8,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gosimple/slug v1.15.0
 	github.com/spf13/cobra v1.10.1
-	github.com/testcontainers/testcontainers-go/modules/compose v0.39.0
+	github.com/testcontainers/testcontainers-go/modules/compose v0.40.0
 	golang.org/x/sync v0.18.0
 )
 
