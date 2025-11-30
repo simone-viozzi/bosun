@@ -1,7 +1,7 @@
 # Testing Structure
 
 ## Overview
-Bosun uses a comprehensive testing strategy with both unit and integration tests. The integration testing infrastructure is built around Docker Compose stacks managed by testcontainers-go.
+Bosun uses a comprehensive testing strategy with both unit and integration tests. The integration testing infrastructure uses CLI-based Docker Compose via `exec.Command`.
 
 ## Test Categories
 - **Unit Tests**: Standard Go tests for individual components
@@ -14,23 +14,36 @@ Core utilities for integration testing:
 
 #### harness.go
 - `ComposeFS`: Embedded filesystem containing compose YAML files from `testutil/compose/*.yaml`
-- `Stack` struct: Represents a running compose stack with project name, files, compose instance, and test reference
+- `Stack` struct: Represents a running compose stack with:
+  - `Project`: Unique project name
+  - `ComposeDir`: Temp directory with compose files
+  - `Files`: List of compose file names
+  - `T`: Testing reference
 - `StartCompose(t, ctx, files...)`: Main harness function
   - Generates unique project names using slug.Make (format: `bosun-{test_name}-{nanotime}`)
-  - Embeds compose YAML files and starts them without temp files
-  - Starts Docker Compose stacks with automatic cleanup via t.Cleanup()
-  - Returns `*Stack` with project name, file paths, and compose instance
+  - Writes embedded compose files to temp directory
+  - Runs `docker compose up -d --wait` via `exec.Command`
+  - Registers cleanup via `t.Cleanup()` (runs `docker compose down -v`)
+  - Returns `*Stack` for further operations
+- `Stack.Down(ctx)`: Stops and removes the compose stack
+- `Stack.Exec(ctx, service, command...)`: Runs command in service container
+- `Stack.Logs(ctx, service)`: Returns service logs
+- `Stack.WaitForHealthy(ctx, service, timeout)`: Waits for service health
 
 #### docker.go
 - `mustDocker(t)`: Creates Docker client with error handling
-- `HostPort(t, ctx, project, service, containerPort)`: Returns published host port for a service in a compose project
-- `DumpLogs(t, ctx, project, outDir)`: Saves container logs to files in outDir
-- `atoiOrFail(t, s)`: Helper to convert string to int with test failure
+- `HostPort(t, ctx, project, service, containerPort)`: Returns published host port
+- `DumpLogs(t, ctx, project, outDir)`: Saves container logs to files
+- `atoiOrFail(t, s)`: Helper to convert string to int
 
 ### Compose Files (`internal/testutil/compose/`)
 Embedded Docker Compose configurations:
-- `docker-compose.yaml`: Basic nginx service on port 80 for smoke testing
-- `dockerlabels-compose.yaml`: Labeled containers, volumes, and networks for integration testing
+- `docker-compose.yaml`: Basic nginx service for smoke testing
+- `dockerlabels-compose.yaml`: Labeled containers, volumes, networks for label discovery tests
+- `joblabels-compose.yaml`: Job labels for plan/job discovery tests
+- `joblabels-invalid-compose.yaml`: Invalid job labels for validation error tests
+- `validate-valid.yaml`: Valid config labels for validation tests
+- `validate-invalid.yaml`: Invalid config labels for validation error tests
 
 ### Integration Tests (`integration/`)
 - Located in `integration/` package
@@ -61,9 +74,8 @@ Integration tests follow this pattern:
 7. Automatic cleanup via `t.Cleanup()`
 
 ## Dependencies
-- `github.com/testcontainers/testcontainers-go`
-- `github.com/testcontainers/testcontainers-go/modules/compose`
-- `github.com/gosimple/slug`
+- `github.com/gosimple/slug` (for unique project names)
+- Docker CLI with `docker compose` support
 - Docker daemon for integration tests
 
 ## Logging
@@ -92,8 +104,14 @@ func Test_Integration_Feature(t *testing.T) {
     defer cancel()
 
     stack := testutil.StartCompose(t, ctx, "compose-file.yaml")
+    // Stack automatically cleaned up via t.Cleanup()
+
+    // Get published port for HTTP requests
     port := testutil.HostPort(t, ctx, stack.Project, "service", 80)
-    // Test logic...
+
+    // Or run bosun CLI and check output
+    cmd := exec.CommandContext(ctx, binaryPath)
+    output, err := cmd.CombinedOutput()
+    // Assert on output...
 }
-```</content>
-<parameter name="memory_name">testing_structure
+```
