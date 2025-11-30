@@ -1,8 +1,6 @@
 package configdoc
 
 import (
-	"time"
-
 	"github.com/simone-viozzi/bosun/internal/config/schema"
 )
 
@@ -151,6 +149,3 @@ func testSpecAllTypes() schema.Spec {
 		},
 	}
 }
-
-// Ensure time package is available for duration tests
-var _ = time.Second

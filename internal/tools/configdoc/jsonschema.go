@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/simone-viozzi/bosun/internal/config/schema"
 )
@@ -127,6 +126,3 @@ func generateJSONSchema(spec schema.Spec, title, schemaID string) ([]byte, error
 	// Marshal with indentation for readability
 	return json.MarshalIndent(doc, "", "  ")
 }
-
-// Ensure time package is used (for potential future use)
-var _ = time.Now
