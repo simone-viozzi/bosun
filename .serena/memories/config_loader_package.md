@@ -1,7 +1,6 @@
 # Config Loader Package
 
 **Location**: `internal/config/loader/`
-**Issue**: #58 (Label Parser)
 
 ## Overview
 

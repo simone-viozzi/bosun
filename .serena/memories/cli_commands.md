@@ -16,9 +16,9 @@ Validates Bosun configuration from Docker labels and files. Checks for typos, ty
 
 **Flags**:
 - `-f, --from <source>`: Config source: `auto` (default), `labels`, `file`
-- `-s, --scope <type>`: Filter by entity type: `container`, `volume`, `network`, `global` (default: all)
-- `-p, --print`: Print merged config as JSON instead of just validating
-- `-c, --config <path>`: Path to config file (future)
+- `-s, --scope <type>`: Validate only: `container`, `volume`, `network`, `global` (default: all)
+- `-p, --print`: Print merged config as JSON
+- `-c, --config <path>`: Path to config file
 - `--stopped`: Include stopped containers (default: false)
 
 **Exit Codes**:

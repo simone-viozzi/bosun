@@ -1,7 +1,6 @@
 # Config Documentation Generator
 
 **Location**: `internal/tools/configdoc/`
-**Status**: ✅ **COMPLETE** (merged via PR, closes #61)
 
 ## Overview
 

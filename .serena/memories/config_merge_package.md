@@ -1,7 +1,6 @@
 # Config Merge Package
 
 **Location**: `internal/config/merge/`
-**Issue**: #59 (Source Merger)
 
 ## Overview
 
