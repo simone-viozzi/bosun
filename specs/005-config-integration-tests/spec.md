@@ -10,7 +10,7 @@
 
 ### User Story 1 - Verify Typed Settings Happy Path (Priority: P1)
 
-As a Bosun developer, I want integration tests that prove all config types (bool, int, duration, size, enum, list) are correctly parsed from real Docker labels, so that I have confidence the system works end-to-end.
+As a Bosun developer, I want integration tests that prove all config types in ConfigV1 (string, bool, int, duration, size, enum) are correctly parsed from real Docker labels, so that I have confidence the system works end-to-end.
 
 **Why this priority**: The primary purpose of this feature - prove the label-to-config pipeline works in real Docker environments, not just unit tests.
 
@@ -22,7 +22,7 @@ As a Bosun developer, I want integration tests that prove all config types (bool
 2. **Given** a container with `bosun.container.stopGracePeriod=30s`, **When** labels are collected and parsed, **Then** config field is `time.Duration` of 30 seconds
 3. **Given** a container with `bosun.volume.maxSize=1GiB`, **When** labels are collected and parsed, **Then** config field is `int64` value `1073741824`
 4. **Given** a container with `bosun.container.logLevel=debug`, **When** labels are collected and parsed, **Then** config field is enum value `debug`
-5. **Given** a container with `bosun.global.tags=a,b,c`, **When** labels are collected and parsed, **Then** config field is `[]string{"a", "b", "c"}`
+5. **Given** a container with `bosun.instance=prod`, **When** labels are collected and parsed, **Then** config field is `string` value `"prod"`
 
 ---
 
@@ -85,7 +85,7 @@ As a Bosun developer, I want integration tests that prove the full pipeline (dis
 
 1. **Given** defaults `stopGracePeriod=10s` and label `bosun.container.stopGracePeriod=30s`, **When** full pipeline runs, **Then** merged config has 30s
 2. **Given** label for one field and no label for another, **When** full pipeline runs, **Then** merged config has label value for first and default for second
-3. **Given** multiple containers with different label values, **When** full pipeline runs, **Then** each container's config reflects its own labels
+3. *(Deferred)* **Given** multiple containers with different label values, **When** full pipeline runs, **Then** each container's config reflects its own labels
 
 ---
 
@@ -93,7 +93,7 @@ As a Bosun developer, I want integration tests that prove the full pipeline (dis
 
 - What happens when Docker Compose stack fails to start? (Test should fail with clear setup error)
 - How do tests clean up containers/volumes after running? (Should use t.Cleanup() for automatic teardown)
-- What if integration test runs without Docker available? (Should skip gracefully with message)
+- What if integration test runs without Docker available? (Tests fail with clear error; CI must have Docker)
 - How to isolate test stacks from each other? (Use unique project names per test)
 
 ## Requirements *(mandatory)*
@@ -101,7 +101,7 @@ As a Bosun developer, I want integration tests that prove the full pipeline (dis
 ### Functional Requirements
 
 - **FR-001**: Tests MUST use real Docker containers via Docker Compose
-- **FR-002**: Tests MUST verify all 7 config types parse correctly (string, bool, int, duration, size, enum, list)
+- **FR-002**: Tests MUST verify all 6 config types in ConfigV1 parse correctly (string, bool, int, duration, size, enum)
 - **FR-003**: Tests MUST verify unknown keys cause hard failure with descriptive error
 - **FR-004**: Tests MUST verify scope mismatches cause hard failure
 - **FR-005**: Tests MUST verify type parse errors include helpful messages
@@ -109,7 +109,7 @@ As a Bosun developer, I want integration tests that prove the full pipeline (dis
 - **FR-007**: Tests MUST clean up Docker resources after each test
 - **FR-008**: Tests MUST use unique project names to avoid conflicts
 - **FR-009**: Tests MUST be runnable via `make it` or `go test -tags=integration`
-- **FR-010**: Tests MUST skip gracefully when Docker is unavailable
+- **FR-010**: Tests MUST fail with clear error message when Docker is unavailable (CI environments must have Docker)
 
 ### Key Entities
 
@@ -126,8 +126,18 @@ As a Bosun developer, I want integration tests that prove the full pipeline (dis
 - **SC-003**: Scope validation test fails with expected error message
 - **SC-004**: Type validation tests fail with expected error messages
 - **SC-005**: Full pipeline test produces correct merged config
-- **SC-006**: Tests complete in under 60 seconds on typical hardware
+- **SC-006**: Tests complete in under 60 seconds on typical hardware (aspirational; 3-min timeout as safety margin)
 - **SC-007**: Tests clean up all Docker resources (no leaked containers/volumes)
+
+## Clarifications
+
+### Session 2025-11-30
+
+- Q: How should the list type requirement be handled given ConfigV1 doesn't include a list field? → A: Remove list type from FR-002 scope (6 types) since ConfigV1 doesn't have one; unit tests cover list parsing
+- Q: What behavior should trigger when Docker is unavailable? → A: Let tests fail with clear error message; CI should always have Docker
+- Q: Should the invalid bool test case be added to complete US-4 coverage? → A: Yes, add `bosun.container.autoRestart=maybe` to `validate-invalid.yaml` to test bool parse error
+- Q: Should multi-container testing be added, or is it out of scope for this feature? → A: Mark as future work; add follow-up issue for multi-container testing
+- Q: Is the 60-second target realistic, and should tests actively verify/enforce this? → A: Keep 60s as aspirational goal; 3-min timeout is safety margin; observe in CI
 
 ## Assumptions
 
