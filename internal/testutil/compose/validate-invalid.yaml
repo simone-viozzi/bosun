@@ -11,11 +11,13 @@ services:
       bosun.container.healthCheckInterval: "notaduration"
       # Error 3: Invalid enum value
       bosun.container.logLevel: "verbose"
+      # Error 4: Invalid bool format
+      bosun.container.autoRestart: "maybe"
     volumes:
       - invalid-data:/data
 
 volumes:
   invalid-data:
     labels:
-      # Error 4: Scope mismatch - container label on volume
-      bosun.container.autoRestart: "true"
+      # Error 5: Scope mismatch - container label on volume
+      bosun.container.stopGracePeriod: "30s"
