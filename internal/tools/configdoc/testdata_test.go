@@ -89,20 +89,6 @@ func testSpecDeprecated() schema.Spec {
 	}
 }
 
-// testSpecRequired creates a spec with a required field.
-func testSpecRequired() schema.Spec {
-	return schema.Spec{
-		"bosun.required.field": schema.FieldSpec{
-			Key:       "bosun.required.field",
-			Scope:     schema.ScopeContainer,
-			Type:      schema.TypeString,
-			Required:  true,
-			Doc:       "This field is required",
-			FieldName: "RequiredField",
-		},
-	}
-}
-
 // testSpecAllTypes creates a spec with all config types for comprehensive testing.
 func testSpecAllTypes() schema.Spec {
 	return schema.Spec{

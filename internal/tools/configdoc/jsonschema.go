@@ -93,31 +93,6 @@ func parseDefaultValue(defaultStr string, configType schema.ConfigType) any {
 	}
 }
 
-// orderedPropertyMap is a helper to produce deterministic JSON output.
-// It holds properties in insertion order for marshaling.
-type orderedPropertyMap struct {
-	keys   []string
-	values map[string]PropertySchema
-}
-
-func newOrderedPropertyMap() *orderedPropertyMap {
-	return &orderedPropertyMap{
-		keys:   make([]string, 0),
-		values: make(map[string]PropertySchema),
-	}
-}
-
-func (m *orderedPropertyMap) Set(key string, value PropertySchema) {
-	if _, exists := m.values[key]; !exists {
-		m.keys = append(m.keys, key)
-	}
-	m.values[key] = value
-}
-
-func (m *orderedPropertyMap) ToMap() map[string]PropertySchema {
-	return m.values
-}
-
 // generateJSONSchema produces JSON Schema from the spec.
 func generateJSONSchema(spec schema.Spec, title, schemaID string) ([]byte, error) {
 	// Get sorted keys for deterministic output
