@@ -21,6 +21,8 @@ import (
 	"github.com/gosimple/slug"
 )
 
+// TODO use testcontainers-go to up / down compose stacks. do not rely on CLI.
+
 //go:embed compose/*.yaml
 var ComposeFS embed.FS
 
