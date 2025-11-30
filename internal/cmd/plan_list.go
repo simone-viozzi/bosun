@@ -175,15 +175,15 @@ func renderTextOutput(foundJobs []jobs.Job, validationErrors []ports.ValidationE
 
 	if len(foundJobs) > 0 {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "NAME\tSCHEDULE\tCONTAINERS\tVOLUMES\tSTACKS")
-		fmt.Fprintln(w, "----\t--------\t----------\t-------\t------")
+		_, _ = fmt.Fprintln(w, "NAME\tSCHEDULE\tCONTAINERS\tVOLUMES\tSTACKS")
+		_, _ = fmt.Fprintln(w, "----\t--------\t----------\t-------\t------")
 
 		for _, job := range foundJobs {
 			stacks := "-"
 			if len(job.TargetStacks) > 0 {
 				stacks = strings.Join(job.TargetStacks, ", ")
 			}
-			fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%s\n",
 				job.Name,
 				job.Schedule,
 				len(job.TargetContainers),
@@ -191,7 +191,7 @@ func renderTextOutput(foundJobs []jobs.Job, validationErrors []ports.ValidationE
 				stacks,
 			)
 		}
-		w.Flush()
+		_ = w.Flush()
 	}
 
 	if len(validationErrors) > 0 {

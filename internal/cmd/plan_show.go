@@ -163,7 +163,7 @@ func formatJobNotFoundError(jobName string, availableJobs []jobs.Job) error {
 
 // formatOrphanedDependentsError creates a helpful error for orphan dependent errors.
 func formatOrphanedDependentsError(jobName string, err error) error {
-	return fmt.Errorf("cannot generate plan for job %q: %w\n\nStopping the targeted containers would leave dependent containers running.\nEither include the dependent containers in the job, or configure them to be stopped separately.", jobName, err)
+	return fmt.Errorf("cannot generate plan for job %q: %w (stopping the targeted containers would leave dependent containers running; either include the dependent containers in the job, or configure them to be stopped separately)", jobName, err)
 }
 
 // renderPlanTextOutput renders an execution plan in human-readable format.
@@ -208,9 +208,9 @@ func renderPlanTextOutput(plan jobs.ExecutionPlan, job jobs.Job) {
 				fmt.Println("   Volume Mounts:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 				for _, vol := range step.VolumeMounts {
-					fmt.Fprintf(w, "     - %s\t→ %s\t(%s)\n", vol.Name, vol.MountPath, vol.Mode)
+					_, _ = fmt.Fprintf(w, "     - %s\t→ %s\t(%s)\n", vol.Name, vol.MountPath, vol.Mode)
 				}
-				w.Flush()
+				_ = w.Flush()
 			}
 
 		case jobs.StepTypeStartContainers:
