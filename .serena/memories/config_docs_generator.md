@@ -1,24 +1,24 @@
 # Config Documentation Generator
 
-**Location**: `internal/tools/configdoc/` (to be created)
-**Issue**: #61
-**Branch**: `004-config-docs-generation`
+**Location**: `internal/tools/configdoc/`
+**Status**: ✅ **COMPLETE** (merged via PR, closes #61)
 
 ## Overview
 
-Auto-generates Markdown documentation and JSON Schema from the code-first `ConfigV1` schema. Reads schema metadata via `ParseTags[ConfigV1]()` and produces deterministic, version-control-friendly output.
+Auto-generates Markdown documentation and JSON Schema from the code-first `ConfigV1` schema. Reads schema metadata via `V1Spec()` and produces deterministic, version-control-friendly output.
 
 ## Generated Files
 
-- `docs/config.md` - Human-readable Markdown reference table
+- `docs/config.md` - Human-readable Markdown reference table grouped by scope
 - `docs/config.schema.json` - JSON Schema draft 2020-12 for validation/IDE support
 
-## Key Design Decisions
+## Key Features
 
-1. **Dual Invocation**: Both `make docs` and `go generate ./internal/config/schema/...`
-2. **Deterministic Output**: Uses `Spec.Keys()` for sorted keys, `json.MarshalIndent` with sorted map keys
-3. **Scope Grouping**: Markdown groups fields by scope (Global, Container, Volume, Network)
-4. **Type Mapping**: Duration/Size as strings with format hints; List as array of strings
+1. **Dual Invocation**: `make docs` or `go generate ./internal/config/schema/...`
+2. **Deterministic Output**: Sorted keys via `Spec.Keys()`, consistent scope ordering
+3. **Scope Grouping**: Global → Container → Volume → Network
+4. **Value Format Docs**: Includes documentation for duration, byte-size, and list formats
+5. **Type Mapping**: Proper JSON Schema types with format hints
 
 ## Type Mapping (ConfigType → JSON Schema)
 
@@ -32,22 +32,19 @@ Auto-generates Markdown documentation and JSON Schema from the code-first `Confi
 | TypeEnum | "string" | enum: [...] |
 | TypeList | "array" | items: {type: "string"} |
 
-## Dependencies
-
-- `internal/config/schema` - Provides `Spec`, `FieldSpec`, `V1Spec()`, `ParseTags[T]()`
-- Standard library only: `encoding/json`, `text/template`, `sort`, `os`
-
 ## Package Structure
 
 ```
 internal/tools/configdoc/
-├── doc.go           # Package documentation
-├── generator.go     # Generator struct and Generate()
-├── markdown.go      # GenerateMarkdown()
-├── jsonschema.go    # GenerateJSONSchema()
-├── generator_test.go
+├── doc.go              # Package documentation
+├── errors.go           # ErrEmptySpec, ErrOutputDir
+├── types.go            # Type/scope mapping helpers
+├── generator.go        # Generator struct, Options, Generate()
+├── markdown.go         # GenerateMarkdown(), templates
+├── jsonschema.go       # GenerateJSONSchema()
+├── *_test.go           # Unit tests
 └── cmd/
-    └── main.go      # Entrypoint for go:generate
+    └── main.go         # go:generate entrypoint
 ```
 
 ## Usage
@@ -60,22 +57,10 @@ make docs
 make docs && git diff --exit-code docs/
 ```
 
-## Task Breakdown
+## Dependencies
 
-Total: **52 tasks** across 8 phases
-
-| Phase | Focus | Tasks |
-|-------|-------|-------|
-| 1 | Setup | 4 |
-| 2 | Foundational | 3 |
-| 3 | US1 - Markdown (P1) | 10 |
-| 4 | US2 - JSON Schema (P1) | 9 |
-| 5 | US3 - Determinism (P2) | 6 |
-| 6 | US4 - Format Docs (P2) | 7 |
-| 7 | US5 - Build Integration (P2) | 6 |
-| 8 | Polish | 7 |
-
-**MVP**: Phases 1-4 (Setup + Foundational + US1 + US2) = 26 tasks
+- `internal/config/schema` - Provides `Spec`, `FieldSpec`, `V1Spec()`
+- Standard library only: `encoding/json`, `text/template`, `sort`, `os`
 
 ## Related Memories
 
