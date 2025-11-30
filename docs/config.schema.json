@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/simone-viozzi/bosun/config.schema.json",
+  "title": "Bosun Configuration Reference",
+  "description": "Configuration schema for Bosun Docker labels",
+  "type": "object",
+  "properties": {
+    "bosun.container.autoRestart": {
+      "type": "boolean",
+      "description": "Automatically restart containers",
+      "default": true
+    },
+    "bosun.container.healthCheckInterval": {
+      "type": "string",
+      "description": "Interval between health checks",
+      "default": "30s",
+      "format": "duration"
+    },
+    "bosun.container.logLevel": {
+      "type": "string",
+      "description": "Logging verbosity level",
+      "default": "info",
+      "enum": [
+        "debug",
+        "info",
+        "warn",
+        "error"
+      ]
+    },
+    "bosun.container.stopGracePeriod": {
+      "type": "string",
+      "description": "Grace period before force stopping",
+      "default": "30s",
+      "format": "duration"
+    },
+    "bosun.instance": {
+      "type": "string",
+      "description": "Unique instance identifier"
+    },
+    "bosun.network.priority": {
+      "type": "integer",
+      "description": "Network priority (lower = higher priority)",
+      "default": 100
+    },
+    "bosun.volume.backupEnabled": {
+      "type": "boolean",
+      "description": "Enable volume backups",
+      "default": false
+    },
+    "bosun.volume.maxSize": {
+      "type": "string",
+      "description": "Maximum volume size",
+      "default": "10GB",
+      "format": "byte-size"
+    }
+  }
+}

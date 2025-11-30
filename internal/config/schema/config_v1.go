@@ -1,5 +1,7 @@
 package schema
 
+//go:generate go run ../../tools/configdoc/cmd/main.go
+
 import "time"
 
 // GlobalConfig contains configuration fields that apply to all entity types.
