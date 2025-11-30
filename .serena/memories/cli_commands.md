@@ -4,8 +4,13 @@ Bosun uses the Cobra CLI framework for command-line interface. Commands are defi
 
 ## Command Structure
 - **Root Command** (`internal/cmd/root.go`): Main entry point for the CLI
+- **Config Command** (`internal/cmd/config.go`): Group for config operations
+- **Validate Command** (`internal/cmd/validate.go`): Validates config and job labels
 - **Labels Command** (`internal/cmd/labels.go`): Group for label-related operations
 - **Snapshot Command** (`internal/cmd/snapshot.go`): Captures and displays Docker label snapshots
+- **Plan Command** (`internal/cmd/plan.go`): Group for backup plan operations
+- **Plan List Command** (`internal/cmd/plan_list.go`): Lists discovered jobs
+- **Plan Show Command** (`internal/cmd/plan_show.go`): Shows execution plan for a job
 
 ## Available Commands
 
@@ -98,6 +103,38 @@ Captures a snapshot of all Docker entities (containers, volumes, networks) with 
 **Error Handling**:
 - Returns friendly error if Docker is unavailable: "failed to connect to Docker: ... Is Docker running?"
 - Non-zero exit code on failure
+
+### `bosun plan list`
+Lists all backup jobs discovered from Docker container and volume labels.
+
+**Usage**: `bosun plan list [--format <fmt>] [--stopped] [--stack <name>]`
+
+**Flags**:
+- `-f, --format <fmt>`: Output format: `text` (default), `json`, `yaml`
+- `--stopped`: Include stopped containers in discovery (default: false)
+- `--stack <name>`: Filter jobs by stack name
+
+**Exit Codes**:
+- `0`: Success
+- `1`: Validation error
+- `2`: Docker unavailable
+- `3`: Internal error
+
+### `bosun plan show <job-name>`
+Shows the execution plan for a specific backup job.
+
+**Usage**: `bosun plan show <job-name> [--format <fmt>] [--stopped]`
+
+**Flags**:
+- `-f, --format <fmt>`: Output format: `text` (default), `json`, `yaml`
+- `--stopped`: Include stopped containers in discovery (default: false)
+
+**Output**: Shows execution steps including:
+1. Stop containers (if any are targeted)
+2. Run the worker container with attached volumes
+3. Restart containers (future milestone)
+
+**Exit Codes**: Same as `plan list`
 
 ## Main Entry Point
 The main entry point (`cmd/bosun/main.go`) creates the root command with context and executes it with signal handling for graceful shutdown.

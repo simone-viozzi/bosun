@@ -21,9 +21,9 @@ Bosun follows the **Hexagonal Architecture** (also known as Ports and Adapters) 
 - Framework independent: Domain logic doesn't depend on external libraries
 
 ## Implementation Notes
-- **Domain & Ports**: Label discovery domain models and ports fully implemented
+- **Domain**: `internal/domain/labels/` (label types) and `internal/domain/jobs/` (Job, ExecutionPlan, PlanStep)
+- **Ports**: `internal/ports/labels.go` (LabelSource, Selector) and `internal/ports/planner.go` (JobDiscoverer, JobPlanner, ValidationError)
 - **Config System**: Schema, loader, and merger packages under `internal/config/`
-- **CLI**: Commands defined in `internal/cmd/`, entry point wires Cobra commands
-- **Adapters**: `dockerlabels` adapter with full container/volume/network discovery; placeholder directories for docker, http, and storage integrations
-- **Application**: `internal/app/app.go` contains App struct with basic Run method; main CLI flow uses Cobra commands directly</content>
-<parameter name="memory_name">architecture
+- **CLI**: Commands in `internal/cmd/` - config, labels, plan subcommands
+- **Adapters**: `dockerlabels` (label discovery), `joblabels` (job discovery from labels)
+- **Application**: `internal/app/app.go` (basic App struct), `internal/app/planner/` (JobPlanner with topological sorting)

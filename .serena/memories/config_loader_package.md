@@ -71,7 +71,34 @@ if err != nil {
 }
 ```
 
+## Job Label Validation (job_validation.go)
+
+Separate validation for `bosun.job.*` labels (not part of config schema):
+
+### `ValidateJobLabels(entities) JobValidationResult`
+Validates job labels across containers and volumes:
+- Container labels: `bosun.job.enabled`, `bosun.job.name`, `bosun.job.schedule`
+- Volume labels: `bosun.job.attach`, `bosun.job.mount.path`, `bosun.job.mount.mode`
+
+### Error Codes (`JobErrorCode`)
+- `JobErrorInvalidEnabled`: Invalid boolean for enabled
+- `JobErrorInvalidSchedule`: Invalid cron expression
+- `JobErrorMissingName`: Container enabled but no job name
+- `JobErrorConflictingField`: Multiple containers define conflicting field values
+- `JobErrorOrphanedVolume`: Volume attached to non-existent job
+- `JobErrorInvalidAttach`: Invalid attach value on volume
+- `JobErrorInvalidMountPath`: Invalid mount path on volume
+
+### Usage
+```go
+result := loader.ValidateJobLabels(entities)
+if !result.IsValid() {
+    for _, err := range result.Errors {
+        fmt.Printf("[%s] %s: %s\n", err.Code, err.EntityName, err.Message)
+    }
+}
+```
+
 ## Test Coverage
 
-Coverage: 89.6%
-All 7 types tested with valid and invalid inputs.
+All validation paths tested with unit and integration tests.

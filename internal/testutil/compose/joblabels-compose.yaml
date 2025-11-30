@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: nginx:alpine  # Using nginx as placeholder (no actual postgres needed for label tests)
+    labels:
+      bosun.job.enabled: "true"
+      bosun.job.name: "daily-backup"
+      bosun.job.schedule: "0 2 * * *"
+      bosun.job.worker.image: "backup-worker:test"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  redis:
+    image: nginx:alpine
+    labels:
+      bosun.job.enabled: "true"
+      bosun.job.name: "daily-backup"  # Same job name - should merge with postgres
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+
+  disabled-service:
+    image: nginx:alpine
+    labels:
+      bosun.job.enabled: "false"
+      bosun.job.name: "should-not-exist"
+
+  no-job-labels:
+    image: nginx:alpine
+    labels:
+      bosun.other: "value"
+
+volumes:
+  pgdata:
+    labels:
+      bosun.job.attach: "daily-backup"
+      bosun.job.mount.path: "/backup/postgres"
+      bosun.job.mount.mode: "ro"
+
+  redis-data:
+    labels:
+      bosun.job.attach: "daily-backup"
+      bosun.job.mount.path: "/backup/redis"
+      bosun.job.mount.mode: "ro"
+
+  orphan-volume:
+    labels:
+      bosun.job.attach: "nonexistent-job"
+
+networks:
+  backend:
+    labels:
+      bosun.network: "true"

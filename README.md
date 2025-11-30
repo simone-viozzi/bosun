@@ -51,7 +51,11 @@ Bosun is in active development. See the [Roadmap](#roadmap) section for the plan
 - ✅ Hexagonal architecture foundation
 - ✅ Label discovery for containers, volumes, and networks
 - ✅ CLI snapshot command
-- 🚧 Configuration schema and validation (in progress)
+- ✅ Configuration schema and validation
+- ✅ Backup job model and label discovery
+- ✅ Job planner with execution plan generation
+- ✅ `bosun plan list` and `bosun plan show` CLI commands
+- 🚧 Backup execution (Milestone 3 - next)
 
 ## Getting Started
 
@@ -71,17 +75,70 @@ make build    # Builds to bin/bosun
 make run      # Runs from source
 ```
 
+### Quick Start: Define a Backup Job
+
+Add Bosun labels to your Docker Compose file to define a backup job:
+
+```yaml
+# docker-compose.yaml
+services:
+  app:
+    image: myapp:latest
+    labels:
+      bosun.job.enabled: "true"
+      bosun.job.name: "daily-backup"
+      bosun.job.schedule: "0 2 * * *"  # 2 AM daily
+    volumes:
+      - app-data:/data
+
+volumes:
+  app-data:
+    labels:
+      bosun.job.attach: "daily-backup"      # Job name to attach to
+      bosun.job.mount.path: "/backup/app"   # Mount path in worker
+      bosun.job.mount.mode: "ro"            # Read-only (default)
+```
+
 ### Usage
 
 ```bash
+# Discover and list backup jobs
+bosun plan list
+
+# Show execution plan for a job
+bosun plan show daily-backup
+
+# Validate all labels (config + job)
+bosun config validate
+
 # View all Docker entities with bosun.* labels
 bosun labels snapshot
 
-# Include stopped containers in the snapshot
-bosun labels snapshot --stopped
+# Include stopped containers
+bosun plan list --stopped
 ```
 
-The snapshot command outputs pretty-printed JSON showing containers, volumes, and networks with their Bosun labels.
+## Job Labels Reference
+
+### Container Labels
+
+| Label | Type | Description |
+|-------|------|-------------|
+| `bosun.job.enabled` | boolean | Enable job participation (required) |
+| `bosun.job.name` | string | Unique job identifier (required when enabled) |
+| `bosun.job.schedule` | cron | Cron expression (default: `0 0 * * *`) |
+| `bosun.job.worker.image` | string | Worker container image |
+
+### Volume Labels
+
+| Label | Type | Description |
+|-------|------|-------------|
+| `bosun.job.attach` | boolean | Attach volume to backup worker |
+| `bosun.job.name` | string | Job this volume belongs to |
+| `bosun.job.mountpath` | string | Mount path in worker (default: `/backup/<volume-name>`) |
+| `bosun.job.readonly` | boolean | Mount as read-only (default: true) |
+
+See [docs/config.md](docs/config.md) for the complete configuration reference.
 
 ## Roadmap
 

@@ -26,5 +26,8 @@ fmt:
 vet:
 	go vet ./...
 
+lint:
+	golangci-lint run
+
 docs:
 	go generate ./internal/config/schema/...

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/simone-viozzi/bosun/internal/adapters/dockerlabels"
 	"github.com/simone-viozzi/bosun/internal/config/loader"
@@ -45,10 +46,11 @@ type EntityValidationError struct {
 
 // ValidationResult holds the outcome of validation
 type ValidationResult struct {
-	Valid        bool                    // Overall success
-	MergedConfig *schema.ConfigV1        // Merged config (if valid or for --print)
-	EntityErrors []EntityValidationError // Per-entity errors
-	Warnings     []string                // Non-fatal warnings
+	Valid        bool                       // Overall success
+	MergedConfig *schema.ConfigV1           // Merged config (if valid or for --print)
+	EntityErrors []EntityValidationError    // Per-entity errors (config labels)
+	JobErrors    loader.JobValidationErrors // Job label validation errors
+	Warnings     []string                   // Non-fatal warnings
 }
 
 // NewValidateCmd creates the validate subcommand
@@ -123,8 +125,16 @@ func runValidate(ctx context.Context, opts ValidateOptions) error {
 	// Filter by scope if specified
 	entities := filterByScope(snapshot.Entities, opts.Scope)
 
-	// Validate each entity
+	// Validate each entity (config labels)
 	result := validateEntities(entities, opts)
+
+	// Validate job labels
+	jobResult := loader.ValidateJobLabels(snapshot.Entities) // Always validate all entities for job cross-checks
+	if !jobResult.IsValid() {
+		result.Valid = false
+		result.JobErrors = jobResult.Errors
+	}
+	result.Warnings = append(result.Warnings, jobResult.Warnings...)
 
 	// Output results
 	return outputResults(result, opts)
@@ -180,6 +190,17 @@ func filterByScope(entities []dlabels.LabeledEntity, scope string) []dlabels.Lab
 	return filtered
 }
 
+// filterJobLabels removes bosun.job.* labels from a map since they are validated separately.
+func filterJobLabels(labels map[string]string) map[string]string {
+	filtered := make(map[string]string)
+	for k, v := range labels {
+		if !strings.HasPrefix(k, "bosun.job.") {
+			filtered[k] = v
+		}
+	}
+	return filtered
+}
+
 // validateEntities validates all entities and collects errors
 func validateEntities(entities []dlabels.LabeledEntity, opts ValidateOptions) ValidationResult {
 	spec := schema.V1Spec()
@@ -193,8 +214,11 @@ func validateEntities(entities []dlabels.LabeledEntity, opts ValidateOptions) Va
 	for _, entity := range entities {
 		scope := entityKindToScope(entity.Kind)
 
-		// Validate labels for this entity
-		cfg, err := loader.FromLabels(spec, entity.Labels, scope)
+		// Filter out job labels - they are validated separately by ValidateJobLabels
+		configLabels := filterJobLabels(entity.Labels)
+
+		// Validate config labels for this entity
+		cfg, err := loader.FromLabels(spec, configLabels, scope)
 		if err != nil {
 			var verrs loader.ValidationErrors
 			if errors.As(err, &verrs) {
@@ -243,6 +267,8 @@ func outputResults(result ValidationResult, opts ValidateOptions) error {
 		fmt.Fprintln(os.Stderr)
 
 		totalErrors := 0
+
+		// Print config label errors (entity-grouped)
 		for _, entityErr := range result.EntityErrors {
 			fmt.Fprintf(os.Stderr, "%s %q (%s):\n",
 				entityErr.Entity.Kind,
@@ -256,11 +282,32 @@ func outputResults(result ValidationResult, opts ValidateOptions) error {
 			fmt.Fprintln(os.Stderr)
 		}
 
-		fmt.Fprintf(os.Stderr, "Found %d error(s) in %d entity(ies)\n",
-			totalErrors, len(result.EntityErrors))
+		// Print job label errors
+		if len(result.JobErrors) > 0 {
+			fmt.Fprintln(os.Stderr, "Job label errors:")
+			for _, jerr := range result.JobErrors {
+				fmt.Fprintf(os.Stderr, "  %s %q: %s\n",
+					jerr.Entity.Kind,
+					jerr.Entity.Name,
+					jerr.Message)
+				totalErrors++
+			}
+			fmt.Fprintln(os.Stderr)
+		}
+
+		fmt.Fprintf(os.Stderr, "Found %d error(s)\n", totalErrors)
 
 		os.Exit(1)
 		return nil
+	}
+
+	// Print warnings (even on success)
+	if len(result.Warnings) > 0 {
+		fmt.Fprintln(os.Stderr, "Warnings:")
+		for _, w := range result.Warnings {
+			fmt.Fprintf(os.Stderr, "  - %s\n", w)
+		}
+		fmt.Fprintln(os.Stderr)
 	}
 
 	// Success path

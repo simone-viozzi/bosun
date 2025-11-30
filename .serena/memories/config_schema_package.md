@@ -93,8 +93,27 @@ All tests in `*_test.go` files alongside source. Key test files:
 - `defaults_test.go` - Value parsers, DefaultOf tests
 - `config_v1_test.go` - Integration tests
 
+## Job Labels (job_labels.go)
+
+Separate schema for `bosun.job.*` labels (not part of ConfigV1):
+
+### `JobLabelConfig` (container labels)
+- `bosun.job.enabled` - bool, enables job participation
+- `bosun.job.name` - string, unique job identifier
+- `bosun.job.schedule` - string, cron expression (default: `0 0 * * *`)
+- `bosun.job.worker.image` - string, worker Docker image
+
+### `JobVolumeConfig` (volume labels)
+- `bosun.job.attach` - string, job name to attach volume to
+- `bosun.job.mount.path` - string, mount path in worker container
+- `bosun.job.mount.mode` - enum (ro|rw), mount mode (default: ro)
+
+### `JobSpec()` - Returns Spec for job labels (combined container + volume)
+
+**Note**: Job labels are validated separately by `loader.ValidateJobLabels()`, not by the config loader.
+
 ## Usage by Downstream Packages
 
-- `config/loader` - Uses Spec for label→config mapping
+- `config/loader` - Uses Spec for label→config mapping, ValidateJobLabels for job labels
 - `config/merge` - Uses Spec for multi-source merging
 - `tools/configdoc` - Uses Spec for documentation generation
