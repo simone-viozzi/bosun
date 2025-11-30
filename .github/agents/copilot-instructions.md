@@ -8,6 +8,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-29
 - N/A (read-only command, no persistence) (003-cli-config-validate)
 - Go 1.24+ + Standard library (`encoding/json`, `text/template`, `sort`), existing `internal/config/schema` package (004-config-docs-generation)
 - File system output to `docs/` directory (004-config-docs-generation)
+- Go 1.24.9 + `github.com/docker/docker` (Docker SDK), `github.com/spf13/cobra` (CLI), `github.com/docker/compose/v2` (indirect), cron parsing library (TBD in research) (006-backup-job-model)
+- N/A (stateless discovery from Docker API) (006-backup-job-model)
 
 - Go 1.24.6 + Standard library (`reflect`, `strings`, `strconv`, `time`), `github.com/docker/go-units` (for byte size parsing) (001-config-schema)
 
@@ -27,9 +29,9 @@ tests/
 Go 1.24.6: Follow standard conventions
 
 ## Recent Changes
+- 006-backup-job-model: Added Go 1.24.9 + `github.com/docker/docker` (Docker SDK), `github.com/spf13/cobra` (CLI), `github.com/docker/compose/v2` (indirect), cron parsing library (TBD in research)
 - 004-config-docs-generation: Added Go 1.24+ + Standard library (`encoding/json`, `text/template`, `sort`), existing `internal/config/schema` package
 - 003-cli-config-validate: Added Go 1.24.6 + Cobra (CLI), Docker SDK, go-units, existing config packages
-- 002-label-parser-merger: Added Go 1.24.6
 
 
 <!-- MANUAL ADDITIONS START -->
