@@ -1,7 +1,7 @@
 APP := bosun
 PKG := github.com/simone-viozzi/bosun
 
-.PHONY: build run test it itv tidy fmt vet
+.PHONY: build run test it itv tidy fmt vet docs
 build:
 	go build -o bin/$(APP) ./cmd/$(APP)
 
@@ -25,3 +25,6 @@ fmt:
 
 vet:
 	go vet ./...
+
+docs:
+	go generate ./internal/config/schema/...

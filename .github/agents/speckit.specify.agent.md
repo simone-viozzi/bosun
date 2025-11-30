@@ -97,6 +97,7 @@ Given that feature description, do this:
     8. Return: SUCCESS (spec ready for planning)
 
 5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+   **DO NOT USE TERMINAL COMMANDS TO WRITE THE FILE** - use `edit/create_file` and `edit/editFiles` tools instead.
 
 6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 

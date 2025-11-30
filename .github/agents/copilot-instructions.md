@@ -6,6 +6,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-29
 - N/A (in-memory config) (002-label-parser-merger)
 - Go 1.24.6 + Cobra (CLI), Docker SDK, go-units, existing config packages (003-cli-config-validate)
 - N/A (read-only command, no persistence) (003-cli-config-validate)
+- Go 1.24+ + Standard library (`encoding/json`, `text/template`, `sort`), existing `internal/config/schema` package (004-config-docs-generation)
+- File system output to `docs/` directory (004-config-docs-generation)
 
 - Go 1.24.6 + Standard library (`reflect`, `strings`, `strconv`, `time`), `github.com/docker/go-units` (for byte size parsing) (001-config-schema)
 
@@ -25,10 +27,10 @@ tests/
 Go 1.24.6: Follow standard conventions
 
 ## Recent Changes
+- 004-config-docs-generation: Added Go 1.24+ + Standard library (`encoding/json`, `text/template`, `sort`), existing `internal/config/schema` package
 - 003-cli-config-validate: Added Go 1.24.6 + Cobra (CLI), Docker SDK, go-units, existing config packages
 - 002-label-parser-merger: Added Go 1.24.6
 
-- 001-config-schema: Added Go 1.24.6 + Standard library (`reflect`, `strings`, `strconv`, `time`), `github.com/docker/go-units` (for byte size parsing)
 
 <!-- MANUAL ADDITIONS START -->
 ## Serena-first workflow (MANDATORY)
