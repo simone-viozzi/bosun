@@ -1,0 +1,67 @@
+# Docker Compose file with invalid job labels for testing validation errors
+# This file is used by integration tests to verify validation error reporting
+
+services:
+  # Container with invalid enabled value
+  invalid-enabled:
+    image: busybox:latest
+    command: ["sleep", "infinity"]
+    labels:
+      bosun.job.enabled: "maybe"  # Invalid: should be true/false
+      bosun.job.name: "invalid-job"
+
+  # Container with invalid cron schedule
+  invalid-schedule:
+    image: busybox:latest
+    command: ["sleep", "infinity"]
+    labels:
+      bosun.job.enabled: "true"
+      bosun.job.name: "invalid-cron"
+      bosun.job.schedule: "not a cron expression"  # Invalid cron
+
+  # Container with missing name (enabled=true but no name)
+  missing-name:
+    image: busybox:latest
+    command: ["sleep", "infinity"]
+    labels:
+      bosun.job.enabled: "true"
+      bosun.job.schedule: "0 2 * * *"
+      # Missing bosun.job.name - required when enabled=true
+
+  # Containers with conflicting schedule for same job
+  conflict-app1:
+    image: busybox:latest
+    command: ["sleep", "infinity"]
+    labels:
+      bosun.job.enabled: "true"
+      bosun.job.name: "conflicting-job"
+      bosun.job.schedule: "0 1 * * *"
+
+  conflict-app2:
+    image: busybox:latest
+    command: ["sleep", "infinity"]
+    labels:
+      bosun.job.enabled: "true"
+      bosun.job.name: "conflicting-job"
+      bosun.job.schedule: "0 2 * * *"  # Different schedule, same job name
+
+volumes:
+  # Volume with invalid attach value
+  invalid-attach:
+    labels:
+      bosun.job.attach: "maybe"  # Invalid: should be true/false
+      bosun.job.name: "some-job"
+
+  # Volume with invalid mount path
+  invalid-mountpath:
+    labels:
+      bosun.job.attach: "true"
+      bosun.job.name: "some-job"
+      bosun.job.mountpath: "relative/path"  # Invalid: must be absolute
+
+  # Orphaned volume (attached to non-existent job)
+  orphaned-volume:
+    labels:
+      bosun.job.attach: "true"
+      bosun.job.name: "nonexistent-job"  # No container defines this job
+      bosun.job.mountpath: "/data"
