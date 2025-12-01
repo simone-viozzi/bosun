@@ -1,5 +1,7 @@
 package schema
 
+import "strings"
+
 // Job label schema defines the Docker labels used to configure backup jobs.
 // Labels are applied to containers and volumes to define how Bosun discovers
 // and executes backup jobs.
@@ -61,4 +63,52 @@ func JobSpec() Spec {
 	}
 
 	return combined
+}
+
+// Label key constants extracted from JobLabelConfig and JobVolumeConfig struct tags.
+// These are the canonical source of truth for job label keys.
+const (
+	// Container job labels
+	LabelJobEnabled     = "bosun.job.enabled"
+	LabelJobName        = "bosun.job.name"
+	LabelJobSchedule    = "bosun.job.schedule"
+	LabelJobWorkerImage = "bosun.job.worker.image"
+
+	// Volume job labels
+	LabelJobAttach    = "bosun.job.attach"
+	LabelJobMountPath = "bosun.job.mount.path"
+	LabelJobMountMode = "bosun.job.mount.mode"
+)
+
+// DefaultJobSchedule returns the default cron schedule for jobs.
+// Value extracted from JobLabelConfig struct tag.
+func DefaultJobSchedule() string {
+	return "0 0 * * *"
+}
+
+// DefaultJobWorkerImage returns the default worker image for jobs.
+// Value extracted from JobLabelConfig struct tag.
+func DefaultJobWorkerImage() string {
+	return "bosun-worker:local"
+}
+
+// DefaultJobMountMode returns the default mount mode for job volumes.
+// Value extracted from JobVolumeConfig struct tag.
+func DefaultJobMountMode() string {
+	return "ro"
+}
+
+// ValidMountModes contains the allowed values for bosun.job.mount.mode.
+var ValidMountModes = []string{"ro", "rw"}
+
+// NormalizeMountMode normalizes mount mode to lowercase.
+// Returns the normalized value and true if valid, or empty string and false if invalid.
+func NormalizeMountMode(mode string) (string, bool) {
+	normalized := strings.ToLower(strings.TrimSpace(mode))
+	for _, valid := range ValidMountModes {
+		if normalized == valid {
+			return normalized, true
+		}
+	}
+	return "", false
 }

@@ -1,3 +1,9 @@
+# docker-compose.yaml
+#
+# Purpose: Minimal compose file for basic Docker API tests.
+# Used by: Basic Docker connectivity and compose lifecycle tests.
+#
+# This is a simple nginx service with no bosun.* labels.
 
 services:
   test-service:

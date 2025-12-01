@@ -8,8 +8,16 @@ import (
 func NewPlanCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plan",
-		Short: "Job planning operations",
-		Long:  "Operations for viewing, validating, and previewing backup job execution plans.",
+		Short: "Job planning and preview",
+		Long: `Operations for discovering, listing, and previewing job execution plans.
+
+Bosun discovers jobs from containers labeled with bosun.job.* labels,
+then generates execution plans that coordinate container stops and worker execution.
+
+Examples:
+  bosun plan list                  # List all discovered jobs
+  bosun plan show daily-backup     # Preview execution plan for a job
+  bosun plan list --project myapp  # List jobs for a specific Compose project`,
 	}
 
 	// Add subcommands

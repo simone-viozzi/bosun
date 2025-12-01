@@ -8,13 +8,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/simone-viozzi/bosun/internal/adapters/dockerlabels"
 	"github.com/simone-viozzi/bosun/internal/config/loader"
 	"github.com/simone-viozzi/bosun/internal/config/merge"
 	"github.com/simone-viozzi/bosun/internal/config/schema"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"github.com/spf13/cobra"
 )
 
 // ConfigSource indicates where config values come from
@@ -72,8 +73,8 @@ Checks for:
 
 Exit codes:
   0 - Validation passed
-  1 - Validation failed (invalid config)
-  2 - Runtime error (Docker unavailable, etc.)`,
+  1 - Runtime error (Docker unavailable, etc.)
+  2 - Validation failed (invalid config)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runValidate(cmd.Context(), opts)
 		},
@@ -105,7 +106,7 @@ func runValidate(ctx context.Context, opts ValidateOptions) error {
 	source, err := dockerlabels.NewFromEnv()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to connect to Docker: %v\nIs Docker running?\n", err)
-		os.Exit(2)
+		os.Exit(ExitRuntimeError)
 		return nil // unreachable, but satisfies compiler
 	}
 
@@ -118,7 +119,7 @@ func runValidate(ctx context.Context, opts ValidateOptions) error {
 	snapshot, err := source.Snapshot(ctx, selector)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to get snapshot: %v\n", err)
-		os.Exit(2)
+		os.Exit(ExitRuntimeError)
 		return nil
 	}
 
@@ -297,7 +298,7 @@ func outputResults(result ValidationResult, opts ValidateOptions) error {
 
 		fmt.Fprintf(os.Stderr, "Found %d error(s)\n", totalErrors)
 
-		os.Exit(1)
+		os.Exit(ExitValidationError)
 		return nil
 	}
 

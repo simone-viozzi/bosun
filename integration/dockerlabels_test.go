@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package integration
 
@@ -10,6 +9,7 @@ import (
 
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+
 	"github.com/simone-viozzi/bosun/internal/adapters/dockerlabels"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"

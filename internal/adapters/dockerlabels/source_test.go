@@ -4,12 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"sort"
+
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
+
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"sort"
 )
 
 // mockDockerClient is a minimal mock that doesn't actually connect to Docker
@@ -233,5 +235,171 @@ func TestEntitySorting(t *testing.T) {
 		if entities[i].Name != name {
 			t.Errorf("entities[%d].Name = %s, want %s", i, entities[i].Name, name)
 		}
+	}
+}
+
+func TestBuildLabelFilters(t *testing.T) {
+	tests := []struct {
+		name        string
+		sel         ports.Selector
+		wantFilters []string // expected filter values (label=value format)
+		wantEmpty   bool
+	}{
+		{
+			name: "empty filters",
+			sel: ports.Selector{
+				Prefixes:      []string{"bosun."},
+				ProjectFilter: nil,
+				StackFilter:   nil,
+			},
+			wantEmpty: true,
+		},
+		{
+			name: "project filter only",
+			sel: ports.Selector{
+				Prefixes:      []string{"bosun."},
+				ProjectFilter: []string{"myproject"},
+				StackFilter:   nil,
+			},
+			wantFilters: []string{"com.docker.compose.project=myproject"},
+		},
+		{
+			name: "stack filter only",
+			sel: ports.Selector{
+				Prefixes:      []string{"bosun."},
+				ProjectFilter: nil,
+				StackFilter:   []string{"production"},
+			},
+			wantFilters: []string{"bosun.stack=production"},
+		},
+		{
+			name: "both filters",
+			sel: ports.Selector{
+				Prefixes:      []string{"bosun."},
+				ProjectFilter: []string{"myproject"},
+				StackFilter:   []string{"production"},
+			},
+			wantFilters: []string{
+				"com.docker.compose.project=myproject",
+				"bosun.stack=production",
+			},
+		},
+		{
+			name: "multiple project values",
+			sel: ports.Selector{
+				Prefixes:      []string{"bosun."},
+				ProjectFilter: []string{"app-a", "app-b"},
+				StackFilter:   nil,
+			},
+			wantFilters: []string{
+				"com.docker.compose.project=app-a",
+				"com.docker.compose.project=app-b",
+			},
+		},
+		{
+			name: "multiple stack values",
+			sel: ports.Selector{
+				Prefixes:      []string{"bosun."},
+				ProjectFilter: nil,
+				StackFilter:   []string{"staging", "production"},
+			},
+			wantFilters: []string{
+				"bosun.stack=staging",
+				"bosun.stack=production",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := buildLabelFilters(tt.sel)
+
+			if tt.wantEmpty {
+				if args.Len() != 0 {
+					t.Errorf("Expected empty filters, got %d", args.Len())
+				}
+				return
+			}
+
+			// Get all label filters
+			labelFilters := args.Get("label")
+			if len(labelFilters) != len(tt.wantFilters) {
+				t.Errorf("Expected %d label filters, got %d: %v",
+					len(tt.wantFilters), len(labelFilters), labelFilters)
+				return
+			}
+
+			// Check each expected filter is present
+			for _, want := range tt.wantFilters {
+				found := false
+				for _, got := range labelFilters {
+					if got == want {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected filter %q not found in %v", want, labelFilters)
+				}
+			}
+		})
+	}
+}
+
+// mockDockerClientWithFilters captures the filters passed to ContainerList
+type mockDockerClientWithFilters struct {
+	lastContainerFilters container.ListOptions
+}
+
+func (m *mockDockerClientWithFilters) ContainerList(ctx context.Context, opts container.ListOptions) ([]container.Summary, error) {
+	m.lastContainerFilters = opts
+	return []container.Summary{}, nil
+}
+
+func (m *mockDockerClientWithFilters) VolumeList(ctx context.Context, opts volume.ListOptions) (volume.ListResponse, error) {
+	return volume.ListResponse{}, nil
+}
+
+func (m *mockDockerClientWithFilters) NetworkList(ctx context.Context, opts network.ListOptions) ([]network.Summary, error) {
+	return []network.Summary{}, nil
+}
+
+func TestSnapshotContainers_UsesFilters(t *testing.T) {
+	mock := &mockDockerClientWithFilters{}
+	source := &DockerLabelSource{CLI: mock}
+
+	sel := ports.Selector{
+		Prefixes:      []string{"bosun."},
+		ProjectFilter: []string{"test-project"},
+		StackFilter:   []string{"test-stack"},
+	}
+
+	_, err := source.snapshotContainers(context.Background(), sel)
+	if err != nil {
+		t.Fatalf("snapshotContainers failed: %v", err)
+	}
+
+	// Verify filters were passed to Docker API
+	labelFilters := mock.lastContainerFilters.Filters.Get("label")
+	if len(labelFilters) != 2 {
+		t.Errorf("Expected 2 label filters, got %d: %v", len(labelFilters), labelFilters)
+	}
+
+	hasProject := false
+	hasStack := false
+	for _, f := range labelFilters {
+		if f == "com.docker.compose.project=test-project" {
+			hasProject = true
+		}
+		if f == "bosun.stack=test-stack" {
+			hasStack = true
+		}
+	}
+
+	if !hasProject {
+		t.Error("Expected project filter to be passed to Docker API")
+	}
+	if !hasStack {
+		t.Error("Expected stack filter to be passed to Docker API")
 	}
 }

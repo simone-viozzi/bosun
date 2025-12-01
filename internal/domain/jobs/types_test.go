@@ -4,28 +4,30 @@ import (
 	"encoding/json"
 	"testing"
 	"time"
+
+	"github.com/simone-viozzi/bosun/internal/config/schema"
 )
 
 func TestJobDefaults(t *testing.T) {
 	t.Run("DefaultSchedule is valid cron expression", func(t *testing.T) {
 		// Default schedule should be midnight daily
-		if DefaultSchedule != "0 0 * * *" {
-			t.Errorf("DefaultSchedule = %q, want %q", DefaultSchedule, "0 0 * * *")
+		if schema.DefaultJobSchedule() != "0 0 * * *" {
+			t.Errorf("DefaultJobSchedule() = %q, want %q", schema.DefaultJobSchedule(), "0 0 * * *")
 		}
 	})
 
 	t.Run("DefaultWorkerImage is set", func(t *testing.T) {
-		if DefaultWorkerImage == "" {
-			t.Error("DefaultWorkerImage should not be empty")
+		if schema.DefaultJobWorkerImage() == "" {
+			t.Error("DefaultJobWorkerImage() should not be empty")
 		}
-		if DefaultWorkerImage != "bosun-worker:local" {
-			t.Errorf("DefaultWorkerImage = %q, want %q", DefaultWorkerImage, "bosun-worker:local")
+		if schema.DefaultJobWorkerImage() != "bosun-worker:local" {
+			t.Errorf("DefaultJobWorkerImage() = %q, want %q", schema.DefaultJobWorkerImage(), "bosun-worker:local")
 		}
 	})
 
 	t.Run("DefaultMountMode is read-only", func(t *testing.T) {
-		if DefaultMountMode != "ro" {
-			t.Errorf("DefaultMountMode = %q, want %q", DefaultMountMode, "ro")
+		if schema.DefaultJobMountMode() != "ro" {
+			t.Errorf("DefaultJobMountMode() = %q, want %q", schema.DefaultJobMountMode(), "ro")
 		}
 	})
 }

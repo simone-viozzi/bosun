@@ -47,3 +47,54 @@ func TestInterfaces(t *testing.T) {
 		t.Errorf("Expected snapshot to have 1 entity")
 	}
 }
+
+func TestSelectorFilters(t *testing.T) {
+	t.Run("empty filters match all", func(t *testing.T) {
+		selector := Selector{
+			Prefixes:       []string{dlabels.DefaultLabelPrefix},
+			IncludeStopped: false,
+			ProjectFilter:  nil,
+			StackFilter:    nil,
+		}
+
+		// Empty filters should not restrict matching
+		if len(selector.ProjectFilter) != 0 {
+			t.Errorf("Expected empty ProjectFilter, got %v", selector.ProjectFilter)
+		}
+		if len(selector.StackFilter) != 0 {
+			t.Errorf("Expected empty StackFilter, got %v", selector.StackFilter)
+		}
+	})
+
+	t.Run("both filters can be set", func(t *testing.T) {
+		selector := Selector{
+			Prefixes:       []string{dlabels.DefaultLabelPrefix},
+			IncludeStopped: false,
+			ProjectFilter:  []string{"myproject"},
+			StackFilter:    []string{"production"},
+		}
+
+		if len(selector.ProjectFilter) != 1 || selector.ProjectFilter[0] != "myproject" {
+			t.Errorf("Expected ProjectFilter=['myproject'], got %v", selector.ProjectFilter)
+		}
+		if len(selector.StackFilter) != 1 || selector.StackFilter[0] != "production" {
+			t.Errorf("Expected StackFilter=['production'], got %v", selector.StackFilter)
+		}
+	})
+
+	t.Run("multiple values in filters", func(t *testing.T) {
+		selector := Selector{
+			Prefixes:       []string{dlabels.DefaultLabelPrefix},
+			IncludeStopped: false,
+			ProjectFilter:  []string{"app-a", "app-b"},
+			StackFilter:    []string{"staging", "production"},
+		}
+
+		if len(selector.ProjectFilter) != 2 {
+			t.Errorf("Expected 2 project filters, got %d", len(selector.ProjectFilter))
+		}
+		if len(selector.StackFilter) != 2 {
+			t.Errorf("Expected 2 stack filters, got %d", len(selector.StackFilter))
+		}
+	})
+}

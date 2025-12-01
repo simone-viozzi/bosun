@@ -188,3 +188,104 @@ func TestJobSpecByScope(t *testing.T) {
 		t.Errorf("Volume scope keys = %d, want 3", len(volumeKeys))
 	}
 }
+
+func TestJobLabelConstants(t *testing.T) {
+	t.Run("label key constants match struct tags", func(t *testing.T) {
+		spec := JobSpec()
+
+		// Container labels
+		if _, ok := spec.Get(LabelJobEnabled); !ok {
+			t.Errorf("LabelJobEnabled %q not found in JobSpec", LabelJobEnabled)
+		}
+		if _, ok := spec.Get(LabelJobName); !ok {
+			t.Errorf("LabelJobName %q not found in JobSpec", LabelJobName)
+		}
+		if _, ok := spec.Get(LabelJobSchedule); !ok {
+			t.Errorf("LabelJobSchedule %q not found in JobSpec", LabelJobSchedule)
+		}
+		if _, ok := spec.Get(LabelJobWorkerImage); !ok {
+			t.Errorf("LabelJobWorkerImage %q not found in JobSpec", LabelJobWorkerImage)
+		}
+
+		// Volume labels
+		if _, ok := spec.Get(LabelJobAttach); !ok {
+			t.Errorf("LabelJobAttach %q not found in JobSpec", LabelJobAttach)
+		}
+		if _, ok := spec.Get(LabelJobMountPath); !ok {
+			t.Errorf("LabelJobMountPath %q not found in JobSpec", LabelJobMountPath)
+		}
+		if _, ok := spec.Get(LabelJobMountMode); !ok {
+			t.Errorf("LabelJobMountMode %q not found in JobSpec", LabelJobMountMode)
+		}
+	})
+}
+
+func TestDefaultJobValues(t *testing.T) {
+	t.Run("DefaultJobSchedule matches struct tag", func(t *testing.T) {
+		spec := JobSpec()
+		fs, _ := spec.Get(LabelJobSchedule)
+		if DefaultJobSchedule() != fs.Default {
+			t.Errorf("DefaultJobSchedule() = %q, spec.Default = %q",
+				DefaultJobSchedule(), fs.Default)
+		}
+	})
+
+	t.Run("DefaultJobWorkerImage matches struct tag", func(t *testing.T) {
+		spec := JobSpec()
+		fs, _ := spec.Get(LabelJobWorkerImage)
+		if DefaultJobWorkerImage() != fs.Default {
+			t.Errorf("DefaultJobWorkerImage() = %q, spec.Default = %q",
+				DefaultJobWorkerImage(), fs.Default)
+		}
+	})
+
+	t.Run("DefaultJobMountMode matches struct tag", func(t *testing.T) {
+		spec := JobSpec()
+		fs, _ := spec.Get(LabelJobMountMode)
+		if DefaultJobMountMode() != fs.Default {
+			t.Errorf("DefaultJobMountMode() = %q, spec.Default = %q",
+				DefaultJobMountMode(), fs.Default)
+		}
+	})
+}
+
+func TestNormalizeMountMode(t *testing.T) {
+	tests := []struct {
+		input     string
+		wantValue string
+		wantValid bool
+	}{
+		// Valid lowercase
+		{"ro", "ro", true},
+		{"rw", "rw", true},
+
+		// Valid uppercase (case-insensitive)
+		{"RO", "ro", true},
+		{"RW", "rw", true},
+
+		// Valid mixed case
+		{"Ro", "ro", true},
+		{"rW", "rw", true},
+
+		// Whitespace handling
+		{"  ro  ", "ro", true},
+		{"  RW  ", "rw", true},
+
+		// Invalid values
+		{"", "", false},
+		{"read-only", "", false},
+		{"readwrite", "", false},
+		{"r", "", false},
+		{"w", "", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			gotValue, gotValid := NormalizeMountMode(tt.input)
+			if gotValue != tt.wantValue || gotValid != tt.wantValid {
+				t.Errorf("NormalizeMountMode(%q) = (%q, %v), want (%q, %v)",
+					tt.input, gotValue, gotValid, tt.wantValue, tt.wantValid)
+			}
+		})
+	}
+}

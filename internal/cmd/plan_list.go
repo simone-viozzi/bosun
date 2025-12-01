@@ -9,21 +9,14 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+
 	"github.com/simone-viozzi/bosun/internal/adapters/dockerlabels"
 	"github.com/simone-viozzi/bosun/internal/adapters/joblabels"
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
-)
-
-// Exit codes for plan commands
-const (
-	exitCodeOK            = 0
-	exitCodeValidationErr = 1
-	exitCodeDockerUnavail = 2
-	exitCodeInternalErr   = 3
 )
 
 // NewPlanListCmd creates the `plan list` subcommand.
@@ -32,6 +25,7 @@ func NewPlanListCmd() *cobra.Command {
 		format         string
 		includeStopped bool
 		stackFilter    string
+		projectFilter  string
 	)
 
 	cmd := &cobra.Command{
@@ -57,19 +51,22 @@ Output formats:
   bosun plan list --stopped
 
   # List jobs for a specific stack
-  bosun plan list --stack myapp`,
+  bosun plan list --stack myapp
+
+  # List jobs from a specific Docker Compose project
+  bosun plan list --project myproject`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			exitCode, err := runPlanList(ctx, format, includeStopped, stackFilter)
+			exitCode, err := runPlanList(ctx, format, includeStopped, stackFilter, projectFilter)
 			if err != nil {
-				if exitCode == exitCodeDockerUnavail {
+				if exitCode == ExitRuntimeError {
 					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 					fmt.Fprintln(os.Stderr, "Is Docker running?")
 				} else {
 					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 				}
 			}
-			if exitCode != exitCodeOK {
+			if exitCode != ExitSuccess {
 				os.Exit(exitCode)
 			}
 			return nil
@@ -78,47 +75,54 @@ Output formats:
 
 	cmd.Flags().StringVarP(&format, "format", "f", "text", "Output format: text, json, yaml")
 	cmd.Flags().BoolVar(&includeStopped, "stopped", false, "Include stopped containers in discovery")
-	cmd.Flags().StringVar(&stackFilter, "stack", "", "Filter jobs by stack name")
+	cmd.Flags().StringVar(&stackFilter, "stack", "", "Filter jobs by bosun.stack label value")
+	cmd.Flags().StringVar(&projectFilter, "project", "", "Filter jobs by Docker Compose project name")
 
 	return cmd
 }
 
 // runPlanList executes the plan list command logic.
-func runPlanList(ctx context.Context, format string, includeStopped bool, stackFilter string) (int, error) {
+func runPlanList(ctx context.Context, format string, includeStopped bool, stackFilter, projectFilter string) (int, error) {
 	// Validate format
 	format = strings.ToLower(format)
 	if format != "text" && format != "json" && format != "yaml" {
-		return exitCodeInternalErr, fmt.Errorf("invalid format %q: must be text, json, or yaml", format)
+		return ExitRuntimeError, fmt.Errorf("invalid format %q: must be text, json, or yaml", format)
 	}
 
 	// Create Docker label source
 	source, err := dockerlabels.NewFromEnv()
 	if err != nil {
-		return exitCodeDockerUnavail, fmt.Errorf("failed to connect to Docker: %w", err)
+		return ExitRuntimeError, fmt.Errorf("failed to connect to Docker: %w", err)
 	}
 
-	// Create selector
+	// Create selector with filters
 	selector := ports.Selector{
 		Prefixes:       []string{dlabels.DefaultLabelPrefix},
 		IncludeStopped: includeStopped,
+	}
+	if projectFilter != "" {
+		selector.ProjectFilter = []string{projectFilter}
+	}
+	if stackFilter != "" {
+		selector.StackFilter = []string{stackFilter}
 	}
 
 	// Get snapshot
 	snapshot, err := source.Snapshot(ctx, selector)
 	if err != nil {
-		return exitCodeDockerUnavail, fmt.Errorf("failed to get Docker snapshot: %w", err)
+		return ExitRuntimeError, fmt.Errorf("failed to get Docker snapshot: %w", err)
 	}
 
 	// Discover jobs
 	discoverer := joblabels.NewDiscoverer()
 	foundJobs, validationErrors, err := discoverer.DiscoverJobs(ctx, snapshot)
 	if err != nil {
-		return exitCodeInternalErr, fmt.Errorf("failed to discover jobs: %w", err)
+		return ExitRuntimeError, fmt.Errorf("failed to discover jobs: %w", err)
 	}
 
-	// Apply stack filter if specified
-	if stackFilter != "" {
-		foundJobs = filterJobsByStack(foundJobs, stackFilter)
+	// Print "No jobs found" to stderr if filters produced no results
+	if len(foundJobs) == 0 && (projectFilter != "" || stackFilter != "") {
+		fmt.Fprintln(os.Stderr, "No jobs found")
 	}
 
 	// Sort jobs by name for consistent output
@@ -132,34 +136,20 @@ func runPlanList(ctx context.Context, format string, includeStopped bool, stackF
 		renderTextOutput(foundJobs, validationErrors)
 	case "json":
 		if err := renderJSONOutput(foundJobs, validationErrors); err != nil {
-			return exitCodeInternalErr, fmt.Errorf("failed to encode JSON: %w", err)
+			return ExitRuntimeError, fmt.Errorf("failed to encode JSON: %w", err)
 		}
 	case "yaml":
 		if err := renderYAMLOutput(foundJobs, validationErrors); err != nil {
-			return exitCodeInternalErr, fmt.Errorf("failed to encode YAML: %w", err)
+			return ExitRuntimeError, fmt.Errorf("failed to encode YAML: %w", err)
 		}
 	}
 
 	// Return validation error exit code if there were validation errors
 	if len(validationErrors) > 0 {
-		return exitCodeValidationErr, nil
+		return ExitValidationError, nil
 	}
 
-	return exitCodeOK, nil
-}
-
-// filterJobsByStack filters jobs to only those with matching stack names.
-func filterJobsByStack(allJobs []jobs.Job, stackFilter string) []jobs.Job {
-	var filtered []jobs.Job
-	for _, job := range allJobs {
-		for _, stack := range job.TargetStacks {
-			if stack == stackFilter {
-				filtered = append(filtered, job)
-				break
-			}
-		}
-	}
-	return filtered
+	return ExitSuccess, nil
 }
 
 // renderTextOutput renders jobs in a human-readable table format.

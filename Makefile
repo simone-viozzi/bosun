@@ -22,6 +22,7 @@ tidy:
 
 fmt:
 	go fmt ./... ./integration/
+	goimports -w -local github.com/simone-viozzi/bosun ./cmd ./internal ./integration
 
 vet:
 	go vet ./...

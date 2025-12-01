@@ -1,3 +1,16 @@
+# joblabels-compose.yaml
+#
+# Purpose: Docker entities with bosun.job.* labels for testing job discovery.
+# Used by: integration/joblabels_test.go, integration/plan_test.go
+#
+# This fixture creates:
+#   - Two containers (postgres, redis) with bosun.job.enabled=true and same job name
+#     (tests job merging from multiple containers)
+#   - One container with bosun.job.enabled=false (tests disabled jobs are ignored)
+#   - One container without job labels (tests non-job containers are filtered)
+#   - Two volumes attached to the "daily-backup" job
+#   - One orphan volume attached to a nonexistent job (tests orphan detection)
+
 services:
   postgres:
     image: nginx:alpine  # Using nginx as placeholder (no actual postgres needed for label tests)

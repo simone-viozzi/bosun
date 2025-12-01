@@ -22,10 +22,19 @@ The `internal/adapters/dockerlabels` package provides utility functions for proc
 - **Interface**: Implements `ports.LabelSource` with `Snapshot()` method
 - **Implementation**: Container, volume, and network discovery fully implemented
 
+### Docker API Filtering
+- **Method**: `buildLabelFilters(sel)` - builds Docker API filter arguments
+- **Features**:
+  - Converts `sel.ProjectFilter` to Docker label filters (`com.docker.compose.project=<value>`)
+  - Converts `sel.StackFilter` to Docker label filters (`bosun.stack=<value>`)
+  - Multiple values in each filter are OR'd; ProjectFilter and StackFilter together are AND'd
+  - Returns `filters.Args` for use with ContainerList, VolumeList, NetworkList
+
 ### Container Discovery
 - **Method**: `snapshotContainers(ctx, sel)` - private method collecting containers
 - **Features**:
-  - Lists containers using `ContainerList` with `All: sel.IncludeStopped`
+  - Lists containers using `ContainerList` with `All: sel.IncludeStopped` and `Filters: buildLabelFilters(sel)`
+  - Applies ProjectFilter and StackFilter server-side via Docker API
   - Filters labels by prefixes using `FilterByPrefixes`
   - Excludes containers with zero matching labels
   - Enriches entities with metadata: image, compose project/service, and instance (if `bosun.instance` label present)
@@ -35,7 +44,8 @@ The `internal/adapters/dockerlabels` package provides utility functions for proc
 ### Volume Discovery
 - **Method**: `snapshotVolumes(ctx, sel)` - private method collecting volumes
 - **Features**:
-  - Lists volumes using `VolumeList` with `volume.ListOptions{}`
+  - Lists volumes using `VolumeList` with `Filters: buildLabelFilters(sel)`
+  - Applies ProjectFilter and StackFilter server-side via Docker API
   - Filters labels by prefixes using `FilterByPrefixes`
   - Excludes volumes with zero matching labels
   - Enriches entities with driver metadata and instance (if `bosun.instance` label present)
@@ -45,7 +55,8 @@ The `internal/adapters/dockerlabels` package provides utility functions for proc
 ### Network Discovery
 - **Method**: `snapshotNetworks(ctx, sel)` - private method collecting networks
 - **Features**:
-  - Lists networks using `NetworkList` with `network.ListOptions{}`
+  - Lists networks using `NetworkList` with `Filters: buildLabelFilters(sel)`
+  - Applies ProjectFilter and StackFilter server-side via Docker API
   - Filters labels by prefixes using `FilterByPrefixes`
   - Excludes networks with zero matching labels
   - Enriches entities with driver and scope metadata and instance (if `bosun.instance` label present)
@@ -81,8 +92,11 @@ Docker Compose may not properly apply labels to networks. Workaround: create net
 ### Empty Label Values
 Labels with empty or whitespace-only values are automatically filtered out by `FilterByPrefixes`.
 
-### ProjectFilter Not Implemented
-The `Selector.ProjectFilter` field exists but is not used in v1.
+### Project and Stack Filtering
+- `Selector.ProjectFilter` filters by `com.docker.compose.project` label (Docker Compose project name)
+- `Selector.StackFilter` filters by `bosun.stack` label
+- Filtering is applied server-side via Docker API for efficiency
+- Both filters work for containers, volumes, and networks
 
 ## Testing
 - Comprehensive unit tests for `FilterByPrefixes` with table-driven approach

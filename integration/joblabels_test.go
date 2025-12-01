@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package integration
 
@@ -32,10 +31,11 @@ func Test_Integration_JobLabels_Discovery(t *testing.T) {
 		t.Fatalf("failed to create DockerLabelSource: %v", err)
 	}
 
-	// Take a snapshot with bosun. prefix filter
+	// Take a snapshot with bosun. prefix filter and project filter for isolation
 	sel := ports.Selector{
 		Prefixes:       []string{dlabels.DefaultLabelPrefix},
 		IncludeStopped: false,
+		ProjectFilter:  []string{stack.Project},
 	}
 
 	snapshot, err := source.Snapshot(ctx, sel)
@@ -77,16 +77,14 @@ func Test_Integration_JobLabels_Discovery(t *testing.T) {
 			t.Errorf("WorkerImage = %q, want %q", job.WorkerImage, "backup-worker:test")
 		}
 
-		// Should have at least 2 target containers (postgres and redis)
-		// Note: When running in parallel with other tests, there may be more containers
-		// since all tests use the same job name "daily-backup"
-		if len(job.TargetContainers) < 2 {
-			t.Errorf("TargetContainers length = %d, want at least 2", len(job.TargetContainers))
+		// Should have exactly 2 target containers (postgres and redis) with project filter
+		if len(job.TargetContainers) != 2 {
+			t.Errorf("TargetContainers length = %d, want 2", len(job.TargetContainers))
 		}
 
-		// Should have at least 2 attached volumes (pgdata and redis-data)
-		if len(job.AttachVolumes) < 2 {
-			t.Errorf("AttachVolumes length = %d, want at least 2", len(job.AttachVolumes))
+		// Should have exactly 2 attached volumes (pgdata and redis-data) with project filter
+		if len(job.AttachVolumes) != 2 {
+			t.Errorf("AttachVolumes length = %d, want 2", len(job.AttachVolumes))
 		}
 
 		// Verify expected volume mount paths are present

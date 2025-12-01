@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/robfig/cron/v3"
+
+	"github.com/simone-viozzi/bosun/internal/config/schema"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 )
 
@@ -114,11 +116,11 @@ func validateContainerJobLabels(entity dlabels.LabeledEntity, result *JobValidat
 	}
 
 	// Validate bosun.job.enabled (must be valid boolean)
-	enabledStr, hasEnabled := labels["bosun.job.enabled"]
+	enabledStr, hasEnabled := labels[schema.LabelJobEnabled]
 	if hasEnabled && !isValidBoolean(enabledStr) {
 		result.Errors = append(result.Errors, JobValidationError{
 			Entity:  entity,
-			Field:   "bosun.job.enabled",
+			Field:   schema.LabelJobEnabled,
 			Message: fmt.Sprintf("invalid boolean value %q, expected 'true' or 'false'", enabledStr),
 			Code:    JobErrorInvalidEnabled,
 		})
@@ -126,15 +128,15 @@ func validateContainerJobLabels(entity dlabels.LabeledEntity, result *JobValidat
 
 	// Parse key values
 	enabled := hasEnabled && isTrue(enabledStr)
-	jobName := labels["bosun.job.name"]
-	schedule := labels["bosun.job.schedule"]
+	jobName := labels[schema.LabelJobName]
+	schedule := labels[schema.LabelJobSchedule]
 
 	// If enabled=true, name must be present
 	if enabled && jobName == "" {
 		result.Errors = append(result.Errors, JobValidationError{
 			Entity:  entity,
-			Field:   "bosun.job.name",
-			Message: "bosun.job.name is required when bosun.job.enabled=true",
+			Field:   schema.LabelJobName,
+			Message: fmt.Sprintf("%s is required when %s=true", schema.LabelJobName, schema.LabelJobEnabled),
 			Code:    JobErrorMissingName,
 		})
 	}
@@ -145,7 +147,7 @@ func validateContainerJobLabels(entity dlabels.LabeledEntity, result *JobValidat
 		if _, err := parser.Parse(schedule); err != nil {
 			result.Errors = append(result.Errors, JobValidationError{
 				Entity:  entity,
-				Field:   "bosun.job.schedule",
+				Field:   schema.LabelJobSchedule,
 				Message: fmt.Sprintf("invalid cron expression %q: %v", schedule, err),
 				Code:    JobErrorInvalidSchedule,
 			})
@@ -161,7 +163,7 @@ func validateContainerJobLabels(entity dlabels.LabeledEntity, result *JobValidat
 
 		// Check each field for conflicts
 		checkFieldConflict(entity, "schedule", schedule, fields, result)
-		checkFieldConflict(entity, "worker.image", labels["bosun.job.worker.image"], fields, result)
+		checkFieldConflict(entity, "worker.image", labels[schema.LabelJobWorkerImage], fields, result)
 		checkFieldConflict(entity, "use_compose_stop", labels["bosun.job.use_compose_stop"], fields, result)
 	}
 }
@@ -192,17 +194,17 @@ func validateVolumeJobLabels(entity dlabels.LabeledEntity, result *JobValidation
 	labels := entity.Labels
 
 	// Check bosun.job.attach - this is the job name to attach to, not a boolean
-	attachJobName, hasAttach := labels["bosun.job.attach"]
+	attachJobName, hasAttach := labels[schema.LabelJobAttach]
 	if !hasAttach || attachJobName == "" {
 		return
 	}
 
 	// Validate mount path if present
-	if mountPath, ok := labels["bosun.job.mount.path"]; ok && mountPath != "" {
+	if mountPath, ok := labels[schema.LabelJobMountPath]; ok && mountPath != "" {
 		if !strings.HasPrefix(mountPath, "/") {
 			result.Errors = append(result.Errors, JobValidationError{
 				Entity:  entity,
-				Field:   "bosun.job.mount.path",
+				Field:   schema.LabelJobMountPath,
 				Message: fmt.Sprintf("mount path %q must be an absolute path (start with /)", mountPath),
 				Code:    JobErrorInvalidMountPath,
 			})
