@@ -9,13 +9,14 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+
 	"github.com/simone-viozzi/bosun/internal/adapters/dockerlabels"
 	"github.com/simone-viozzi/bosun/internal/adapters/joblabels"
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 // NewPlanListCmd creates the `plan list` subcommand.

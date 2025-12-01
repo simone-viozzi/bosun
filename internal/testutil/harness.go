@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 // Package testutil provides test utilities for integration tests.
 // It uses the docker compose CLI directly instead of the Go library

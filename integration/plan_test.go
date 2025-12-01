@@ -12,10 +12,11 @@ import (
 	"testing"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
 	"github.com/simone-viozzi/bosun/internal/ports"
 	"github.com/simone-viozzi/bosun/internal/testutil"
-	"gopkg.in/yaml.v3"
 )
 
 // planListOutput matches the JSON/YAML output structure of `bosun plan list`.

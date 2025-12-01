@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/robfig/cron/v3"
+
 	"github.com/simone-viozzi/bosun/internal/config/schema"
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
 	"github.com/simone-viozzi/bosun/internal/domain/labels"

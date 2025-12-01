@@ -4,12 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"sort"
+
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
+
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"sort"
 )
 
 // mockDockerClient is a minimal mock that doesn't actually connect to Docker

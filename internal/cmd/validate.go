@@ -8,13 +8,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/simone-viozzi/bosun/internal/adapters/dockerlabels"
 	"github.com/simone-viozzi/bosun/internal/config/loader"
 	"github.com/simone-viozzi/bosun/internal/config/merge"
 	"github.com/simone-viozzi/bosun/internal/config/schema"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"github.com/spf13/cobra"
 )
 
 // ConfigSource indicates where config values come from

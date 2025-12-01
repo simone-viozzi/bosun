@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/simone-viozzi/bosun/internal/adapters/dockerlabels"
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"github.com/spf13/cobra"
 )
 
 // NewSnapshotCmd creates the snapshot subcommand

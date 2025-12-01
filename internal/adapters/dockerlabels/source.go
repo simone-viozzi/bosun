@@ -12,9 +12,10 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
+	"golang.org/x/sync/errgroup"
+
 	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
-	"golang.org/x/sync/errgroup"
 )
 
 // dockerClient defines the subset of Docker client methods we use

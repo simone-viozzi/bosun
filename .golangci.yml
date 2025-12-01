@@ -1,0 +1,63 @@
+# golangci-lint configuration
+# https://golangci-lint.run/usage/configuration/
+
+version: "2"
+
+run:
+  # Timeout for analysis
+  timeout: 5m
+  # Include test files
+  tests: true
+  # Build tags to include integration tests in analysis
+  build-tags:
+    - integration
+
+linters:
+  # Use the standard preset as base
+  default: standard
+  enable:
+    # Bug detection
+    - bodyclose
+    - nilerr
+
+    # TODO: Enable these linters after fixing existing issues
+    # - prealloc    # Performance: pre-allocate slices
+    # - unparam     # Maintainability: unused parameters
+  disable:
+    # TODO: Re-enable after addressing existing violations
+    - errcheck    # Many unchecked errors in test cleanup code
+
+  settings:
+    govet:
+      # Enable all analyzers
+      enable-all: true
+      disable:
+        # Too noisy for this project
+        - shadow
+        - fieldalignment
+        - unusedwrite    # Too noisy in tests
+
+    staticcheck:
+      checks:
+        - "all"
+        - "-ST1000"      # Package comments - TODO: add later
+        - "-ST1016"      # Receiver names - TODO: fix later
+        - "-ST1022"      # Comment format - TODO: fix later
+
+  exclusions:
+    rules:
+      # Allow unused parameters in test files (common for table-driven tests)
+      - path: _test\.go
+        linters:
+          - unparam
+
+issues:
+  # Don't limit the number of issues
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  # Sort results by file, line, column
+  sort-order:
+    - file
+    - linter
