@@ -1,3 +1,12 @@
+# dockerlabels-compose.yaml
+#
+# Purpose: Basic Docker entities with bosun.* config labels (not job labels).
+# Used by: integration/dockerlabels_test.go, Test_Integration_PlanList_NoJobs
+#
+# This fixture creates containers, volumes, and networks with generic bosun.*
+# labels but NO bosun.job.* labels, useful for testing label discovery without
+# job semantics.
+
 services:
   test-app:
     image: nginx:alpine

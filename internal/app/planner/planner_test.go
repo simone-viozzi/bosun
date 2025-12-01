@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/simone-viozzi/bosun/internal/config/schema"
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
 )
 
@@ -18,8 +19,8 @@ func TestPlan_EmptyJob(t *testing.T) {
 	p := New()
 	job := jobs.Job{
 		Name:        "empty-job",
-		Schedule:    jobs.DefaultSchedule,
-		WorkerImage: jobs.DefaultWorkerImage,
+		Schedule:    schema.DefaultJobSchedule(),
+		WorkerImage: schema.DefaultJobWorkerImage(),
 	}
 
 	plan, err := p.Plan(context.Background(), job)

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
@@ -35,10 +36,33 @@ func NewFromEnv() (*DockerLabelSource, error) {
 	return &DockerLabelSource{CLI: cli}, nil
 }
 
+// buildLabelFilters constructs Docker API filters for ProjectFilter and StackFilter.
+// Multiple values in each filter are OR'd (match any), but ProjectFilter and StackFilter
+// together are AND'd (must match at least one from each if both specified).
+func buildLabelFilters(sel ports.Selector) filters.Args {
+	args := filters.NewArgs()
+
+	// Filter by Docker Compose project label
+	for _, project := range sel.ProjectFilter {
+		args.Add("label", "com.docker.compose.project="+project)
+	}
+
+	// Filter by bosun.stack label
+	for _, stack := range sel.StackFilter {
+		args.Add("label", dlabels.LabelStack+"="+stack)
+	}
+
+	return args
+}
+
 // snapshotContainers collects containers from Docker, filters by label prefixes,
 // and returns labeled entities for containers with matching labels.
+// Uses Docker's native label filtering for ProjectFilter and StackFilter for efficiency.
 func (s *DockerLabelSource) snapshotContainers(ctx context.Context, sel ports.Selector) ([]dlabels.LabeledEntity, error) {
-	opts := container.ListOptions{All: sel.IncludeStopped}
+	opts := container.ListOptions{
+		All:     sel.IncludeStopped,
+		Filters: buildLabelFilters(sel),
+	}
 	ctrs, err := s.CLI.ContainerList(ctx, opts)
 	if err != nil {
 		return nil, err
@@ -75,8 +99,12 @@ func (s *DockerLabelSource) snapshotContainers(ctx context.Context, sel ports.Se
 
 // snapshotVolumes collects volumes from Docker, filters by label prefixes,
 // and returns labeled entities for volumes with matching labels.
+// Applies ProjectFilter and StackFilter if specified.
 func (s *DockerLabelSource) snapshotVolumes(ctx context.Context, sel ports.Selector) ([]dlabels.LabeledEntity, error) {
-	vl, err := s.CLI.VolumeList(ctx, volume.ListOptions{})
+	opts := volume.ListOptions{
+		Filters: buildLabelFilters(sel),
+	}
+	vl, err := s.CLI.VolumeList(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -106,8 +134,12 @@ func (s *DockerLabelSource) snapshotVolumes(ctx context.Context, sel ports.Selec
 
 // snapshotNetworks collects networks from Docker, filters by label prefixes,
 // and returns labeled entities for networks with matching labels.
+// Applies ProjectFilter and StackFilter if specified.
 func (s *DockerLabelSource) snapshotNetworks(ctx context.Context, sel ports.Selector) ([]dlabels.LabeledEntity, error) {
-	nets, err := s.CLI.NetworkList(ctx, network.ListOptions{})
+	opts := network.ListOptions{
+		Filters: buildLabelFilters(sel),
+	}
+	nets, err := s.CLI.NetworkList(ctx, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -33,13 +33,12 @@ func Test_Integration_PlanList_TextFormat(t *testing.T) {
 
 	// Start compose stack with job labels
 	stack := testutil.StartCompose(t, ctx, "joblabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan list`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list")
+	// Run `bosun plan list --project <project>` for isolation
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -78,13 +77,12 @@ func Test_Integration_PlanList_JSONFormat(t *testing.T) {
 
 	// Start compose stack with job labels
 	stack := testutil.StartCompose(t, ctx, "joblabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan list --format json`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--format", "json")
+	// Run `bosun plan list --format json --project <project>` for isolation
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--format", "json", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -100,21 +98,15 @@ func Test_Integration_PlanList_JSONFormat(t *testing.T) {
 		t.Fatalf("Failed to parse JSON output: %v", err)
 	}
 
-	// Verify we have at least 1 job
-	if len(result.Jobs) == 0 {
-		t.Fatal("Expected at least 1 job in JSON output")
+	// Verify we have exactly 1 job with project filter
+	if len(result.Jobs) != 1 {
+		t.Fatalf("Expected exactly 1 job in JSON output, got %d", len(result.Jobs))
 	}
 
-	// Find our job
-	var foundJob *jobs.Job
-	for i := range result.Jobs {
-		if result.Jobs[i].Name == "daily-backup" {
-			foundJob = &result.Jobs[i]
-			break
-		}
-	}
-	if foundJob == nil {
-		t.Fatal("Expected 'daily-backup' job in JSON output")
+	// Verify it's our job
+	foundJob := &result.Jobs[0]
+	if foundJob.Name != "daily-backup" {
+		t.Fatalf("Expected 'daily-backup' job, got %q", foundJob.Name)
 	}
 
 	// Verify job properties
@@ -124,11 +116,11 @@ func Test_Integration_PlanList_JSONFormat(t *testing.T) {
 	if foundJob.WorkerImage != "backup-worker:test" {
 		t.Errorf("WorkerImage = %q, want %q", foundJob.WorkerImage, "backup-worker:test")
 	}
-	if len(foundJob.TargetContainers) < 2 {
-		t.Errorf("TargetContainers = %d, want >= 2", len(foundJob.TargetContainers))
+	if len(foundJob.TargetContainers) != 2 {
+		t.Errorf("TargetContainers = %d, want 2", len(foundJob.TargetContainers))
 	}
-	if len(foundJob.AttachVolumes) < 2 {
-		t.Errorf("AttachVolumes = %d, want >= 2", len(foundJob.AttachVolumes))
+	if len(foundJob.AttachVolumes) != 2 {
+		t.Errorf("AttachVolumes = %d, want 2", len(foundJob.AttachVolumes))
 	}
 
 	// Verify validation errors are present (for orphan volume)
@@ -146,13 +138,12 @@ func Test_Integration_PlanList_YAMLFormat(t *testing.T) {
 
 	// Start compose stack with job labels
 	stack := testutil.StartCompose(t, ctx, "joblabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan list --format yaml`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--format", "yaml")
+	// Run `bosun plan list --format yaml --project <project>` for isolation
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--format", "yaml", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -168,66 +159,49 @@ func Test_Integration_PlanList_YAMLFormat(t *testing.T) {
 		t.Fatalf("Failed to parse YAML output: %v", err)
 	}
 
-	// Verify we have at least 1 job
-	if len(result.Jobs) == 0 {
-		t.Fatal("Expected at least 1 job in YAML output")
+	// Verify we have exactly 1 job with project filter
+	if len(result.Jobs) != 1 {
+		t.Fatalf("Expected exactly 1 job in YAML output, got %d", len(result.Jobs))
 	}
 
-	// Verify our job exists
-	found := false
-	for _, job := range result.Jobs {
-		if job.Name == "daily-backup" {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Error("Expected 'daily-backup' job in YAML output")
+	// Verify it's our job
+	if result.Jobs[0].Name != "daily-backup" {
+		t.Errorf("Expected 'daily-backup' job in YAML output, got %q", result.Jobs[0].Name)
 	}
 }
 
-// Test_Integration_PlanList_NoJobs validates the "no jobs" message.
-// Note: This test is skipped because bosun discovers jobs from ALL containers
-// on the Docker daemon, not just those from the test's compose stack. When running
-// the full test suite, other tests create job-labeled containers, causing this
-// test to find jobs even though the test's own compose stack has none.
-// TODO: Add project filtering to bosun to enable isolated testing.
+// Test_Integration_PlanList_NoJobs validates the "no jobs" message when filtering
+// to a project without any job labels.
 func Test_Integration_PlanList_NoJobs(t *testing.T) {
-	t.Skip("Test requires complete Docker isolation - jobs from other tests interfere")
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
 	// Start compose stack WITHOUT job labels
 	stack := testutil.StartCompose(t, ctx, "dockerlabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan list`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list")
+	// Run `bosun plan list --project <project>` - this project has no job labels
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	err := cmd.Run()
 	if err != nil {
-		// Check if it's a non-zero exit (which is unexpected here)
-		t.Logf("Command error: %v, stderr: %s", err, stderr.String())
+		t.Logf("Command error: %v", err)
 	}
 
-	output := stdout.String()
-	t.Logf("Output:\n%s", output)
+	stderrStr := stderr.String()
+	t.Logf("stderr:\n%s", stderrStr)
+	t.Logf("stdout:\n%s", stdout.String())
 
-	// Should show "no jobs" message
-	if !strings.Contains(output, "No jobs discovered") {
-		t.Error("Expected 'No jobs discovered' message")
-	}
-
-	// Should show helpful instructions
-	if !strings.Contains(output, "bosun.job.enabled") {
-		t.Error("Expected helpful instructions about bosun.job.enabled label")
+	// Should show "No jobs found" message on stderr
+	if !strings.Contains(stderrStr, "No jobs found") {
+		t.Error("Expected 'No jobs found' message on stderr")
 	}
 }
 
@@ -240,13 +214,12 @@ func Test_Integration_PlanShow_TextFormat(t *testing.T) {
 
 	// Start compose stack with job labels
 	stack := testutil.StartCompose(t, ctx, "joblabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan show daily-backup`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup")
+	// Run `bosun plan show daily-backup --project <project>` for isolation
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -291,13 +264,12 @@ func Test_Integration_PlanShow_JSONFormat(t *testing.T) {
 
 	// Start compose stack with job labels
 	stack := testutil.StartCompose(t, ctx, "joblabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan show daily-backup --format json`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--format", "json")
+	// Run `bosun plan show daily-backup --format json --project <project>` for isolation
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--format", "json", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -364,13 +336,12 @@ func Test_Integration_PlanShow_JobNotFound(t *testing.T) {
 
 	// Start compose stack with job labels
 	stack := testutil.StartCompose(t, ctx, "joblabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan show nonexistent-job`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "nonexistent-job")
+	// Run `bosun plan show nonexistent-job --project <project>` for isolation
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "nonexistent-job", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -403,13 +374,12 @@ func Test_Integration_PlanShow_YAMLFormat(t *testing.T) {
 
 	// Start compose stack with job labels
 	stack := testutil.StartCompose(t, ctx, "joblabels-compose.yaml")
-	_ = stack
 
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run `bosun plan show daily-backup --format yaml`
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--format", "yaml")
+	// Run `bosun plan show daily-backup --format yaml --project <project>` for isolation
+	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--format", "yaml", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

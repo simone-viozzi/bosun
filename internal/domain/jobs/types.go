@@ -2,15 +2,6 @@ package jobs
 
 import "time"
 
-// DefaultSchedule is the default cron expression for jobs (daily at midnight).
-const DefaultSchedule = "0 0 * * *"
-
-// DefaultWorkerImage is the placeholder worker image for this milestone.
-const DefaultWorkerImage = "bosun-worker:local"
-
-// DefaultMountMode is the default volume mount mode (read-only for safety).
-const DefaultMountMode = "ro"
-
 // StepType identifies the kind of action in a plan step.
 type StepType string
 

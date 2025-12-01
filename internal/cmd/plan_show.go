@@ -24,6 +24,8 @@ func NewPlanShowCmd() *cobra.Command {
 	var (
 		format         string
 		includeStopped bool
+		projectFilter  string
+		stackFilter    string
 	)
 
 	cmd := &cobra.Command{
@@ -45,16 +47,19 @@ the same job configuration will produce identical output.`,
   bosun plan show daily-backup --format json
 
   # Include stopped containers in discovery
-  bosun plan show daily-backup --stopped`,
+  bosun plan show daily-backup --stopped
+
+  # Show plan for job in specific project
+  bosun plan show daily-backup --project myapp`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			jobName := args[0]
-			exitCode, err := runPlanShow(ctx, jobName, format, includeStopped)
+			exitCode, err := runPlanShow(ctx, jobName, format, includeStopped, projectFilter, stackFilter)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			}
-			if exitCode != exitCodeOK {
+			if exitCode != ExitSuccess {
 				os.Exit(exitCode)
 			}
 			return nil
@@ -63,41 +68,49 @@ the same job configuration will produce identical output.`,
 
 	cmd.Flags().StringVarP(&format, "format", "f", "text", "Output format: text, json, yaml")
 	cmd.Flags().BoolVar(&includeStopped, "stopped", false, "Include stopped containers in discovery")
+	cmd.Flags().StringVar(&projectFilter, "project", "", "Filter by Docker Compose project name")
+	cmd.Flags().StringVar(&stackFilter, "stack", "", "Filter by bosun.stack label value")
 
 	return cmd
 }
 
 // runPlanShow executes the plan show command logic.
-func runPlanShow(ctx context.Context, jobName string, format string, includeStopped bool) (int, error) {
+func runPlanShow(ctx context.Context, jobName string, format string, includeStopped bool, projectFilter, stackFilter string) (int, error) {
 	// Validate format
 	format = strings.ToLower(format)
 	if format != "text" && format != "json" && format != "yaml" {
-		return exitCodeInternalErr, fmt.Errorf("invalid format %q: must be text, json, or yaml", format)
+		return ExitRuntimeError, fmt.Errorf("invalid format %q: must be text, json, or yaml", format)
 	}
 
 	// Create Docker label source
 	source, err := dockerlabels.NewFromEnv()
 	if err != nil {
-		return exitCodeDockerUnavail, fmt.Errorf("failed to connect to Docker: %w", err)
+		return ExitRuntimeError, fmt.Errorf("failed to connect to Docker: %w", err)
 	}
 
-	// Create selector
+	// Create selector with filters
 	selector := ports.Selector{
 		Prefixes:       []string{dlabels.DefaultLabelPrefix},
 		IncludeStopped: includeStopped,
+	}
+	if projectFilter != "" {
+		selector.ProjectFilter = []string{projectFilter}
+	}
+	if stackFilter != "" {
+		selector.StackFilter = []string{stackFilter}
 	}
 
 	// Get snapshot
 	snapshot, err := source.Snapshot(ctx, selector)
 	if err != nil {
-		return exitCodeDockerUnavail, fmt.Errorf("failed to get Docker snapshot: %w", err)
+		return ExitRuntimeError, fmt.Errorf("failed to get Docker snapshot: %w", err)
 	}
 
 	// Discover jobs
 	discoverer := joblabels.NewDiscoverer()
 	foundJobs, _, err := discoverer.DiscoverJobs(ctx, snapshot)
 	if err != nil {
-		return exitCodeInternalErr, fmt.Errorf("failed to discover jobs: %w", err)
+		return ExitRuntimeError, fmt.Errorf("failed to discover jobs: %w", err)
 	}
 
 	// Find the requested job
@@ -110,8 +123,8 @@ func runPlanShow(ctx context.Context, jobName string, format string, includeStop
 	}
 
 	if targetJob == nil {
-		// Job not found - show available jobs
-		return exitCodeValidationErr, formatJobNotFoundError(jobName, foundJobs)
+		// Job not found - show available jobs and suggest bosun plan list
+		return ExitValidationError, formatJobNotFoundError(jobName, foundJobs)
 	}
 
 	// Generate execution plan
@@ -120,9 +133,9 @@ func runPlanShow(ctx context.Context, jobName string, format string, includeStop
 	if err != nil {
 		// Check for specific errors
 		if err == ports.ErrOrphanedDependents {
-			return exitCodeValidationErr, formatOrphanedDependentsError(jobName, err)
+			return ExitValidationError, formatOrphanedDependentsError(jobName, err)
 		}
-		return exitCodeInternalErr, fmt.Errorf("failed to generate plan: %w", err)
+		return ExitRuntimeError, fmt.Errorf("failed to generate plan: %w", err)
 	}
 
 	// Output results
@@ -131,21 +144,21 @@ func runPlanShow(ctx context.Context, jobName string, format string, includeStop
 		renderPlanTextOutput(plan, *targetJob)
 	case "json":
 		if err := renderPlanJSONOutput(plan); err != nil {
-			return exitCodeInternalErr, fmt.Errorf("failed to encode JSON: %w", err)
+			return ExitRuntimeError, fmt.Errorf("failed to encode JSON: %w", err)
 		}
 	case "yaml":
 		if err := renderPlanYAMLOutput(plan); err != nil {
-			return exitCodeInternalErr, fmt.Errorf("failed to encode YAML: %w", err)
+			return ExitRuntimeError, fmt.Errorf("failed to encode YAML: %w", err)
 		}
 	}
 
-	return exitCodeOK, nil
+	return ExitSuccess, nil
 }
 
 // formatJobNotFoundError creates a helpful error message when a job is not found.
 func formatJobNotFoundError(jobName string, availableJobs []jobs.Job) error {
 	if len(availableJobs) == 0 {
-		return fmt.Errorf("job %q not found\n\nNo jobs discovered. To define a job, add these labels to a container:\n  bosun.job.enabled: \"true\"\n  bosun.job.name: \"my-backup\"", jobName)
+		return fmt.Errorf("job %q not found\n\nNo jobs discovered. To define a job, add these labels to a container:\n  bosun.job.enabled: \"true\"\n  bosun.job.name: \"my-backup\"\n\nRun 'bosun plan list' to see discovered jobs", jobName)
 	}
 
 	// Sort jobs by name for consistent output
@@ -158,7 +171,7 @@ func formatJobNotFoundError(jobName string, availableJobs []jobs.Job) error {
 		names[i] = j.Name
 	}
 
-	return fmt.Errorf("job %q not found\n\nAvailable jobs:\n  %s", jobName, strings.Join(names, "\n  "))
+	return fmt.Errorf("job %q not found\n\nAvailable jobs:\n  %s\n\nRun 'bosun plan list' to see all discovered jobs", jobName, strings.Join(names, "\n  "))
 }
 
 // formatOrphanedDependentsError creates a helpful error for orphan dependent errors.

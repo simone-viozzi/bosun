@@ -9,6 +9,9 @@ const DefaultLabelPrefix = "bosun."
 // LabelInstance is the label key for instance identification.
 const LabelInstance = DefaultLabelPrefix + "instance"
 
+// LabelStack is the label key for stack grouping (used for filtering).
+const LabelStack = DefaultLabelPrefix + "stack"
+
 type Kind string
 
 const (

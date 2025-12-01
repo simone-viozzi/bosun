@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/simone-viozzi/bosun/internal/domain/jobs"
+	"github.com/simone-viozzi/bosun/internal/config/schema"
 	"github.com/simone-viozzi/bosun/internal/domain/labels"
 )
 
@@ -44,10 +44,10 @@ func TestDiscoverJobs_SingleContainer(t *testing.T) {
 				ID:   "container-123",
 				Name: "postgres",
 				Labels: map[string]string{
-					LabelJobEnabled:     "true",
-					LabelJobName:        "daily-backup",
-					LabelJobSchedule:    "0 2 * * *",
-					LabelJobWorkerImage: "backup:v1",
+					schema.LabelJobEnabled:     "true",
+					schema.LabelJobName:        "daily-backup",
+					schema.LabelJobSchedule:    "0 2 * * *",
+					schema.LabelJobWorkerImage: "backup:v1",
 				},
 				Meta: map[string]string{
 					"compose.project": "myapp",
@@ -95,9 +95,9 @@ func TestDiscoverJobs_MergeMultipleContainers(t *testing.T) {
 				ID:   "postgres-1",
 				Name: "postgres",
 				Labels: map[string]string{
-					LabelJobEnabled:  "true",
-					LabelJobName:     "daily-backup",
-					LabelJobSchedule: "0 2 * * *",
+					schema.LabelJobEnabled:  "true",
+					schema.LabelJobName:     "daily-backup",
+					schema.LabelJobSchedule: "0 2 * * *",
 				},
 				Meta: map[string]string{"compose.project": "myapp"},
 			},
@@ -106,8 +106,8 @@ func TestDiscoverJobs_MergeMultipleContainers(t *testing.T) {
 				ID:   "redis-1",
 				Name: "redis",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
-					LabelJobName:    "daily-backup",
+					schema.LabelJobEnabled: "true",
+					schema.LabelJobName:    "daily-backup",
 				},
 				Meta: map[string]string{"compose.project": "myapp"},
 			},
@@ -144,8 +144,8 @@ func TestDiscoverJobs_DefaultValues(t *testing.T) {
 				ID:   "container-1",
 				Name: "app",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
-					LabelJobName:    "minimal-job",
+					schema.LabelJobEnabled: "true",
+					schema.LabelJobName:    "minimal-job",
 					// No schedule or worker image - should use defaults
 				},
 				Meta: map[string]string{},
@@ -166,11 +166,11 @@ func TestDiscoverJobs_DefaultValues(t *testing.T) {
 	}
 
 	job := foundJobs[0]
-	if job.Schedule != jobs.DefaultSchedule {
-		t.Errorf("Schedule = %q, want default %q", job.Schedule, jobs.DefaultSchedule)
+	if job.Schedule != schema.DefaultJobSchedule() {
+		t.Errorf("Schedule = %q, want default %q", job.Schedule, schema.DefaultJobSchedule())
 	}
-	if job.WorkerImage != jobs.DefaultWorkerImage {
-		t.Errorf("WorkerImage = %q, want default %q", job.WorkerImage, jobs.DefaultWorkerImage)
+	if job.WorkerImage != schema.DefaultJobWorkerImage() {
+		t.Errorf("WorkerImage = %q, want default %q", job.WorkerImage, schema.DefaultJobWorkerImage())
 	}
 }
 
@@ -183,7 +183,7 @@ func TestDiscoverJobs_MissingJobName(t *testing.T) {
 				ID:   "container-1",
 				Name: "app",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
+					schema.LabelJobEnabled: "true",
 					// Missing bosun.job.name
 				},
 				Meta: map[string]string{},
@@ -204,8 +204,8 @@ func TestDiscoverJobs_MissingJobName(t *testing.T) {
 	}
 
 	ve := validationErrors[0]
-	if ve.Field != LabelJobName {
-		t.Errorf("Field = %q, want %q", ve.Field, LabelJobName)
+	if ve.Field != schema.LabelJobName {
+		t.Errorf("Field = %q, want %q", ve.Field, schema.LabelJobName)
 	}
 	if ve.EntityID != "container-1" {
 		t.Errorf("EntityID = %q, want %q", ve.EntityID, "container-1")
@@ -221,9 +221,9 @@ func TestDiscoverJobs_InvalidCronSchedule(t *testing.T) {
 				ID:   "container-1",
 				Name: "app",
 				Labels: map[string]string{
-					LabelJobEnabled:  "true",
-					LabelJobName:     "bad-cron-job",
-					LabelJobSchedule: "invalid cron",
+					schema.LabelJobEnabled:  "true",
+					schema.LabelJobName:     "bad-cron-job",
+					schema.LabelJobSchedule: "invalid cron",
 				},
 				Meta: map[string]string{},
 			},
@@ -240,16 +240,16 @@ func TestDiscoverJobs_InvalidCronSchedule(t *testing.T) {
 	}
 
 	ve := validationErrors[0]
-	if ve.Field != LabelJobSchedule {
-		t.Errorf("Field = %q, want %q", ve.Field, LabelJobSchedule)
+	if ve.Field != schema.LabelJobSchedule {
+		t.Errorf("Field = %q, want %q", ve.Field, schema.LabelJobSchedule)
 	}
 
 	// Job should still be created with default schedule
 	if len(foundJobs) != 1 {
 		t.Fatalf("expected 1 job, got %d", len(foundJobs))
 	}
-	if foundJobs[0].Schedule != jobs.DefaultSchedule {
-		t.Errorf("Schedule = %q, want default %q after invalid", foundJobs[0].Schedule, jobs.DefaultSchedule)
+	if foundJobs[0].Schedule != schema.DefaultJobSchedule() {
+		t.Errorf("Schedule = %q, want default %q after invalid", foundJobs[0].Schedule, schema.DefaultJobSchedule())
 	}
 }
 
@@ -262,9 +262,9 @@ func TestDiscoverJobs_ConflictingSchedule(t *testing.T) {
 				ID:   "container-1",
 				Name: "app1",
 				Labels: map[string]string{
-					LabelJobEnabled:  "true",
-					LabelJobName:     "shared-job",
-					LabelJobSchedule: "0 2 * * *",
+					schema.LabelJobEnabled:  "true",
+					schema.LabelJobName:     "shared-job",
+					schema.LabelJobSchedule: "0 2 * * *",
 				},
 				Meta: map[string]string{},
 			},
@@ -273,9 +273,9 @@ func TestDiscoverJobs_ConflictingSchedule(t *testing.T) {
 				ID:   "container-2",
 				Name: "app2",
 				Labels: map[string]string{
-					LabelJobEnabled:  "true",
-					LabelJobName:     "shared-job",
-					LabelJobSchedule: "0 3 * * *", // Different schedule!
+					schema.LabelJobEnabled:  "true",
+					schema.LabelJobName:     "shared-job",
+					schema.LabelJobSchedule: "0 3 * * *", // Different schedule!
 				},
 				Meta: map[string]string{},
 			},
@@ -292,8 +292,8 @@ func TestDiscoverJobs_ConflictingSchedule(t *testing.T) {
 	}
 
 	ve := validationErrors[0]
-	if ve.Field != LabelJobSchedule {
-		t.Errorf("Field = %q, want %q", ve.Field, LabelJobSchedule)
+	if ve.Field != schema.LabelJobSchedule {
+		t.Errorf("Field = %q, want %q", ve.Field, schema.LabelJobSchedule)
 	}
 	if !containsSubstring(ve.Message, "conflicting") {
 		t.Errorf("Message should contain 'conflicting': %q", ve.Message)
@@ -317,8 +317,8 @@ func TestDiscoverJobs_VolumeAttachment(t *testing.T) {
 				ID:   "postgres-1",
 				Name: "postgres",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
-					LabelJobName:    "backup-job",
+					schema.LabelJobEnabled: "true",
+					schema.LabelJobName:    "backup-job",
 				},
 				Meta: map[string]string{},
 			},
@@ -327,9 +327,9 @@ func TestDiscoverJobs_VolumeAttachment(t *testing.T) {
 				ID:   "pgdata",
 				Name: "pgdata",
 				Labels: map[string]string{
-					LabelJobAttach:    "backup-job",
-					LabelJobMountPath: "/var/lib/postgresql/data",
-					LabelJobMountMode: "ro",
+					schema.LabelJobAttach:    "backup-job",
+					schema.LabelJobMountPath: "/var/lib/postgresql/data",
+					schema.LabelJobMountMode: "ro",
 				},
 				Meta: map[string]string{},
 			},
@@ -374,8 +374,8 @@ func TestDiscoverJobs_VolumeDefaultMountPath(t *testing.T) {
 				ID:   "app-1",
 				Name: "app",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
-					LabelJobName:    "backup",
+					schema.LabelJobEnabled: "true",
+					schema.LabelJobName:    "backup",
 				},
 				Meta: map[string]string{},
 			},
@@ -384,7 +384,7 @@ func TestDiscoverJobs_VolumeDefaultMountPath(t *testing.T) {
 				ID:   "myvolume",
 				Name: "myvolume",
 				Labels: map[string]string{
-					LabelJobAttach: "backup",
+					schema.LabelJobAttach: "backup",
 					// No mount path - should default to /mnt/{volume_name}
 				},
 				Meta: map[string]string{},
@@ -408,8 +408,8 @@ func TestDiscoverJobs_VolumeDefaultMountPath(t *testing.T) {
 	if vol.MountPath != "/mnt/myvolume" {
 		t.Errorf("MountPath = %q, want default %q", vol.MountPath, "/mnt/myvolume")
 	}
-	if vol.Mode != jobs.DefaultMountMode {
-		t.Errorf("Mode = %q, want default %q", vol.Mode, jobs.DefaultMountMode)
+	if vol.Mode != schema.DefaultJobMountMode() {
+		t.Errorf("Mode = %q, want default %q", vol.Mode, schema.DefaultJobMountMode())
 	}
 }
 
@@ -422,7 +422,7 @@ func TestDiscoverJobs_VolumeReferencesUnknownJob(t *testing.T) {
 				ID:   "orphan-vol",
 				Name: "orphan-vol",
 				Labels: map[string]string{
-					LabelJobAttach: "nonexistent-job",
+					schema.LabelJobAttach: "nonexistent-job",
 				},
 				Meta: map[string]string{},
 			},
@@ -442,8 +442,8 @@ func TestDiscoverJobs_VolumeReferencesUnknownJob(t *testing.T) {
 	}
 
 	ve := validationErrors[0]
-	if ve.Field != LabelJobAttach {
-		t.Errorf("Field = %q, want %q", ve.Field, LabelJobAttach)
+	if ve.Field != schema.LabelJobAttach {
+		t.Errorf("Field = %q, want %q", ve.Field, schema.LabelJobAttach)
 	}
 	if !containsSubstring(ve.Message, "unknown job") {
 		t.Errorf("Message should contain 'unknown job': %q", ve.Message)
@@ -459,8 +459,8 @@ func TestDiscoverJobs_InvalidMountMode(t *testing.T) {
 				ID:   "app-1",
 				Name: "app",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
-					LabelJobName:    "backup",
+					schema.LabelJobEnabled: "true",
+					schema.LabelJobName:    "backup",
 				},
 				Meta: map[string]string{},
 			},
@@ -469,8 +469,8 @@ func TestDiscoverJobs_InvalidMountMode(t *testing.T) {
 				ID:   "vol-1",
 				Name: "vol-1",
 				Labels: map[string]string{
-					LabelJobAttach:    "backup",
-					LabelJobMountMode: "invalid",
+					schema.LabelJobAttach:    "backup",
+					schema.LabelJobMountMode: "invalid",
 				},
 				Meta: map[string]string{},
 			},
@@ -487,16 +487,16 @@ func TestDiscoverJobs_InvalidMountMode(t *testing.T) {
 	}
 
 	ve := validationErrors[0]
-	if ve.Field != LabelJobMountMode {
-		t.Errorf("Field = %q, want %q", ve.Field, LabelJobMountMode)
+	if ve.Field != schema.LabelJobMountMode {
+		t.Errorf("Field = %q, want %q", ve.Field, schema.LabelJobMountMode)
 	}
 
 	// Volume should still be attached with default mode
 	if len(foundJobs) != 1 || len(foundJobs[0].AttachVolumes) != 1 {
 		t.Fatal("job should have 1 attached volume")
 	}
-	if foundJobs[0].AttachVolumes[0].Mode != jobs.DefaultMountMode {
-		t.Errorf("Mode = %q, want default %q", foundJobs[0].AttachVolumes[0].Mode, jobs.DefaultMountMode)
+	if foundJobs[0].AttachVolumes[0].Mode != schema.DefaultJobMountMode() {
+		t.Errorf("Mode = %q, want default %q", foundJobs[0].AttachVolumes[0].Mode, schema.DefaultJobMountMode())
 	}
 }
 
@@ -510,9 +510,9 @@ func TestDiscoverJobs_StackResolution(t *testing.T) {
 		{
 			name: "bosun.stack takes precedence",
 			labels: map[string]string{
-				LabelJobEnabled: "true",
-				LabelJobName:    "job",
-				LabelStack:      "custom-stack",
+				schema.LabelJobEnabled: "true",
+				schema.LabelJobName:    "job",
+				LabelStack:             "custom-stack",
 			},
 			meta: map[string]string{
 				"compose.project": "compose-project",
@@ -522,8 +522,8 @@ func TestDiscoverJobs_StackResolution(t *testing.T) {
 		{
 			name: "falls back to compose.project",
 			labels: map[string]string{
-				LabelJobEnabled: "true",
-				LabelJobName:    "job",
+				schema.LabelJobEnabled: "true",
+				schema.LabelJobName:    "job",
 			},
 			meta: map[string]string{
 				"compose.project": "my-compose",
@@ -533,8 +533,8 @@ func TestDiscoverJobs_StackResolution(t *testing.T) {
 		{
 			name: "no stack when not set",
 			labels: map[string]string{
-				LabelJobEnabled: "true",
-				LabelJobName:    "job",
+				schema.LabelJobEnabled: "true",
+				schema.LabelJobName:    "job",
 			},
 			meta:          map[string]string{},
 			expectedStack: "",
@@ -587,8 +587,8 @@ func TestDiscoverJobs_IgnoresDisabledContainers(t *testing.T) {
 				ID:   "enabled-1",
 				Name: "enabled",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
-					LabelJobName:    "enabled-job",
+					schema.LabelJobEnabled: "true",
+					schema.LabelJobName:    "enabled-job",
 				},
 				Meta: map[string]string{},
 			},
@@ -597,8 +597,8 @@ func TestDiscoverJobs_IgnoresDisabledContainers(t *testing.T) {
 				ID:   "disabled-1",
 				Name: "disabled",
 				Labels: map[string]string{
-					LabelJobEnabled: "false",
-					LabelJobName:    "disabled-job",
+					schema.LabelJobEnabled: "false",
+					schema.LabelJobName:    "disabled-job",
 				},
 				Meta: map[string]string{},
 			},
@@ -607,7 +607,7 @@ func TestDiscoverJobs_IgnoresDisabledContainers(t *testing.T) {
 				ID:   "no-label-1",
 				Name: "no-label",
 				Labels: map[string]string{
-					LabelJobName: "no-enabled-job",
+					schema.LabelJobName: "no-enabled-job",
 					// Missing bosun.job.enabled
 				},
 				Meta: map[string]string{},
@@ -643,8 +643,8 @@ func TestDiscoverJobs_ContextCancellation(t *testing.T) {
 				ID:   "container-1",
 				Name: "app",
 				Labels: map[string]string{
-					LabelJobEnabled: "true",
-					LabelJobName:    "job",
+					schema.LabelJobEnabled: "true",
+					schema.LabelJobName:    "job",
 				},
 				Meta: map[string]string{},
 			},
@@ -676,7 +676,7 @@ func TestIsJobEnabled(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.value, func(t *testing.T) {
-			lbls := map[string]string{LabelJobEnabled: tt.value}
+			lbls := map[string]string{schema.LabelJobEnabled: tt.value}
 			result := isJobEnabled(lbls)
 			if result != tt.expected {
 				t.Errorf("isJobEnabled(%q) = %v, want %v", tt.value, result, tt.expected)

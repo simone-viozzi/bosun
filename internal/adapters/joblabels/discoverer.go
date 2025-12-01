@@ -6,25 +6,14 @@ import (
 	"strings"
 
 	"github.com/robfig/cron/v3"
+	"github.com/simone-viozzi/bosun/internal/config/schema"
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
 	"github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
 )
 
-// Label keys for job configuration.
+// Stack labels used for job grouping.
 const (
-	// Container labels
-	LabelJobEnabled     = "bosun.job.enabled"
-	LabelJobName        = "bosun.job.name"
-	LabelJobSchedule    = "bosun.job.schedule"
-	LabelJobWorkerImage = "bosun.job.worker.image"
-
-	// Volume labels
-	LabelJobAttach    = "bosun.job.attach"
-	LabelJobMountPath = "bosun.job.mount.path"
-	LabelJobMountMode = "bosun.job.mount.mode"
-
-	// Stack labels
 	LabelStack          = "bosun.stack"
 	LabelComposeProject = "com.docker.compose.project"
 )
@@ -68,13 +57,13 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 		}
 
 		// Get job name - required when enabled
-		jobName := entity.Labels[LabelJobName]
+		jobName := entity.Labels[schema.LabelJobName]
 		if jobName == "" {
 			validationErrors = append(validationErrors, ports.ValidationError{
 				EntityKind: string(entity.Kind),
 				EntityID:   entity.ID,
 				EntityName: entity.Name,
-				Field:      LabelJobName,
+				Field:      schema.LabelJobName,
 				Message:    "job name is required when bosun.job.enabled=true",
 			})
 			continue
@@ -103,13 +92,13 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 		}
 
 		// Merge schedule (validate and detect conflicts)
-		if schedule := entity.Labels[LabelJobSchedule]; schedule != "" {
+		if schedule := entity.Labels[schema.LabelJobSchedule]; schedule != "" {
 			if err := d.validateCronExpression(schedule); err != nil {
 				validationErrors = append(validationErrors, ports.ValidationError{
 					EntityKind: string(entity.Kind),
 					EntityID:   entity.ID,
 					EntityName: entity.Name,
-					Field:      LabelJobSchedule,
+					Field:      schema.LabelJobSchedule,
 					Message:    fmt.Sprintf("invalid cron expression %q: %v", schedule, err),
 				})
 			} else if builder.schedule != "" && builder.schedule != schedule {
@@ -117,7 +106,7 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 					EntityKind: string(entity.Kind),
 					EntityID:   entity.ID,
 					EntityName: entity.Name,
-					Field:      LabelJobSchedule,
+					Field:      schema.LabelJobSchedule,
 					Message:    fmt.Sprintf("conflicting schedule %q (previously %q)", schedule, builder.schedule),
 				})
 			} else {
@@ -126,13 +115,13 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 		}
 
 		// Merge worker image (detect conflicts)
-		if workerImage := entity.Labels[LabelJobWorkerImage]; workerImage != "" {
+		if workerImage := entity.Labels[schema.LabelJobWorkerImage]; workerImage != "" {
 			if builder.workerImage != "" && builder.workerImage != workerImage {
 				validationErrors = append(validationErrors, ports.ValidationError{
 					EntityKind: string(entity.Kind),
 					EntityID:   entity.ID,
 					EntityName: entity.Name,
-					Field:      LabelJobWorkerImage,
+					Field:      schema.LabelJobWorkerImage,
 					Message:    fmt.Sprintf("conflicting worker image %q (previously %q)", workerImage, builder.workerImage),
 				})
 			} else {
@@ -149,7 +138,7 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 			continue
 		}
 
-		attachTo := entity.Labels[LabelJobAttach]
+		attachTo := entity.Labels[schema.LabelJobAttach]
 		if attachTo == "" {
 			continue
 		}
@@ -160,36 +149,37 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 				EntityKind: string(entity.Kind),
 				EntityID:   entity.ID,
 				EntityName: entity.Name,
-				Field:      LabelJobAttach,
+				Field:      schema.LabelJobAttach,
 				Message:    fmt.Sprintf("volume references unknown job %q", attachTo),
 			})
 			continue
 		}
 
-		mountPath := entity.Labels[LabelJobMountPath]
+		mountPath := entity.Labels[schema.LabelJobMountPath]
 		if mountPath == "" {
 			// Default mount path based on volume name
 			mountPath = "/mnt/" + entity.Name
 		}
 
-		mode := entity.Labels[LabelJobMountMode]
+		mode := entity.Labels[schema.LabelJobMountMode]
+		normalizedMode, valid := schema.NormalizeMountMode(mode)
 		if mode == "" {
-			mode = jobs.DefaultMountMode // "ro"
-		} else if mode != "ro" && mode != "rw" {
+			normalizedMode = schema.DefaultJobMountMode()
+		} else if !valid {
 			validationErrors = append(validationErrors, ports.ValidationError{
 				EntityKind: string(entity.Kind),
 				EntityID:   entity.ID,
 				EntityName: entity.Name,
-				Field:      LabelJobMountMode,
+				Field:      schema.LabelJobMountMode,
 				Message:    fmt.Sprintf("invalid mount mode %q, must be 'ro' or 'rw'", mode),
 			})
-			mode = jobs.DefaultMountMode
+			normalizedMode = schema.DefaultJobMountMode()
 		}
 
 		volumeAttachments[attachTo] = append(volumeAttachments[attachTo], jobs.VolumeAttachment{
 			Name:      entity.Name,
 			MountPath: mountPath,
-			Mode:      mode,
+			Mode:      normalizedMode,
 		})
 	}
 
@@ -200,12 +190,12 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 		// Apply defaults
 		schedule := builder.schedule
 		if schedule == "" {
-			schedule = jobs.DefaultSchedule
+			schedule = schema.DefaultJobSchedule()
 		}
 
 		workerImage := builder.workerImage
 		if workerImage == "" {
-			workerImage = jobs.DefaultWorkerImage
+			workerImage = schema.DefaultJobWorkerImage()
 		}
 
 		// Collect stack names as slice
@@ -241,8 +231,8 @@ type jobBuilder struct {
 }
 
 // isJobEnabled checks if the bosun.job.enabled label is set to true.
-func isJobEnabled(labels map[string]string) bool {
-	val, ok := labels[LabelJobEnabled]
+func isJobEnabled(lbls map[string]string) bool {
+	val, ok := lbls[schema.LabelJobEnabled]
 	if !ok {
 		return false
 	}
