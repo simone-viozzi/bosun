@@ -13,6 +13,12 @@ repos:
         language: system
         pass_filenames: false
         types: [go]
+      - id: lint
+        name: lint
+        entry: make lint
+        language: system
+        pass_filenames: false
+        types: [go]
   - repo: https://github.com/simone-viozzi/rusty-todo-md-pre-commit.git
     rev: v1.10.2
     hooks:
