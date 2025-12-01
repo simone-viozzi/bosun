@@ -26,10 +26,10 @@ Validates Bosun configuration from Docker labels and files. Checks for typos, ty
 - `-c, --config <path>`: Path to config file
 - `--stopped`: Include stopped containers (default: false)
 
-**Exit Codes**:
-- `0`: Validation passed
-- `1`: Validation failed (invalid config)
-- `2`: Runtime error (Docker unavailable)
+**Exit Codes** (standardized in `internal/cmd/exitcodes.go`):
+- `0` (ExitSuccess): Validation passed
+- `1` (ExitRuntimeError): Runtime error (Docker unavailable, I/O failure)
+- `2` (ExitValidationError): Validation failed (invalid config, missing fields)
 
 **Output Examples**:
 
@@ -105,29 +105,31 @@ Captures a snapshot of all Docker entities (containers, volumes, networks) with 
 - Non-zero exit code on failure
 
 ### `bosun plan list`
-Lists all backup jobs discovered from Docker container and volume labels.
+Lists all jobs discovered from Docker container and volume labels.
 
-**Usage**: `bosun plan list [--format <fmt>] [--stopped] [--stack <name>]`
+**Usage**: `bosun plan list [--format <fmt>] [--stopped] [--stack <name>] [--project <name>]`
 
 **Flags**:
 - `-f, --format <fmt>`: Output format: `text` (default), `json`, `yaml`
 - `--stopped`: Include stopped containers in discovery (default: false)
-- `--stack <name>`: Filter jobs by stack name
+- `--stack <name>`: Filter jobs by bosun.stack label value
+- `--project <name>`: Filter jobs by Docker Compose project name (com.docker.compose.project)
 
-**Exit Codes**:
-- `0`: Success
-- `1`: Validation error
-- `2`: Docker unavailable
-- `3`: Internal error
+**Exit Codes** (standardized):
+- `0` (ExitSuccess): Success
+- `1` (ExitRuntimeError): Docker unavailable, internal error
+- `2` (ExitValidationError): Validation errors in labels
 
 ### `bosun plan show <job-name>`
-Shows the execution plan for a specific backup job.
+Shows the execution plan for a specific job.
 
-**Usage**: `bosun plan show <job-name> [--format <fmt>] [--stopped]`
+**Usage**: `bosun plan show <job-name> [--format <fmt>] [--stopped] [--project <name>] [--stack <name>]`
 
 **Flags**:
 - `-f, --format <fmt>`: Output format: `text` (default), `json`, `yaml`
 - `--stopped`: Include stopped containers in discovery (default: false)
+- `--project <name>`: Filter by Docker Compose project name
+- `--stack <name>`: Filter by bosun.stack label value
 
 **Output**: Shows execution steps including:
 1. Stop containers (if any are targeted)
@@ -135,6 +137,10 @@ Shows the execution plan for a specific backup job.
 3. Restart containers (future milestone)
 
 **Exit Codes**: Same as `plan list`
+
+**Error Handling**:
+- Job not found: Suggests running `bosun plan list` to see available jobs
+- Orphaned dependents: Explains why the plan cannot be generated
 
 ## Main Entry Point
 The main entry point (`cmd/bosun/main.go`) creates the root command with context and executes it with signal handling for graceful shutdown.
