@@ -14,11 +14,11 @@ const tagName = "bosun"
 //
 // Example input: "key=bosun.container.stop,scope=container,type=duration,doc='Grace period'"
 // Example output: map[string]string{"key": "bosun.container.stop", "scope": "container", ...}
-func parseTagValue(tagValue string) (map[string]string, error) {
+func parseTagValue(tagValue string) map[string]string {
 	result := make(map[string]string)
 
 	if tagValue == "" {
-		return result, nil
+		return result
 	}
 
 	// State machine to parse comma-separated key=value pairs,
@@ -84,7 +84,7 @@ func parseTagValue(tagValue string) (map[string]string, error) {
 		result[key] = value
 	}
 
-	return result, nil
+	return result
 }
 
 // parseFieldSpec creates a FieldSpec from parsed tag parts.
@@ -248,10 +248,7 @@ func parseStructFields(t reflect.Type, spec Spec) error {
 		}
 
 		// Parse tag value
-		tagParts, err := parseTagValue(tagValue)
-		if err != nil {
-			return fmt.Errorf("field %s: %w", field.Name, err)
-		}
+		tagParts := parseTagValue(tagValue)
 
 		// Create field spec
 		fs, err := parseFieldSpec(field.Name, field.Type, tagParts)

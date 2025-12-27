@@ -210,7 +210,7 @@ func validateEntities(entities []dlabels.LabeledEntity, opts ValidateOptions) Va
 	}
 
 	// Collect all entity configs for merging
-	var labelConfigs []schema.ConfigV1
+	labelConfigs := make([]schema.ConfigV1, 0, len(entities))
 
 	for _, entity := range entities {
 		scope := entityKindToScope(entity.Kind)

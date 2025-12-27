@@ -57,6 +57,13 @@ func TestSelectorFilters(t *testing.T) {
 			StackFilter:    nil,
 		}
 
+		// Verify Prefixes and IncludeStopped are set correctly
+		if len(selector.Prefixes) != 1 || selector.Prefixes[0] != dlabels.DefaultLabelPrefix {
+			t.Errorf("Expected Prefixes=[%q], got %v", dlabels.DefaultLabelPrefix, selector.Prefixes)
+		}
+		if selector.IncludeStopped {
+			t.Errorf("Expected IncludeStopped=false")
+		}
 		// Empty filters should not restrict matching
 		if len(selector.ProjectFilter) != 0 {
 			t.Errorf("Expected empty ProjectFilter, got %v", selector.ProjectFilter)
@@ -74,6 +81,13 @@ func TestSelectorFilters(t *testing.T) {
 			StackFilter:    []string{"production"},
 		}
 
+		// Verify Prefixes and IncludeStopped are set correctly
+		if len(selector.Prefixes) != 1 || selector.Prefixes[0] != dlabels.DefaultLabelPrefix {
+			t.Errorf("Expected Prefixes=[%q], got %v", dlabels.DefaultLabelPrefix, selector.Prefixes)
+		}
+		if selector.IncludeStopped {
+			t.Errorf("Expected IncludeStopped=false")
+		}
 		if len(selector.ProjectFilter) != 1 || selector.ProjectFilter[0] != "myproject" {
 			t.Errorf("Expected ProjectFilter=['myproject'], got %v", selector.ProjectFilter)
 		}
@@ -90,6 +104,13 @@ func TestSelectorFilters(t *testing.T) {
 			StackFilter:    []string{"staging", "production"},
 		}
 
+		// Verify Prefixes and IncludeStopped are set correctly
+		if len(selector.Prefixes) != 1 || selector.Prefixes[0] != dlabels.DefaultLabelPrefix {
+			t.Errorf("Expected Prefixes=[%q], got %v", dlabels.DefaultLabelPrefix, selector.Prefixes)
+		}
+		if selector.IncludeStopped {
+			t.Errorf("Expected IncludeStopped=false")
+		}
 		if len(selector.ProjectFilter) != 2 {
 			t.Errorf("Expected 2 project filters, got %d", len(selector.ProjectFilter))
 		}

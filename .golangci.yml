@@ -19,13 +19,11 @@ linters:
     # Bug detection
     - bodyclose
     - nilerr
+    - errcheck
 
-    # TODO: Enable these linters after fixing existing issues
-    # - prealloc    # Performance: pre-allocate slices
-    # - unparam     # Maintainability: unused parameters
-  disable:
-    # TODO: Re-enable after addressing existing violations
-    - errcheck    # Many unchecked errors in test cleanup code
+    # Performance & maintainability
+    - prealloc    # Performance: pre-allocate slices
+    - unparam     # Maintainability: unused parameters
 
   settings:
     govet:
@@ -35,14 +33,10 @@ linters:
         # Too noisy for this project
         - shadow
         - fieldalignment
-        - unusedwrite    # Too noisy in tests
 
     staticcheck:
       checks:
         - "all"
-        - "-ST1000"      # Package comments - TODO: add later
-        - "-ST1016"      # Receiver names - TODO: fix later
-        - "-ST1022"      # Comment format - TODO: fix later
 
   exclusions:
     rules:

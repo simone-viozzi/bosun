@@ -23,10 +23,9 @@ func filterBosunLabels(labels map[string]string) map[string]string {
 
 // setField sets a field in the config struct using reflection.
 // It navigates through embedded structs to find the target field.
-func setField(cfg *schema.ConfigV1, fieldSpec schema.FieldSpec, value any) error {
+func setField(cfg *schema.ConfigV1, fieldSpec schema.FieldSpec, value any) {
 	v := reflect.ValueOf(cfg).Elem()
 	setFieldRecursive(v, fieldSpec.FieldName, value)
-	return nil
 }
 
 // setFieldRecursive recursively searches for and sets a field by name.
@@ -141,9 +140,7 @@ func FromLabels(spec schema.Spec, labels map[string]string, scope schema.Scope) 
 		}
 
 		// Set the field in the config
-		if err := setField(&cfg, fieldSpec, parsedValue); err != nil {
-			errs.AddTypeParseFailed(key, value, string(fieldSpec.Type), scope, err)
-		}
+		setField(&cfg, fieldSpec, parsedValue)
 	}
 
 	// Check for required fields

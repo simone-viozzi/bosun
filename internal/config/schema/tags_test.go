@@ -8,10 +8,9 @@ import (
 
 func TestParseTagValue(t *testing.T) {
 	tests := []struct {
-		name    string
-		input   string
-		want    map[string]string
-		wantErr bool
+		name  string
+		input string
+		want  map[string]string
 	}{
 		{
 			name:  "empty string",
@@ -89,11 +88,7 @@ func TestParseTagValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseTagValue(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseTagValue() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := parseTagValue(tt.input)
 			if len(got) != len(tt.want) {
 				t.Errorf("parseTagValue() got %d pairs, want %d", len(got), len(tt.want))
 				return

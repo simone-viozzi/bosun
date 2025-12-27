@@ -69,7 +69,7 @@ func (s *DockerLabelSource) snapshotContainers(ctx context.Context, sel ports.Se
 		return nil, err
 	}
 
-	var out []dlabels.LabeledEntity
+	out := make([]dlabels.LabeledEntity, 0, len(ctrs))
 	for _, c := range ctrs {
 		fl := FilterByPrefixes(c.Labels, sel.Prefixes)
 		if len(fl) == 0 {
@@ -110,7 +110,7 @@ func (s *DockerLabelSource) snapshotVolumes(ctx context.Context, sel ports.Selec
 		return nil, err
 	}
 
-	var out []dlabels.LabeledEntity
+	out := make([]dlabels.LabeledEntity, 0, len(vl.Volumes))
 	for _, v := range vl.Volumes {
 		fl := FilterByPrefixes(v.Labels, sel.Prefixes)
 		if len(fl) == 0 {
@@ -145,7 +145,7 @@ func (s *DockerLabelSource) snapshotNetworks(ctx context.Context, sel ports.Sele
 		return nil, err
 	}
 
-	var out []dlabels.LabeledEntity
+	out := make([]dlabels.LabeledEntity, 0, len(nets))
 	for _, n := range nets {
 		fl := FilterByPrefixes(n.Labels, sel.Prefixes)
 		if len(fl) == 0 {
@@ -170,26 +170,26 @@ func (s *DockerLabelSource) snapshotNetworks(ctx context.Context, sel ports.Sele
 }
 
 // Snapshot implements the LabelSource interface
-func (d *DockerLabelSource) Snapshot(ctx context.Context, sel ports.Selector) (dlabels.Snapshot, error) {
+func (s *DockerLabelSource) Snapshot(ctx context.Context, sel ports.Selector) (dlabels.Snapshot, error) {
 	g, ctx := errgroup.WithContext(ctx)
 
 	var containers, volumes, networks []dlabels.LabeledEntity
 
 	g.Go(func() error {
 		var err error
-		containers, err = d.snapshotContainers(ctx, sel)
+		containers, err = s.snapshotContainers(ctx, sel)
 		return err
 	})
 
 	g.Go(func() error {
 		var err error
-		volumes, err = d.snapshotVolumes(ctx, sel)
+		volumes, err = s.snapshotVolumes(ctx, sel)
 		return err
 	})
 
 	g.Go(func() error {
 		var err error
-		networks, err = d.snapshotNetworks(ctx, sel)
+		networks, err = s.snapshotNetworks(ctx, sel)
 		return err
 	})
 

@@ -58,10 +58,7 @@ func applyDefaults(v reflect.Value, t reflect.Type) error {
 		}
 
 		// Parse the tag to get the default value.
-		tagParts, err := parseTagValue(tagValue)
-		if err != nil {
-			return fmt.Errorf("field %s: %w", field.Name, err)
-		}
+		tagParts := parseTagValue(tagValue)
 
 		defaultStr, hasDefault := tagParts["default"]
 		if !hasDefault || defaultStr == "" {
@@ -81,7 +78,7 @@ func applyDefaults(v reflect.Value, t reflect.Type) error {
 		}
 
 		// Parse and set the default value.
-		if err := setDefaultValue(fieldVal, field.Type, configType, defaultStr, enumValues); err != nil {
+		if err := setDefaultValue(fieldVal, configType, defaultStr, enumValues); err != nil {
 			return fmt.Errorf("field %s: %w", field.Name, err)
 		}
 	}
@@ -90,7 +87,7 @@ func applyDefaults(v reflect.Value, t reflect.Type) error {
 }
 
 // setDefaultValue parses the default string and sets it on the field.
-func setDefaultValue(fieldVal reflect.Value, fieldType reflect.Type, configType ConfigType, defaultStr string, enumValues []string) error {
+func setDefaultValue(fieldVal reflect.Value, configType ConfigType, defaultStr string, enumValues []string) error {
 	if !fieldVal.CanSet() {
 		return fmt.Errorf("cannot set field value")
 	}

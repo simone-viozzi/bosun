@@ -51,12 +51,12 @@ func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 	for _, f := range files {
 		content, err := ComposeFS.ReadFile(filepath.Join("compose", f))
 		if err != nil {
-			os.RemoveAll(tmpDir)
+			_ = os.RemoveAll(tmpDir)
 			t.Fatalf("read compose %s: %v", f, err)
 		}
 		destPath := filepath.Join(tmpDir, f)
 		if err := os.WriteFile(destPath, content, 0644); err != nil {
-			os.RemoveAll(tmpDir)
+			_ = os.RemoveAll(tmpDir)
 			t.Fatalf("write compose %s: %v", f, err)
 		}
 	}
@@ -80,7 +80,7 @@ func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 
 	t.Logf("Starting compose stack %s with files: %v", project, files)
 	if err := cmd.Run(); err != nil {
-		os.RemoveAll(tmpDir)
+		_ = os.RemoveAll(tmpDir)
 		t.Fatalf("docker compose up failed: %v\nstdout: %s\nstderr: %s", err, stdout.String(), stderr.String())
 	}
 
@@ -89,8 +89,8 @@ func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 
 	// Register cleanup
 	t.Cleanup(func() {
-		st.Down(context.Background())
-		os.RemoveAll(tmpDir)
+		_ = st.Down(context.Background())
+		_ = os.RemoveAll(tmpDir)
 	})
 
 	return st
