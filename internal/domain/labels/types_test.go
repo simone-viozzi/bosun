@@ -40,11 +40,15 @@ func TestTypes(t *testing.T) {
 	}
 
 	// Test Snapshot
+	now := time.Now()
 	snapshot := Snapshot{
 		Entities: []LabeledEntity{entity},
-		TakenAt:  time.Now(),
+		TakenAt:  now,
 	}
 	if len(snapshot.Entities) != 1 {
 		t.Errorf("Expected snapshot to have 1 entity")
+	}
+	if snapshot.TakenAt != now {
+		t.Errorf("Expected snapshot.TakenAt to be %v, got %v", now, snapshot.TakenAt)
 	}
 }

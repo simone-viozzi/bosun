@@ -97,7 +97,7 @@ func generateMarkdown(spec schema.Spec, title string) ([]byte, error) {
 	scopeFields := spec.Scopes()
 
 	// Build sections in canonical order
-	var sections []ScopeSection
+	sections := make([]ScopeSection, 0, len(scopeOrder))
 	for _, scope := range scopeOrder {
 		fields, ok := scopeFields[scope]
 		if !ok || len(fields) == 0 {
