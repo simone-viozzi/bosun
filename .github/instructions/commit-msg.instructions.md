@@ -5,6 +5,7 @@ applyTo: "**/COMMIT_EDITMSG,**/.git/COMMIT_EDITMSG,**/.git/MERGE_MSG,**/.git/SQU
 # Commit message assistant (Conventional Commits + Chris Beams)
 
 When editing a commit message buffer:
+- **Write the commit directly in the `COMMIT_EDITMSG` file**, not in chat.
 - **Insert only the final commit text at the very top of the file.**
 - Do **not** modify or delete any lines starting with `#`.
 - Do **not** modify the cut line `------------------------ >8 ------------------------` or anything after it.
@@ -15,7 +16,7 @@ When editing a commit message buffer:
   Types: `feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
   ≤50 chars, imperative, no trailing period.
 - **Blank line**
-- **Body (wrap at 72):** what & why (not how), user impact, trade-offs; `Closes #123`.
+- **Body (wrap at 72):** what & why (not how), user impact, trade-offs; `Closes #123`. Use a bullet point list.
 - **Footer (optional):** `BREAKING CHANGE: ...`, co-authors, etc.
 
 **Mapping hints:** docs→`docs`; build/config→`build`; CI→`ci`; formatting-only→`style`; behavior-preserving→`refactor`; perf-only→`perf`.
@@ -24,6 +25,7 @@ When editing a commit message buffer:
 
 ## Correct placement example (how the buffer should look after your insertion)
 
+```.git/COMMIT_EDITMSG
 feat(instructions): add path-specific commit assistant for COMMIT_EDITMSG
 
 Explain placement-only edits, enforce 50/72, and keep comments/cut line intact.
@@ -32,19 +34,14 @@ Closes #123
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
 #
-# Date:      Thu Sep 25 23:08:54 2025 +0200
+# Date:      <...>
 #
-# On branch feat/docker/first-tests
+# On branch <...>
 # Changes to be committed:
-#	new file:   .github/instructions/commit-msg.instructions.md
 #	<...>
 #
 # ------------------------ >8 ------------------------
 # Do not modify or remove the line above.
 # Everything below it will be ignored.
-diff --git c/.github/instructions/commit-msg.instructions.md i/.github/instructions/commit-msg.instructions.md
-new file mode 100644
-index 0000000..66b0347
---- /dev/null
-+++ i/.github/instructions/commit-msg.instructions.md
-<diffs that the agent should read>
+<diffs that the agent MUST read>
+```
