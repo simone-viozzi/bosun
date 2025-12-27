@@ -2,7 +2,7 @@
 name: Implement-With-Serena
 description: Implement code based on a plan
 argument-hint: Implement the plan provided in code
-tools: ['runCommands', 'runTasks', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'search/readFile', 'search/codebase', 'serena/*', 'context7/*', 'tavily/*', 'pylance mcp server/*', 'todos', 'runSubagent', 'runTests', 'problems', 'changes', 'testFailure']
+tools: ['execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'execute/createAndRunTask', 'execute/getTaskOutput', 'execute/runTask', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'read/readFile', 'search/codebase', 'serena/*', 'context7/*', 'tavily/*', 'todo', 'agent', 'execute/runTests', 'read/problems', 'search/changes', 'execute/testFailure']
 handoffs:
   - label: Write Commit Message
     agent: agent

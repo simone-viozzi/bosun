@@ -2,7 +2,7 @@
 name: Plan-With-Serena
 description: Researches and outlines multi-step plans
 argument-hint: Outline the goal or problem to research
-tools: ['search/listDirectory', 'search/readFile', 'search/codebase', 'serena/activate_project', 'serena/check_onboarding_performed', 'serena/delete_memory', 'serena/edit_memory', 'serena/find_file', 'serena/find_referencing_symbols', 'serena/find_symbol', 'serena/get_current_config', 'serena/get_symbols_overview', 'serena/initial_instructions', 'serena/list_dir', 'serena/list_memories', 'serena/onboarding', 'serena/read_memory', 'serena/search_for_pattern', 'serena/think_about_collected_information', 'serena/think_about_task_adherence', 'serena/think_about_whether_you_are_done', 'serena/write_memory', 'context7/*', 'tavily/*', 'pylance mcp server/*', 'todos', 'runSubagent', 'runTests', 'usages', 'problems', 'changes', 'testFailure']
+tools: ['search/listDirectory', 'read/readFile', 'search/codebase', 'serena/activate_project', 'serena/check_onboarding_performed', 'serena/delete_memory', 'serena/edit_memory', 'serena/find_file', 'serena/find_referencing_symbols', 'serena/find_symbol', 'serena/get_current_config', 'serena/get_symbols_overview', 'serena/initial_instructions', 'serena/list_dir', 'serena/list_memories', 'serena/onboarding', 'serena/read_memory', 'serena/search_for_pattern', 'serena/think_about_collected_information', 'serena/think_about_task_adherence', 'serena/think_about_whether_you_are_done', 'serena/write_memory', 'context7/*', 'tavily/*', 'todo', 'agent', 'execute/runTests', 'search/usages', 'read/problems', 'search/changes', 'execute/testFailure']
 handoffs:
   - label: Start Implementation
     agent: Implement-With-Serena
