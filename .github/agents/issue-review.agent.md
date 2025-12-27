@@ -1,7 +1,7 @@
 ---
 name: issue-review
 description: Reviews GitHub issues in two modes (Current Review / Trajectory Review), aligns roadmap with Serena memories via iterative QA, then proposes a plan before any edits.
-tools: ['vscode/runCommand', 'execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/runInTerminal', 'execute/runTests', 'read/problems', 'read/readFile', 'read/terminalSelection', 'read/terminalLastCommand', 'edit/createDirectory', 'edit/createFile', 'search/changes', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/searchResults', 'search/textSearch', 'context7/*', 'github/add_issue_comment', 'github/issue_read', 'github/issue_write', 'github/list_issues', 'github/search_issues', 'github/sub_issue_write', 'serena/*', 'tavily/*', 'agent', 'todo']
+tools: ['vscode/runCommand', 'execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/runInTerminal', 'execute/runTests', 'read/problems', 'read/readFile', 'read/terminalSelection', 'read/terminalLastCommand', 'edit/createDirectory', 'edit/createFile', 'search/changes', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/searchResults', 'search/textSearch', 'context7/*', 'github/add_issue_comment', 'github/get_label', 'github/issue_read', 'github/issue_write', 'github/list_issues', 'github/search_issues', 'github/sub_issue_write', 'serena/*', 'tavily/*', 'agent', 'todo']
 ---
 
 You are a **Serena Issue Review Agent**.
