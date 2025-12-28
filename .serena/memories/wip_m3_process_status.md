@@ -4,7 +4,7 @@
 **Feature Branch**: `009-job-execution-mvp`
 **GitHub Issue**: #85 (M3: Job Execution MVP)
 
-## Current Phase: Research In Progress
+## Current Phase: RESEARCH COMPLETE - Ready for Planning
 
 ### Workflow Progress
 
@@ -12,9 +12,9 @@
 |------|-------|--------|--------|
 | **Chat 1** | `/speckit.specify` | ✅ Complete | `spec.md`, WIP memories |
 | **Chat 2** | Research #109 | ✅ Complete | `m3_compose_control_decision.md` |
-| **Chat 3** | Research #110 | ⏳ Not started | Worker architecture decision |
-| **Chat 4** | Research #117 | ⏳ Not started | Failure handling decision |
-| **Chat 5** | `/speckit.plan` | ⏳ Blocked | `plan.md`, `data-model.md` |
+| **Chat 3** | Research #110 | ✅ Complete | `m3_worker_contract.md` |
+| **Chat 4** | Research #117 | ✅ Complete | `m3_failure_handling.md` |
+| **Chat 5** | `/speckit.plan` | ⏳ Ready | `plan.md`, `data-model.md` |
 | **Chat 6** | `/speckit.tasks` | ⏳ Blocked | `tasks.md` |
 
 ## Created Artifacts
@@ -25,19 +25,20 @@
 
 ### Decision Memories: `.serena/memories/`
 - `m3_compose_control_decision.md` - **Decision: API + Labels + Topological Sort**
+- `m3_worker_contract.md` - **Decision: BOSUN_* env vars, SIGTERM→SIGKILL, BYOI**
+- `m3_failure_handling.md` - **Decision: 30s timeouts, always restart, pre-validate image**
 - `wip_research_watchtower.md` - Watchtower patterns (complete)
 - `wip_research_portainer.md` - Portainer patterns (complete)
 
 ### WIP Research Memories: `.serena/memories/`
-- `wip_research_110_worker_architecture.md` - Context for Chat 3
-- `wip_research_117_failure_handling.md` - Context for Chat 4
+- All WIP research memories cleaned up (converted to decision memories)
 
 ## GitHub Sub-Issues (12 total)
 
-### Research (must complete first)
+### Research (ALL COMPLETE)
 - [x] #109 - Compose Control Strategy → **Decision: Docker API + Labels** (closed)
-- [ ] #110 - Worker Architecture (signals, base images)
-- [ ] #117 - Failure Handling (timeouts, rollback)
+- [x] #110 - Worker Architecture → **Decision: BOSUN_* env, SIGTERM→SIGKILL, BYOI** (closed)
+- [x] #117 - Failure Handling → **Decision: 30s timeouts, always restart, pre-validate** (to close)
 
 ### Future (created from research)
 - [ ] #125 - Add Compose v2 library support for complex stacks
@@ -59,87 +60,64 @@
 - [ ] #123 - M3 Integration tests
 - [ ] #120 - M3 Basic docs update
 
-## [NEEDS CLARIFICATION] Summary (6 remaining, 2 resolved)
+## [NEEDS CLARIFICATION] Summary - ALL RESOLVED ✅
 
-### ~~Research #109 - Compose Control~~ ✅ RESOLVED
+### Research #109 - Compose Control ✅ RESOLVED
 | FR | Question | Resolution |
 |----|----------|------------|
-| ~~FR-003~~ | ~~Container dependency order~~ | Topological sort on `com.docker.compose.depends_on` |
-| ~~FR-004~~ | ~~Health check waiting~~ | Not in M3 (documented limitation), #125 for future | |
-| FR-004 | How to wait for health checks during startup |
+| FR-003 | Container dependency order | Topological sort on `com.docker.compose.depends_on` |
+| FR-004 | Health check waiting | Not in M3 (documented limitation), #125 for future |
 
-### Research #110 - Worker Architecture
-| FR | Question |
-|----|----------|
-| FR-010 | What environment variables to inject (BOSUN_JOB_NAME, etc.) |
-| FR-011 | Signal protocol for timeouts (SIGTERM → SIGKILL?) |
-| FR-012 | Container cleanup strategy (keep on failure?) |
+### Research #110 - Worker Architecture ✅ RESOLVED
+| FR | Question | Resolution |
+|----|----------|------------|
+| FR-010 | Environment variables | BOSUN_JOB_NAME, BOSUN_RUN_ID, BOSUN_STACK, BOSUN_DRY_RUN + label pass-through |
+| FR-011 | Signal protocol | SIGTERM → 10s grace → SIGKILL (Docker standard) |
+| FR-012 | Container cleanup | Always remove; `--keep-failed-worker` flag to preserve |
 
-### Research #117 - Failure Handling
-| FR | Question |
-|----|----------|
-| FR-005 | Default timeouts for stop/start, per-job config |
-| FR-014 | Stack restart policy when worker fails |
-| FR-023 | Pre-pull/validate worker image before stopping stack |
+### Research #117 - Failure Handling ✅ RESOLVED
+| FR | Question | Resolution |
+|----|----------|------------|
+| FR-005 | Default timeouts | 30s stop/start, 1h worker, label-configurable |
+| FR-014 | Stack restart policy | Always restart; `--keep-stopped` to override |
+| FR-023 | Pre-validation | ImageInspect before stop (fail fast) |
 
-### Additional (lower priority)
-- Restart-on-failure configuration label
-- Maintenance mode feature
-- Log persistence vs display-only
-- Log streaming approach
-- Concurrency/locking for M3
+### Additional Clarifications ✅ RESOLVED
+| Question | Resolution |
+|----------|------------|
+| Restart-on-failure config | `--keep-stopped` CLI flag |
+| Maintenance mode | Use `--keep-stopped` flag |
+| Log persistence | Display only in M3, persistence in M5 |
+| Log streaming | Real-time via Docker attach |
+| Concurrency/locking | No locking in M3, deferred to M4 |
 
 ## Next Steps
 
-### Chat 2 Prompt
+### Chat 5 - Planning (NEXT)
 ```
-Research for M3 spec 009-job-execution-mvp.
+Run `/speckit.plan` for spec 009-job-execution-mvp.
 
-Read: .serena/memories/wip_research_109_compose_control.md
+Input: specs/009-job-execution-mvp/spec.md (all clarifications resolved)
 
-Question: Docker API vs docker compose CLI for stack control?
-
-Tasks:
-- Research Compose dependency handling
-- Review Portainer/Dockge approaches
-- Prototype both options if needed
-- Make decision with rationale
+Reference memories:
+- .serena/memories/m3_compose_control_decision.md
+- .serena/memories/m3_worker_contract.md
+- .serena/memories/m3_failure_handling.md
 
 Output:
-1. Update wip_research_109_compose_control.md with findings
-2. Create final memory: m3_compose_control_decision.md
+1. plan.md - Implementation plan with component architecture
+2. data-model.md - Domain types and interfaces
 ```
 
-### Chat 3 Prompt
+### Chat 6 - Tasks
 ```
-Research for M3 spec 009-job-execution-mvp.
+Run `/speckit.tasks` for spec 009-job-execution-mvp.
 
-Read: .serena/memories/wip_research_110_worker_architecture.md
-
-Question: Worker contract - env vars, signals, cleanup, base images?
+Input: specs/009-job-execution-mvp/plan.md
 
 Output:
-1. Update wip_research_110_worker_architecture.md with findings
-2. Create final memory: m3_worker_contract.md
+1. tasks.md - GitHub-ready task list for all sub-issues
 ```
-
-### Chat 4 Prompt
-```
-Research for M3 spec 009-job-execution-mvp.
-
-Read: .serena/memories/wip_research_117_failure_handling.md
-(Uses Chat 2 outcome for API vs CLI context)
-
-Question: Timeouts, failure behavior, restart policy?
-
-Output:
-1. Update wip_research_117_failure_handling.md with findings
-2. Create final memory: m3_failure_handling.md
-3. Update spec.md to resolve [NEEDS CLARIFICATION] markers
-```
-
-### Chat 5
-Run `/speckit.plan` after all research is complete.
 
 ## Dependencies
 

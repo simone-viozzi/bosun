@@ -1,6 +1,6 @@
 # WIP Research: Worker Container Architecture (#110)
 
-**Status**: NOT STARTED
+**Status**: ✅ COMPLETE
 **GitHub Issue**: #110
 **Spec Reference**: `specs/009-job-execution-mvp/spec.md`
 **Blocks**: M3 implementation (FR-010, FR-011, FR-012)
@@ -71,11 +71,15 @@ How can workers send signals back to Bosun?
 
 ## Research Tasks
 
-- [ ] Define minimum environment variable set
-- [ ] Decide on signal escalation for timeouts
-- [ ] Decide on container cleanup policy
-- [ ] Evaluate base image value vs complexity
-- [ ] Design worker communication (if any beyond exit code)
+- [x] Define minimum environment variable set → BOSUN_* prefix + label pass-through
+- [x] Decide on signal escalation for timeouts → SIGTERM → 10s grace → SIGKILL
+- [x] Decide on container cleanup policy → Always remove, `--keep-failed` flag
+- [x] Evaluate base image value vs complexity → BYOI only for M3
+- [x] Design worker communication (if any beyond exit code) → Exit codes only for M3
+
+## Final Decision
+
+See `m3_worker_contract.md` for complete decision documentation.
 
 ## Example Workers to Consider
 
