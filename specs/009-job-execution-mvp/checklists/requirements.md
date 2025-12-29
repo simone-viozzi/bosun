@@ -2,6 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2025-12-28
+**Updated**: 2025-12-28 (all research complete)
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -13,7 +14,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain *(8 markers remain - research required)*
+- [x] No [NEEDS CLARIFICATION] markers remain *(all 8 markers resolved via research)*
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -29,35 +30,35 @@
 - [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
-## Research Blockers
+## Research Blockers *(ALL RESOLVED)*
 
-The following [NEEDS CLARIFICATION] markers require research before implementation:
+### Research #109 - Compose Control Strategy ✅
+- [x] FR-003: Container dependency order handling → Docker API with topological sort
+- [x] FR-004: Health check waiting approach → Deferred to future milestone (M3 starts containers only)
+- **Decision memory**: `.serena/memories/m3_compose_control_decision.md`
 
-### Research #109 - Compose Control Strategy
-- [ ] FR-003: Container dependency order handling
-- [ ] FR-004: Health check waiting approach
+### Research #110 - Worker Architecture ✅
+- [x] FR-010: Environment variables to inject → BOSUN_JOB_NAME, BOSUN_STACK_NAME, BOSUN_VOLUMES, BOSUN_DRY_RUN
+- [x] FR-011: Signal protocol for timeouts → SIGTERM → 10s → SIGKILL
+- [x] FR-012: Container cleanup strategy → Remove on success, keep on failure with `--keep-failed-worker`
+- **Decision memory**: `.serena/memories/m3_worker_contract.md`
 
-### Research #110 - Worker Architecture
-- [ ] FR-010: Environment variables to inject
-- [ ] FR-011: Signal protocol for timeouts
-- [ ] FR-012: Container cleanup strategy
+### Research #117 - Failure Handling ✅
+- [x] FR-005: Timeout defaults and configuration → 30s stop/start, 1h worker, label-configurable
+- [x] FR-014: Stack restart policy on failure → Always restart, `--keep-stopped` to override
+- [x] FR-023: Pre-pull validation strategy → ImageInspect before stop (fail fast)
+- **Decision memory**: `.serena/memories/m3_failure_handling.md`
 
-### Research #117 - Failure Handling
-- [ ] FR-005: Timeout defaults and configuration
-- [ ] FR-014: Stack restart policy on failure
-- [ ] FR-023: Pre-pull validation strategy
+### Additional Clarifications ✅
+- [x] Restart-on-failure configuration → `--keep-stopped` CLI flag
+- [x] Maintenance mode feature → Use `--keep-stopped` flag
+- [x] Log persistence vs display-only → Display only in M3, persistence in M5
+- [x] Log streaming approach → Real-time streaming via Docker attach
+- [x] Concurrency/locking for M3 → No locking in M3, deferred to M4
 
-### Additional Clarifications
-- [ ] Restart-on-failure configuration label
-- [ ] Maintenance mode feature
-- [ ] Log persistence vs display-only
-- [ ] Log streaming approach
-- [ ] Concurrency/locking for M3
+## Status
 
-## Notes
-
-- Spec is **BLOCKED** pending research completion
-- Proceed with research chats (2, 3, 4) before `/speckit.plan`
+**✅ READY FOR PLANNING** - All research complete, proceed with `/speckit.plan`
 - Research outputs should be Serena memories for future context
 
 ## Next Steps

@@ -1,27 +1,61 @@
 # WIP: Milestone 3 Process Status
 
-**Last Updated**: 2025-12-28
+**Last Updated**: 2025-12-29
 **Feature Branch**: `009-job-execution-mvp`
 **GitHub Issue**: #85 (M3: Job Execution MVP)
 
-## Current Phase: RESEARCH COMPLETE - Ready for Planning
+## Current Phase: IMPLEMENTATION IN PROGRESS
 
-### Workflow Progress
+### Recent Progress (2025-12-29)
 
-| Chat | Phase | Status | Output |
-|------|-------|--------|--------|
-| **Chat 1** | `/speckit.specify` | ✅ Complete | `spec.md`, WIP memories |
-| **Chat 2** | Research #109 | ✅ Complete | `m3_compose_control_decision.md` |
-| **Chat 3** | Research #110 | ✅ Complete | `m3_worker_contract.md` |
-| **Chat 4** | Research #117 | ✅ Complete | `m3_failure_handling.md` |
-| **Chat 5** | `/speckit.plan` | ⏳ Ready | `plan.md`, `data-model.md` |
-| **Chat 6** | `/speckit.tasks` | ⏳ Blocked | `tasks.md` |
+**Bug Fix - COMPLETED:**
+- Fixed worker log capture deadlock in `internal/adapters/docker/worker/runner.go`
+  - Moved log capture AFTER `ContainerWait()` (was blocking before)
+  - Changed `Follow: false` since container is already stopped
+  - Memory `wip_m3_log_capture_bug` deleted (no longer needed)
+
+**T017.1 Signal Handler - COMPLETED:**
+- Implemented `SIGINT/SIGTERM` handler in `internal/cmd/job_run.go`
+- Context cancellation on signal → executor aborts → stack restart (via defer)
+- Exit code 16 (`ExitInterrupted`) on Ctrl+C
+
+**Phase 4 Dry Run - COMPLETED (T020-T024):**
+- Added `--dry-run` flag to preview execution plan
+- Added `--format` flag (text, json)
+- Implemented `printDryRunText()` and `printDryRunJSON()` formatters
+- `DryRunJob()` already existed in executor
+
+**Additional Fixes:**
+- Fixed deprecated `ImageInspectWithRaw` → `ImageInspect`
+- Fixed errcheck lint warning in `captureLogs()`
+- Fixed test count in `TestJobSpecByScope` (7 container-scope keys after M3 additions)
+- Changed `JobLabelConfig` timeout fields from `string` to `time.Duration`
+
+### Remaining MVP Tasks
+
+| Phase | Task | Description | Status |
+|-------|------|-------------|--------|
+| 3 | T012 | ComposeController unit tests | ✅ Complete |
+| 3 | T015 | WorkerRunner unit tests | ✅ Complete |
+| 3 | T018 | Executor unit tests | ✅ Complete |
+| 4 | T024 | Dry-run unit test | ✅ Complete |
+
+**MVP Phase 1-4 Implementation COMPLETE** (2025-12-29)
+
 
 ## Created Artifacts
 
 ### Spec Directory: `specs/009-job-execution-mvp/`
 - `spec.md` - Full specification with 5 user stories, 25 functional requirements
-- `checklists/requirements.md` - Quality checklist tracking 8 [NEEDS CLARIFICATION] markers
+- `plan.md` - Implementation plan with architecture, dependencies, phases
+- `data-model.md` - Domain types, port interfaces, error types
+- `research.md` - Consolidated research decisions
+- `quickstart.md` - Developer implementation guide
+- `tasks.md` - 57 tasks across 9 phases (24 MVP, 33 post-MVP)
+- `contracts/` - Go interface definitions
+  - `compose_controller.go` - ComposeController port (#115)
+  - `worker_runner.go` - WorkerRunner port (#116)
+  - `job_executor.go` - JobExecutor port (#114)
 
 ### Decision Memories: `.serena/memories/`
 - `m3_compose_control_decision.md` - **Decision: API + Labels + Topological Sort**
@@ -38,10 +72,12 @@
 ### Research (ALL COMPLETE)
 - [x] #109 - Compose Control Strategy → **Decision: Docker API + Labels** (closed)
 - [x] #110 - Worker Architecture → **Decision: BOSUN_* env, SIGTERM→SIGKILL, BYOI** (closed)
-- [x] #117 - Failure Handling → **Decision: 30s timeouts, always restart, pre-validate** (to close)
+- [x] #117 - Failure Handling → **Decision: 30s timeouts, always restart, pre-validate** (closed)
 
-### Future (created from research)
+### Deferred Features (M6+)
 - [ ] #125 - Add Compose v2 library support for complex stacks
+- [ ] #126 - Pass BOSUN_VOLUMES environment variable to worker containers
+- [ ] #127 - Wait for health checks during stack startup
 
 ### Port Definitions
 - [ ] #115 - ComposeController port interface
@@ -93,40 +129,67 @@
 
 ## Next Steps
 
-### Chat 5 - Planning (NEXT)
+### Chat 6 - Implementation (NEXT)
 ```
-Run `/speckit.plan` for spec 009-job-execution-mvp.
+Run `/speckit.implement` for spec 009-job-execution-mvp.
 
-Input: specs/009-job-execution-mvp/spec.md (all clarifications resolved)
+Input: specs/009-job-execution-mvp/tasks.md (Phases 1-4 = MVP)
 
-Reference memories:
-- .serena/memories/m3_compose_control_decision.md
-- .serena/memories/m3_worker_contract.md
-- .serena/memories/m3_failure_handling.md
+Reference:
+- specs/009-job-execution-mvp/plan.md (architecture)
+- specs/009-job-execution-mvp/data-model.md (types)
+- specs/009-job-execution-mvp/contracts/ (interfaces)
+- specs/009-job-execution-mvp/quickstart.md (guide)
 
-Output:
-1. plan.md - Implementation plan with component architecture
-2. data-model.md - Domain types and interfaces
+MVP Tasks (24 total):
+- Phase 1: Setup (T001-T005) - Domain types, error types, exit codes
+- Phase 2: Ports (T006-T008) - ComposeController, WorkerRunner, JobExecutor interfaces
+- Phase 3: US1 Execute Job (T009-T019) - Adapters, Executor, CLI
+- Phase 4: US2 Dry Run (T020-T024) - --dry-run, --format flags
 ```
 
-### Chat 6 - Tasks
-```
-Run `/speckit.tasks` for spec 009-job-execution-mvp.
+### Post-MVP (Phases 5-9)
+After MVP validation:
+- Phase 5: US3 Logs (T025-T029)
+- Phase 6: US4 Timeouts (T030-T035)
+- Phase 7: US5 Dependencies (T036-T039)
+- Phase 8: Integration Tests (T040-T050)
+- Phase 9: Polish (T051-T056)
 
-Input: specs/009-job-execution-mvp/plan.md
+## Analysis Summary (Chat 5)
 
-Output:
-1. tasks.md - GitHub-ready task list for all sub-issues
-```
+### Issues Found & Remediated
+| ID | Severity | Issue | Resolution |
+|----|----------|-------|------------|
+| I1 | HIGH | Env var naming (BOSUN_STACK_NAME vs BOSUN_STACK) | Fixed: Use BOSUN_STACK |
+| C1 | HIGH | Missing Ctrl+C task | Added T017.1 for signal handler |
+| I2 | MEDIUM | Flag naming (--keep-failed-worker) | Fixed: Use --keep-failed |
+| I3 | MEDIUM | Exit code collision (1-6) | Fixed: Use 10-16 range |
+| A1/A2 | MEDIUM | Health check ambiguity | Marked DEFERRED, created #127 |
+
+### Metrics
+- Requirements: 25 (24 covered, 1 deferred)
+- Tasks: 57 (24 MVP, 33 post-MVP)
+- Coverage: 96%
+- Constitution: All 5 principles PASS
 
 ## Dependencies
 
 ```
-#109 (Compose Strategy) ──┐
-#110 (Worker Architecture)├──► Implementation Tasks ──► #85 (M3 Complete)
-#117 (Failure Handling) ──┘
-        ↑
-   (depends on #109)
+Research Complete ──► Planning Complete ──► Implementation Ready
+     ↓                      ↓                      ↓
+#109, #110, #117      plan.md, tasks.md      Phase 1-4 (MVP)
+   (closed)              (done)                (next)
+```
+
+### Implementation Order
+```
+Phase 1 (Setup) ────► Phase 2 (Ports) ────► Phase 3 (US1) ────► Phase 4 (US2)
+   T001-T005            T006-T008            T009-T019           T020-T024
+   (parallel)           (parallel)           (sequential)        (sequential)
+                                                  │
+                                                  ▼
+                                            MVP COMPLETE
 ```
 
 ---

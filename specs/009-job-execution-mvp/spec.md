@@ -118,7 +118,7 @@ As a system administrator, I want the stack stop/start to respect container heal
 **Acceptance Scenarios**:
 
 1. **Given** a stack with `depends_on` relationships, **When** the stack is stopped, **Then** containers are stopped in reverse dependency order
-2. **Given** a stack with health checks, **When** the stack is started, **Then** Bosun waits for health checks to pass before reporting success
+2. ~~**Given** a stack with health checks, **When** the stack is started, **Then** Bosun waits for health checks to pass before reporting success~~ *(DEFERRED to M6+: M3 starts containers without waiting for health)*
 3. **Given** a container with a long graceful shutdown, **When** stopping, **Then** SIGTERM is sent first, with SIGKILL only after grace period
 
 ---
@@ -150,9 +150,9 @@ As a system administrator, I want the stack stop/start to respect container heal
 
 - **FR-001**: System MUST be able to stop all containers in a Compose stack (identified by project name)
 - **FR-002**: System MUST be able to start all containers in a Compose stack
-- **FR-003**: System MUST respect container dependency order during stop/start operations [NEEDS CLARIFICATION: Research #109 - Docker API vs CLI approach determines how dependencies are handled]
-- **FR-004**: System MUST wait for health checks during stack startup [NEEDS CLARIFICATION: Research #109 - depends on API vs CLI choice]
-- **FR-005**: System MUST support configurable timeouts for stop/start operations [NEEDS CLARIFICATION: Research #117 - what are reasonable defaults? per-job config?]
+- **FR-003**: System MUST respect container dependency order during stop/start operations *(DECIDED #109: Use Docker API with labels to determine topology; stop in reverse order, start in forward order)*
+- **FR-004**: ~~System MUST wait for health checks during stack startup~~ *(DEFERRED: M3 will NOT wait for health checks - just start containers; health check waiting deferred to M6+)*
+- **FR-005**: System MUST support configurable timeouts for stop/start operations *(DECIDED #117: 30s default for stop/start, configurable via `bosun.backup.stop-timeout` and `bosun.backup.start-timeout` labels, or `--stop-timeout`/`--start-timeout` CLI flags)*
 
 #### Worker Execution (GitHub #116, #119)
 
@@ -160,14 +160,14 @@ As a system administrator, I want the stack stop/start to respect container heal
 - **FR-007**: System MUST attach specified volumes to the worker container with correct mount modes (ro/rw)
 - **FR-008**: System MUST capture worker container exit code and propagate it as job success/failure
 - **FR-009**: System MUST capture worker container stdout/stderr logs
-- **FR-010**: System MUST pass job metadata to worker via environment variables [NEEDS CLARIFICATION: Research #110 - what metadata? BOSUN_JOB_NAME, BOSUN_VOLUMES, etc.?]
-- **FR-011**: System MUST support worker execution timeout with configurable duration [NEEDS CLARIFICATION: Research #110 - signal protocol? SIGTERM then SIGKILL?]
-- **FR-012**: System MUST clean up worker container after execution (remove container) [NEEDS CLARIFICATION: Research #110 - keep on failure for debugging?]
+- **FR-010**: System MUST pass job metadata to worker via environment variables *(DECIDED #110: Pass `BOSUN_JOB_NAME`, `BOSUN_RUN_ID`, `BOSUN_STACK`, `BOSUN_DRY_RUN` - no BOSUN_VOLUMES as workers should be pre-configured for their mount paths)*
+- **FR-011**: System MUST support worker execution timeout with configurable duration *(DECIDED #110: 1h default via `bosun.backup.timeout`, SIGTERM → 10s grace → SIGKILL)*
+- **FR-012**: System MUST clean up worker container after execution (remove container) *(DECIDED #110: Always remove on success; keep on failure if `--keep-failed` flag)*
 
 #### Orchestration (GitHub #114, #121)
 
 - **FR-013**: System MUST execute job steps in order: stop stack → run worker → start stack
-- **FR-014**: System MUST restart the stack even if worker fails (unless configured otherwise) [NEEDS CLARIFICATION: Research #117 - always restart? config option?]
+- **FR-014**: System MUST restart the stack even if worker fails (unless configured otherwise) *(DECIDED #117: Always restart by default; `--keep-stopped` CLI flag to skip restart)*
 - **FR-015**: System MUST report overall job status (success only if all steps succeed)
 - **FR-016**: System MUST support dry-run mode that shows planned actions without execution
 
@@ -182,7 +182,7 @@ As a system administrator, I want the stack stop/start to respect container heal
 #### Error Handling
 
 - **FR-022**: System MUST validate job exists before execution
-- **FR-023**: System MUST validate worker image is accessible before stopping stack [NEEDS CLARIFICATION: Research #117 - pre-pull image? or fail fast on create?]
+- **FR-023**: System MUST validate worker image is accessible before stopping stack *(DECIDED #117: Use ImageInspect to check local cache, then pull if needed - fail fast before stopping stack)*
 - **FR-024**: System MUST handle Ctrl+C gracefully (attempt stack restart before exit)
 - **FR-025**: System MUST provide clear error messages with actionable guidance
 
@@ -215,7 +215,9 @@ The following research questions MUST be resolved before implementation:
 - Review how other tools handle this (Portainer, Dockge)
 - Compare performance: API calls vs subprocess
 
-[NEEDS CLARIFICATION: Research required - see GitHub issue #109]
+**✅ RESOLVED** - See `.serena/memories/m3_compose_control_decision.md`
+
+**Decision**: Use Docker API directly with label-based discovery and topological sort for dependency ordering. Not using Compose CLI or library. Key rationale: avoids subprocess spawning, full control over execution, cleaner error handling. Dependencies determined from `com.docker.compose.depends_on` labels.
 
 ---
 
@@ -237,7 +239,9 @@ The following research questions MUST be resolved before implementation:
 - What notifications are useful? (progress, warnings, completion status)
 - Design example workers: pg_dump, MySQL dump, Restic backup, Redis RDB
 
-[NEEDS CLARIFICATION: Research required - see GitHub issue #110]
+**✅ RESOLVED** - See `.serena/memories/m3_worker_contract.md`
+
+**Decision**: BYOI (Bring Your Own Image) approach. Workers receive `BOSUN_*` environment variables and must respect SIGTERM for graceful shutdown. No callback mechanism in M3 - workers are fire-and-forget with exit code determining success. Timeout via SIGTERM → 10s → SIGKILL.
 
 ---
 
@@ -260,22 +264,29 @@ The following research questions MUST be resolved before implementation:
 - `up` fails after worker completed: retry? alert? manual intervention?
 - Rollback strategy: If worker fails, should we still `up` the stack?
 
-[NEEDS CLARIFICATION: Research required - see GitHub issue #117]
+**✅ RESOLVED** - See `.serena/memories/m3_failure_handling.md`
+
+**Decision**:
+- **Timeouts**: 30s default for stop/start, 1h for worker. Configurable via labels.
+- **Stop fails**: Abort job, do NOT proceed to worker. Stack may be in inconsistent state.
+- **Worker fails**: Still restart stack (availability > backup success). `--keep-stopped` flag to override.
+- **Start fails**: Report error, exit non-zero. No automatic retry in M3.
+- **Pre-validation**: ImageInspect before stopping stack - fail fast if worker image unavailable.
 
 ---
 
 ### Additional Clarifications Needed
 
-**Orchestration Behavior**:
-- [NEEDS CLARIFICATION: If worker fails, should stack always be restarted? Or respect a `bosun.job.restart-on-failure=false` label?]
-- [NEEDS CLARIFICATION: Should there be a "maintenance mode" where stack stays down after worker completes?]
+**Orchestration Behavior** *(RESOLVED)*:
+- ✅ **Worker failure**: Stack always restarted by default. `--keep-stopped` flag to skip restart.
+- ✅ **Maintenance mode**: Use `--keep-stopped` flag when stack should stay down after worker.
 
-**Logging & Observability**:
-- [NEEDS CLARIFICATION: Should logs be persisted to a file or only displayed? (M5 will add structured observability)]
-- [NEEDS CLARIFICATION: Real-time log streaming or collect-at-end?]
+**Logging & Observability** *(PARTIALLY RESOLVED)*:
+- ✅ **Log persistence**: M3 displays logs only (stdout/stderr to terminal). Log persistence deferred to M5.
+- ✅ **Log streaming**: Real-time streaming via Docker attach (not collect-at-end).
 
-**Concurrency & Locking**:
-- [NEEDS CLARIFICATION: Is any locking needed in M3, or defer entirely to M4?]
+**Concurrency & Locking** *(DEFERRED)*:
+- ✅ **M3 scope**: No locking in M3. User responsible for not running concurrent jobs on same stack. Full locking deferred to M4.
 
 ## Success Criteria *(mandatory)*
 

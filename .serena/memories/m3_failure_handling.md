@@ -331,14 +331,20 @@ type TimeoutError struct {
 }
 
 // Application-level exit codes (internal/cmd/exitcodes.go)
+// NOTE: M3 uses 10-16 range to avoid collision with existing codes (0-2)
 const (
-    ExitSuccess          = 0
-    ExitWorkerFailed     = 1
-    ExitStopFailed       = 2
-    ExitStartFailed      = 3
-    ExitTimeout          = 4
-    ExitImageNotFound    = 5
-    ExitConfigError      = 6
+    ExitSuccess       = 0
+    ExitRuntimeError  = 1   // Pre-existing
+    ExitValidationError = 2 // Pre-existing
+
+    // M3 additions (10-16 range)
+    ExitWorkerFailed  = 10
+    ExitStopFailed    = 11
+    ExitStartFailed   = 12
+    ExitTimeout       = 13
+    ExitImageNotFound = 14
+    ExitJobNotFound   = 15
+    ExitInterrupted   = 16
 )
 ```
 
