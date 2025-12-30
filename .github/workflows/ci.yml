@@ -15,6 +15,7 @@ jobs:
   history-cleanliness:
     name: Enforce history cleanliness
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout (full history)
@@ -74,6 +75,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: history-cleanliness
+    if: always() && (needs.history-cleanliness.result == 'success' || needs.history-cleanliness.result == 'skipped')
 
     steps:
     - uses: actions/checkout@v6
@@ -96,6 +98,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     needs: history-cleanliness
+    if: always() && (needs.history-cleanliness.result == 'success' || needs.history-cleanliness.result == 'skipped')
 
     steps:
     - uses: actions/checkout@v6
