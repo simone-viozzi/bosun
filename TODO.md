@@ -1,12 +1,9 @@
 # TODO
 ## internal/app/executor/executor.go
-* [internal/app/executor/executor.go:265](internal/app/executor/executor.go#L265): Add worker env vars from labels (bosun.job.worker.env.*)
+* [internal/app/executor/executor.go:270](internal/app/executor/executor.go#L270): Add worker env vars from labels (bosun.job.worker.env.*)
 
 ## internal/app/planner/planner.go
 * [internal/app/planner/planner.go:57](internal/app/planner/planner.go#L57): In future, verify all target containers are in this stack
-
-## internal/cmd/job_run.go
-* [internal/cmd/job_run.go:241](internal/cmd/job_run.go#L241): Parse timeout strings and set overrides
 
 ## internal/domain/labels/types.go
 * [internal/domain/labels/types.go:9](internal/domain/labels/types.go#L9): Consider a better way of handling shared label constants.

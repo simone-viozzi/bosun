@@ -8,6 +8,7 @@ package ports
 
 import (
 	"context"
+	"io"
 	"time"
 )
 
@@ -81,6 +82,11 @@ type WorkerConfig struct {
 	// DryRun indicates if this is a dry-run execution.
 	// Used for BOSUN_DRY_RUN env var.
 	DryRun bool
+
+	// LogWriter receives real-time log output during execution.
+	// If nil, logs are only captured in WorkerResult.Logs.
+	// If set, logs are streamed in real-time AND captured.
+	LogWriter io.Writer
 }
 
 // VolumeMount defines a volume attachment for the worker.

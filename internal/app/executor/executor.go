@@ -252,6 +252,11 @@ func (e *Executor) buildWorkerConfig(job jobs.Job, runID string, opts ports.Exec
 		config.Timeout = opts.TimeoutOverride
 	}
 
+	// Wire log streaming (Phase 5: US3)
+	if !opts.Quiet && opts.LogWriter != nil {
+		config.LogWriter = opts.LogWriter
+	}
+
 	// Convert volume attachments to mounts
 	config.Mounts = make([]ports.VolumeMount, len(job.AttachVolumes))
 	for i, vol := range job.AttachVolumes {

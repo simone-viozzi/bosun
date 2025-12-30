@@ -74,10 +74,23 @@ func (r *Runner) Run(ctx context.Context, config ports.WorkerConfig) (ports.Work
 		return ports.WorkerResult{}, fmt.Errorf("failed to start worker container: %w", err)
 	}
 
+	// Set up log buffer for capturing
+	var logBuf bytes.Buffer
+	var logWriter io.Writer = &logBuf
+
+	// If real-time streaming requested, use MultiWriter
+	if config.LogWriter != nil {
+		logWriter = io.MultiWriter(&logBuf, config.LogWriter)
+	}
+
+	// Start streaming logs in background
+	logDone := make(chan struct{})
+	go func() {
+		defer close(logDone)
+		r.streamLogs(ctx, containerID, logWriter)
+	}()
+
 	// Wait for container with timeout
-	// NOTE: We wait BEFORE capturing logs to enable proper timeout enforcement.
-	// ContainerLogs with Follow: true would block until container exits,
-	// preventing us from enforcing timeouts via context cancellation.
 	timeoutCtx, cancel := context.WithTimeout(ctx, config.Timeout)
 	defer cancel()
 
@@ -97,12 +110,8 @@ func (r *Runner) Run(ctx context.Context, config ports.WorkerConfig) (ports.Work
 		exitCode = int(status.StatusCode)
 	}
 
-	// Capture logs AFTER container exits (no Follow needed since container stopped)
-	logs, err := r.captureLogs(ctx, containerID)
-	if err != nil {
-		// Non-fatal - continue with execution
-		logs = fmt.Sprintf("(failed to capture logs: %v)", err)
-	}
+	// Wait for log streaming to complete
+	<-logDone
 
 	duration := time.Since(startTime)
 
@@ -113,7 +122,7 @@ func (r *Runner) Run(ctx context.Context, config ports.WorkerConfig) (ports.Work
 
 	return ports.WorkerResult{
 		ExitCode:    exitCode,
-		Logs:        logs,
+		Logs:        logBuf.String(),
 		ContainerID: containerID,
 		Duration:    duration,
 		TimedOut:    timedOut,
@@ -138,25 +147,22 @@ func (r *Runner) stopContainer(ctx context.Context, containerID string) int {
 	return inspect.State.ExitCode
 }
 
-// captureLogs captures stdout and stderr from a container.
-func (r *Runner) captureLogs(ctx context.Context, containerID string) (string, error) {
+// streamLogs streams stdout/stderr from a container to the writer.
+// This function blocks until the container exits or context is cancelled.
+func (r *Runner) streamLogs(ctx context.Context, containerID string, writer io.Writer) {
 	reader, err := r.docker.ContainerLogs(ctx, containerID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
-		Follow:     false, // Container already stopped; no streaming needed
+		Follow:     true, // Stream until container exits
 	})
 	if err != nil {
-		return "", err
+		return // Best effort - ignore errors
 	}
 	defer func() { _ = reader.Close() }()
 
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, reader)
-	if err != nil {
-		return buf.String(), err
-	}
-
-	return buf.String(), nil
+	// Docker multiplexes stdout/stderr with 8-byte header
+	// Use stdcopy.StdCopy to demux, or just copy raw for combined output
+	_, _ = io.Copy(writer, reader)
 }
 
 // convertMounts converts ports.VolumeMount to Docker mount format.

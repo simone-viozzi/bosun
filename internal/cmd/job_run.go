@@ -236,10 +236,32 @@ func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, er
 	executeOpts.KeepStopped = opts.keepStopped
 	executeOpts.KeepFailedWorker = opts.keepFailed
 	executeOpts.Quiet = opts.quiet
-	executeOpts.LogWriter = os.Stdout
+	if !opts.quiet {
+		executeOpts.LogWriter = os.Stdout
+	}
 
-	// TODO: Parse timeout strings and set overrides
-	// For M3 MVP, we'll use defaults
+	// Parse timeout strings and set overrides (Phase 6: US4)
+	if opts.timeout != "" {
+		d, err := time.ParseDuration(opts.timeout)
+		if err != nil {
+			return ExitValidationError, fmt.Errorf("invalid --timeout value %q: %w", opts.timeout, err)
+		}
+		executeOpts.TimeoutOverride = d
+	}
+	if opts.stopTimeout != "" {
+		d, err := time.ParseDuration(opts.stopTimeout)
+		if err != nil {
+			return ExitValidationError, fmt.Errorf("invalid --stop-timeout value %q: %w", opts.stopTimeout, err)
+		}
+		executeOpts.StopTimeoutOverride = d
+	}
+	if opts.startTimeout != "" {
+		d, err := time.ParseDuration(opts.startTimeout)
+		if err != nil {
+			return ExitValidationError, fmt.Errorf("invalid --start-timeout value %q: %w", opts.startTimeout, err)
+		}
+		executeOpts.StartTimeoutOverride = d
+	}
 
 	// Execute job
 	result, err := exec.ExecuteJob(ctx, *targetJob, executeOpts)

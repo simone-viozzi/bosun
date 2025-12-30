@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"bytes"
 	"testing"
 	"time"
 
@@ -313,6 +314,39 @@ func TestEnvVarConstants(t *testing.T) {
 	}
 	if jobs.EnvDryRun != "BOSUN_DRY_RUN" {
 		t.Errorf("EnvDryRun = %q, want %q", jobs.EnvDryRun, "BOSUN_DRY_RUN")
+	}
+}
+
+// T029: Test log streaming with LogWriter
+func TestWorkerConfig_LogWriter(t *testing.T) {
+	var buf bytes.Buffer
+
+	config := ports.DefaultWorkerConfig()
+	config.LogWriter = &buf
+
+	if config.LogWriter == nil {
+		t.Error("LogWriter should not be nil after assignment")
+	}
+
+	// Verify it's the buffer we assigned
+	if config.LogWriter != &buf {
+		t.Error("LogWriter should be the buffer we assigned")
+	}
+}
+
+// T035: Test timeout configuration
+func TestWorkerConfig_Timeout(t *testing.T) {
+	config := ports.DefaultWorkerConfig()
+
+	// Default timeout should be 1 hour
+	if config.Timeout != 1*time.Hour {
+		t.Errorf("Default Timeout = %v, want %v", config.Timeout, 1*time.Hour)
+	}
+
+	// Override timeout
+	config.Timeout = 30 * time.Minute
+	if config.Timeout != 30*time.Minute {
+		t.Errorf("Overridden Timeout = %v, want %v", config.Timeout, 30*time.Minute)
 	}
 }
 

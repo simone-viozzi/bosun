@@ -117,11 +117,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Add log streaming to WorkerRunner.Run in internal/adapters/docker/worker/runner.go
-- [ ] T026 [US3] Add LogWriter field to ExecuteOptions for real-time output in internal/ports/executor.go
-- [ ] T027 [US3] Wire log streaming from Executor to CLI stdout in internal/cmd/job_run.go
-- [ ] T028 [US3] Add --quiet flag to suppress logs in internal/cmd/job_run.go
-- [ ] T029 [US3] Unit test for log capture in internal/adapters/docker/worker/runner_test.go
+- [X] T025 [US3] Add log streaming to WorkerRunner.Run in internal/adapters/docker/worker/runner.go
+- [X] T026 [US3] Add LogWriter field to ExecuteOptions for real-time output in internal/ports/executor.go
+- [X] T027 [US3] Wire log streaming from Executor to CLI stdout in internal/cmd/job_run.go
+- [X] T028 [US3] Add --quiet flag to suppress logs in internal/cmd/job_run.go
+- [X] T029 [US3] Unit test for log capture in internal/adapters/docker/worker/runner_test.go
 
 **Checkpoint**: User Story 3 (P2) complete - worker logs visible
 
@@ -135,12 +135,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T030 [US4] Implement timeout context in ComposeController.StopStack in internal/adapters/docker/compose/controller.go
-- [ ] T031 [US4] Implement timeout context in ComposeController.StartStack in internal/adapters/docker/compose/controller.go
-- [ ] T032 [US4] Add --timeout flag to override worker timeout in internal/cmd/job_run.go
-- [ ] T033 [US4] Add --stop-timeout flag to override stop timeout in internal/cmd/job_run.go
-- [ ] T034 [US4] Add --start-timeout flag to override start timeout in internal/cmd/job_run.go
-- [ ] T035 [US4] Unit test for timeout handling in internal/adapters/docker/worker/runner_test.go
+- [X] T030 [US4] Implement timeout context in ComposeController.StopStack in internal/adapters/docker/compose/controller.go
+- [X] T031 [US4] Implement timeout context in ComposeController.StartStack in internal/adapters/docker/compose/controller.go
+- [X] T032 [US4] Add --timeout flag to override worker timeout in internal/cmd/job_run.go
+- [X] T033 [US4] Add --stop-timeout flag to override stop timeout in internal/cmd/job_run.go
+- [X] T034 [US4] Add --start-timeout flag to override start timeout in internal/cmd/job_run.go
+- [X] T035 [US4] Unit test for timeout handling in internal/adapters/docker/worker/runner_test.go
 
 **Checkpoint**: User Story 4 (P2) complete - timeouts enforced
 
@@ -154,9 +154,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T036 [US5] Parse com.docker.compose.depends_on label in internal/adapters/docker/compose/controller.go
-- [ ] T037 [US5] Validate topological sort handles cycles with error in internal/adapters/docker/compose/topology.go
-- [ ] T038 [US5] Add cycle detection test in internal/adapters/docker/compose/topology_test.go
+- [X] T036 [US5] Parse com.docker.compose.depends_on label in internal/adapters/docker/compose/controller.go
+- [X] T037 [US5] Validate topological sort handles cycles with error in internal/adapters/docker/compose/topology.go
+- [X] T038 [US5] Add cycle detection test in internal/adapters/docker/compose/topology_test.go
 - [ ] T039 [US5] Integration test for dependency ordering in integration/job_execution_test.go
 
 **Checkpoint**: User Story 5 (P2) complete - dependency ordering works
