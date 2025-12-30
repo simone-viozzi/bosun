@@ -55,7 +55,7 @@ Bosun is in active development. See the [Roadmap](#roadmap) section for the plan
 - ✅ Backup job model and label discovery
 - ✅ Job planner with execution plan generation
 - ✅ `bosun plan list` and `bosun plan show` CLI commands
-- 🚧 Backup execution (Milestone 3 - next)
+- ✅ Job execution with `bosun job run` (Milestone 3 complete)
 
 ## Getting Started
 
@@ -108,6 +108,21 @@ bosun plan list
 # Show execution plan for a job
 bosun plan show daily-backup
 
+# Execute a backup job
+bosun job run daily-backup
+
+# Execute with dry-run (preview without making changes)
+bosun job run daily-backup --dry-run
+
+# Execute with custom timeout
+bosun job run daily-backup --timeout 2h
+
+# Execute in quiet mode (suppress worker logs)
+bosun job run daily-backup --quiet
+
+# Keep stack stopped after job (maintenance mode)
+bosun job run daily-backup --keep-stopped
+
 # Validate all labels (config + job)
 bosun config validate
 
@@ -117,6 +132,41 @@ bosun labels snapshot
 # Include stopped containers
 bosun plan list --stopped
 ```
+
+### Job Execution
+
+The `bosun job run` command executes a backup job by:
+
+1. **Discovering** the job from Docker labels
+2. **Validating** the worker image exists
+3. **Stopping** the target Compose stack
+4. **Running** the worker container with attached volumes
+5. **Restarting** the stack (always, even on failure)
+
+**Key flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Preview execution plan without making changes |
+| `--timeout` | Worker execution timeout (e.g., `1h`, `30m`) |
+| `--stop-timeout` | Stack stop timeout (e.g., `30s`) |
+| `--start-timeout` | Stack restart timeout (e.g., `1m`) |
+| `--quiet` | Suppress worker log output |
+| `--keep-stopped` | Skip stack restart (for maintenance) |
+| `--keep-failed` | Preserve worker container on failure (for debugging) |
+| `--project` | Filter by Docker Compose project name |
+
+**Exit codes:**
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | Worker container failed |
+| 2 | Validation error |
+| 3 | Job not found |
+| 4 | Timeout |
+| 5 | Runtime error |
+| 130 | Interrupted (Ctrl+C) |
 
 ## Job Labels Reference
 

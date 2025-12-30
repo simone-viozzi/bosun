@@ -52,6 +52,7 @@ func NewJobRunCmd() *cobra.Command {
 		includeStopped bool
 		dryRun         bool
 		format         string
+		projectFilter  string
 	)
 
 	cmd := &cobra.Command{
@@ -94,7 +95,7 @@ Use --dry-run to preview the execution plan without making any changes.`,
 
 			// Handle dry-run mode
 			if dryRun {
-				return runDryRun(ctx, jobName, format, includeStopped)
+				return runDryRun(ctx, jobName, format, includeStopped, projectFilter)
 			}
 
 			exitCode, err := runJobRun(ctx, jobName, jobRunOptions{
@@ -107,6 +108,7 @@ Use --dry-run to preview the execution plan without making any changes.`,
 				includeStopped: includeStopped,
 				dryRun:         dryRun,
 				format:         format,
+				projectFilter:  projectFilter,
 			})
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -127,6 +129,7 @@ Use --dry-run to preview the execution plan without making any changes.`,
 	cmd.Flags().BoolVar(&includeStopped, "stopped", false, "Include stopped containers in discovery")
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Preview execution plan without running")
 	cmd.Flags().StringVar(&format, "format", "text", "Output format: text or json (for --dry-run)")
+	cmd.Flags().StringVar(&projectFilter, "project", "", "Filter jobs by Docker Compose project name")
 
 	return cmd
 }
@@ -141,6 +144,7 @@ type jobRunOptions struct {
 	includeStopped bool
 	dryRun         bool
 	format         string // "text" or "json"
+	projectFilter  string
 }
 
 // runJobRun executes the job run command logic.
@@ -183,6 +187,9 @@ func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, er
 	selector := ports.Selector{
 		Prefixes:       []string{dlabels.DefaultLabelPrefix},
 		IncludeStopped: opts.includeStopped,
+	}
+	if opts.projectFilter != "" {
+		selector.ProjectFilter = []string{opts.projectFilter}
 	}
 
 	// Get snapshot
@@ -321,7 +328,7 @@ func printExecutionResult(result ports.ExecutionResult) {
 }
 
 // runDryRun executes a dry-run preview of job execution.
-func runDryRun(ctx context.Context, jobName, format string, includeStopped bool) error {
+func runDryRun(ctx context.Context, jobName, format string, includeStopped bool, projectFilter string) error {
 	// Validate format
 	if format != "text" && format != "json" {
 		return fmt.Errorf("invalid format %q: must be 'text' or 'json'", format)
@@ -345,6 +352,9 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool)
 	selector := ports.Selector{
 		Prefixes:       []string{dlabels.DefaultLabelPrefix},
 		IncludeStopped: includeStopped,
+	}
+	if projectFilter != "" {
+		selector.ProjectFilter = []string{projectFilter}
 	}
 
 	// Get snapshot

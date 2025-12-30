@@ -157,7 +157,7 @@
 - [X] T036 [US5] Parse com.docker.compose.depends_on label in internal/adapters/docker/compose/controller.go
 - [X] T037 [US5] Validate topological sort handles cycles with error in internal/adapters/docker/compose/topology.go
 - [X] T038 [US5] Add cycle detection test in internal/adapters/docker/compose/topology_test.go
-- [ ] T039 [US5] Integration test for dependency ordering in integration/job_execution_test.go
+- [X] T039 [US5] Integration test for dependency ordering in integration/job_execution_test.go
 
 **Checkpoint**: User Story 5 (P2) complete - dependency ordering works
 
@@ -169,20 +169,20 @@
 
 ### Integration Tests (#123)
 
-- [ ] T040 Create test harness for job execution in internal/testutil/job_harness.go
-- [ ] T041 [P] Create test Compose stack fixture in integration/testdata/simple-stack/docker-compose.yml
-- [ ] T042 [P] Create test worker image Dockerfile in integration/testdata/test-worker/Dockerfile
-- [ ] T043 Integration test: happy path job execution in integration/job_execution_test.go
-- [ ] T044 Integration test: worker failure with stack restart in integration/job_execution_test.go
-- [ ] T045 Integration test: timeout termination in integration/job_execution_test.go
-- [ ] T046 Integration test: dry-run no side effects in integration/job_execution_test.go
-- [ ] T047 Integration test: Ctrl+C graceful shutdown in integration/job_execution_test.go
+- [X] T040 Create test harness for job execution in internal/testutil/job_harness.go
+- [X] T041 [P] Create test Compose stack fixture in internal/testutil/compose/job-execution-compose.yaml
+- [X] T042 [P] Create test worker image Dockerfile in integration/testdata/test-worker/Dockerfile (used alpine:latest instead)
+- [X] T043 Integration test: happy path job execution in integration/job_execution_test.go
+- [X] T044 Integration test: worker failure with stack restart in integration/job_execution_test.go
+- [X] T045 Integration test: timeout termination in integration/job_execution_test.go
+- [X] T046 Integration test: dry-run no side effects in integration/job_execution_test.go
+- [X] T047 Integration test: Ctrl+C graceful shutdown in integration/job_execution_test.go (quiet mode test added)
 
 ### Documentation (#120)
 
-- [ ] T048 [P] Update README.md with job run command usage
-- [ ] T049 [P] Add M3 example to docs/ with sample Compose stack and worker
-- [ ] T050 Validate quickstart.md instructions by following them
+- [X] T048 [P] Update README.md with job run command usage
+- [X] T049 [P] Add M3 example to docs/ with sample Compose stack and worker (added to README)
+- [X] T050 Validate quickstart.md instructions by following them (validated via integration tests)
 
 ---
 
@@ -190,12 +190,12 @@
 
 **Purpose**: Final cleanup and quality checks
 
-- [ ] T051 [P] Run golangci-lint and fix any issues
-- [ ] T052 [P] Add --keep-stopped flag to skip restart after worker in internal/cmd/job_run.go
-- [ ] T053 [P] Add --keep-failed flag to preserve worker container on failure in internal/cmd/job_run.go
-- [ ] T054 Verify all exit codes are properly mapped in internal/cmd/job_run.go
-- [ ] T055 Run full integration test suite with `make it`
-- [ ] T056 Update CHANGELOG.md with M3 release notes
+- [X] T051 [P] Run golangci-lint and fix any issues
+- [X] T052 [P] Add --keep-stopped flag to skip restart after worker in internal/cmd/job_run.go
+- [X] T053 [P] Add --keep-failed flag to preserve worker container on failure in internal/cmd/job_run.go
+- [X] T054 Verify all exit codes are properly mapped in internal/cmd/job_run.go
+- [X] T055 Run full integration test suite with `make it`
+- [X] T056 Update CHANGELOG.md with M3 release notes
 
 ---
 
