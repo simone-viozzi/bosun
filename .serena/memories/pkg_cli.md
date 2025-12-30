@@ -12,9 +12,11 @@ bosun
 │   └── validate    # Validate config labels
 ├── labels
 │   └── snapshot    # Show Docker entities with bosun.* labels
-└── plan
-    ├── list        # List discovered jobs
-    └── show <job>  # Show execution plan for a job
+├── plan
+│   ├── list        # List discovered jobs
+│   └── show <job>  # Show execution plan for a job
+└── job
+    └── run <job>   # Execute a backup job
 ```
 
 ### `bosun config validate`
@@ -53,6 +55,32 @@ Shows execution plan for a specific job.
 **Flags**: Same as `plan list`
 
 **Output**: Ordered steps (stop, run_worker, start)
+
+### `bosun job run <job>`
+Executes a backup job.
+
+**Flags**:
+- `--dry-run` - Validate and show plan without executing
+- `--timeout` - Worker execution timeout (default: 1h)
+- `--stop-timeout` - Stack stop timeout (default: 30s)
+- `--start-timeout` - Stack start timeout (default: 30s)
+- `--keep-worker` - Keep worker container after execution
+- `--project` - Filter by Compose project name
+
+**Exit Codes** (M3 additions, 10-16 range):
+- `10` - Worker failed (non-zero exit)
+- `11` - Stop failed
+- `12` - Start failed
+- `13` - Timeout
+- `14` - Image not found
+- `15` - Job not found
+- `16` - Interrupted
+
+**Behavior**:
+- Pre-validates worker image before stopping stack
+- Always restarts stack, even if worker fails
+- Captures worker logs to stdout
+- Graceful shutdown on SIGINT/SIGTERM
 
 ### Main Entry Point
 `cmd/bosun/main.go` - Context with signal handling for graceful shutdown.
