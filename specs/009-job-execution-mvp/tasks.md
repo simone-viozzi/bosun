@@ -22,7 +22,7 @@
 - [X] T001 Create domain run types in internal/domain/jobs/run.go (JobRun, RunStatus, ExecutionResult, StepResult)
 - [X] T002 [P] Create domain error types in internal/domain/jobs/errors.go (StopError, StartError, TimeoutError, WorkerError)
 - [X] T003 [P] Add M3 exit codes to internal/cmd/exitcodes.go (ExitWorkerFailed, ExitStopFailed, ExitStartFailed, ExitTimeout, ExitImageNotFound)
-- [X] T004 [P] Add new timeout labels to internal/config/schema/job_labels.go (bosun.backup.stop-timeout, bosun.backup.start-timeout)
+- [X] T004 [P] Add new timeout labels to internal/config/schema/job_labels.go (bosun.job.stop-timeout, bosun.job.start-timeout)
 - [X] T005 [P] Add defaults constants in internal/domain/jobs/defaults.go (DefaultStopTimeout, DefaultStartTimeout, GracePeriod)
 
 ---

@@ -105,8 +105,8 @@ Workers define their own environment (RESTIC_*, PGHOST, etc.). Bosun injects onl
 **User pass-through** (from labels):
 ```yaml
 labels:
-  bosun.backup.worker-env.RESTIC_REPOSITORY: "s3:s3.amazonaws.com/mybucket"
-  bosun.backup.worker-env.RESTIC_PASSWORD_FILE: "/run/secrets/restic-password"
+  bosun.job.worker-env.RESTIC_REPOSITORY: "s3:s3.amazonaws.com/mybucket"
+  bosun.job.worker-env.RESTIC_PASSWORD_FILE: "/run/secrets/restic-password"
 ```
 
 **Exit code interpretation**:
@@ -158,9 +158,9 @@ Fail-fast with guaranteed restart attempt.
 **Timeout configuration**:
 | Step | Default | Label Override | CLI Override |
 |------|---------|----------------|--------------|
-| Stop stack | 30s | `bosun.backup.stop-timeout` | `--stop-timeout` |
-| Run worker | 1h | `bosun.backup.timeout` | `--timeout` |
-| Start stack | 30s | `bosun.backup.start-timeout` | `--start-timeout` |
+| Stop stack | 30s | `bosun.job.stop-timeout` | `--stop-timeout` |
+| Run worker | 1h | `bosun.job.timeout` | `--timeout` |
+| Start stack | 30s | `bosun.job.start-timeout` | `--start-timeout` |
 
 **Failure scenarios**:
 

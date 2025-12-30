@@ -268,9 +268,9 @@ Adapters can be developed in parallel after their respective ports are defined.
 
 | Label | Type | Default | Package |
 |-------|------|---------|---------|
-| `bosun.backup.stop-timeout` | duration | `30s` | `internal/config/schema/` |
-| `bosun.backup.start-timeout` | duration | `30s` | `internal/config/schema/` |
-| `bosun.backup.worker-env.*` | string | - | `internal/config/schema/` |
+| `bosun.job.stop-timeout` | duration | `30s` | `internal/config/schema/` |
+| `bosun.job.start-timeout` | duration | `30s` | `internal/config/schema/` |
+| `bosun.job.worker-env.*` | string | - | `internal/config/schema/` |
 
 ### Exit Codes to Add
 

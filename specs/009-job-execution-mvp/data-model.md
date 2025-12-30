@@ -422,15 +422,15 @@ Add to `internal/config/schema/job_labels.go`:
 
 | Label Key | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `bosun.backup.stop-timeout` | duration | `30s` | Timeout for stopping each container |
-| `bosun.backup.start-timeout` | duration | `30s` | Timeout for starting each container |
-| `bosun.backup.worker-env.*` | string | - | Pass-through env vars (prefix stripped) |
+| `bosun.job.stop-timeout` | duration | `30s` | Timeout for stopping each container |
+| `bosun.job.start-timeout` | duration | `30s` | Timeout for starting each container |
+| `bosun.job.worker-env.*` | string | - | Pass-through env vars (prefix stripped) |
 
 ```go
 // Label definitions to add:
 var (
     LabelStopTimeout = LabelSpec{
-        Key:         "bosun.backup.stop-timeout",
+        Key:         "bosun.job.stop-timeout",
         Type:        TypeDuration,
         Default:     "30s",
         Scope:       ScopeContainer,
@@ -438,7 +438,7 @@ var (
     }
 
     LabelStartTimeout = LabelSpec{
-        Key:         "bosun.backup.start-timeout",
+        Key:         "bosun.job.start-timeout",
         Type:        TypeDuration,
         Default:     "30s",
         Scope:       ScopeContainer,
@@ -446,7 +446,7 @@ var (
     }
 
     // Worker env vars use prefix matching, not individual label specs
-    LabelWorkerEnvPrefix = "bosun.backup.worker-env."
+    LabelWorkerEnvPrefix = "bosun.job.worker-env."
 )
 ```
 

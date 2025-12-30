@@ -152,7 +152,7 @@ As a system administrator, I want the stack stop/start to respect container heal
 - **FR-002**: System MUST be able to start all containers in a Compose stack
 - **FR-003**: System MUST respect container dependency order during stop/start operations *(DECIDED #109: Use Docker API with labels to determine topology; stop in reverse order, start in forward order)*
 - **FR-004**: ~~System MUST wait for health checks during stack startup~~ *(DEFERRED: M3 will NOT wait for health checks - just start containers; health check waiting deferred to M6+)*
-- **FR-005**: System MUST support configurable timeouts for stop/start operations *(DECIDED #117: 30s default for stop/start, configurable via `bosun.backup.stop-timeout` and `bosun.backup.start-timeout` labels, or `--stop-timeout`/`--start-timeout` CLI flags)*
+- **FR-005**: System MUST support configurable timeouts for stop/start operations *(DECIDED #117: 30s default for stop/start, configurable via `bosun.job.stop-timeout` and `bosun.job.start-timeout` labels, or `--stop-timeout`/`--start-timeout` CLI flags)*
 
 #### Worker Execution (GitHub #116, #119)
 
@@ -161,7 +161,7 @@ As a system administrator, I want the stack stop/start to respect container heal
 - **FR-008**: System MUST capture worker container exit code and propagate it as job success/failure
 - **FR-009**: System MUST capture worker container stdout/stderr logs
 - **FR-010**: System MUST pass job metadata to worker via environment variables *(DECIDED #110: Pass `BOSUN_JOB_NAME`, `BOSUN_RUN_ID`, `BOSUN_STACK`, `BOSUN_DRY_RUN` - no BOSUN_VOLUMES as workers should be pre-configured for their mount paths)*
-- **FR-011**: System MUST support worker execution timeout with configurable duration *(DECIDED #110: 1h default via `bosun.backup.timeout`, SIGTERM → 10s grace → SIGKILL)*
+- **FR-011**: System MUST support worker execution timeout with configurable duration *(DECIDED #110: 1h default via `bosun.job.timeout`, SIGTERM → 10s grace → SIGKILL)*
 - **FR-012**: System MUST clean up worker container after execution (remove container) *(DECIDED #110: Always remove on success; keep on failure if `--keep-failed` flag)*
 
 #### Orchestration (GitHub #114, #121)
