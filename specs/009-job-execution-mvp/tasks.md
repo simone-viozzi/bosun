@@ -19,11 +19,11 @@
 
 **Purpose**: Domain types and error definitions needed by all components
 
-- [ ] T001 Create domain run types in internal/domain/jobs/run.go (JobRun, RunStatus, ExecutionResult, StepResult)
-- [ ] T002 [P] Create domain error types in internal/domain/jobs/errors.go (StopError, StartError, TimeoutError, WorkerError)
-- [ ] T003 [P] Add M3 exit codes to internal/cmd/exitcodes.go (ExitWorkerFailed, ExitStopFailed, ExitStartFailed, ExitTimeout, ExitImageNotFound)
-- [ ] T004 [P] Add new timeout labels to internal/config/schema/job_labels.go (bosun.backup.stop-timeout, bosun.backup.start-timeout)
-- [ ] T005 [P] Add defaults constants in internal/domain/jobs/defaults.go (DefaultStopTimeout, DefaultStartTimeout, GracePeriod)
+- [X] T001 Create domain run types in internal/domain/jobs/run.go (JobRun, RunStatus, ExecutionResult, StepResult)
+- [X] T002 [P] Create domain error types in internal/domain/jobs/errors.go (StopError, StartError, TimeoutError, WorkerError)
+- [X] T003 [P] Add M3 exit codes to internal/cmd/exitcodes.go (ExitWorkerFailed, ExitStopFailed, ExitStartFailed, ExitTimeout, ExitImageNotFound)
+- [X] T004 [P] Add new timeout labels to internal/config/schema/job_labels.go (bosun.backup.stop-timeout, bosun.backup.start-timeout)
+- [X] T005 [P] Add defaults constants in internal/domain/jobs/defaults.go (DefaultStopTimeout, DefaultStartTimeout, GracePeriod)
 
 ---
 
@@ -33,9 +33,9 @@
 
 **⚠️ CRITICAL**: Ports must be complete before adapters can start
 
-- [ ] T006 [P] Define ComposeController port interface in internal/ports/compose.go (#115)
-- [ ] T007 [P] Define WorkerRunner port interface in internal/ports/worker.go (#116)
-- [ ] T008 [P] Define JobExecutor port interface in internal/ports/executor.go (#114)
+- [X] T006 [P] Define ComposeController port interface in internal/ports/compose.go (#115)
+- [X] T007 [P] Define WorkerRunner port interface in internal/ports/worker.go (#116)
+- [X] T008 [P] Define JobExecutor port interface in internal/ports/executor.go (#114)
 
 **Checkpoint**: All port interfaces defined - adapter implementation can begin
 
@@ -49,39 +49,39 @@
 
 ### Adapters for User Story 1
 
-- [ ] T009 [US1] Create internal/adapters/docker/compose/doc.go with package documentation
-- [ ] T010 [US1] Implement topological sort in internal/adapters/docker/compose/topology.go
-- [ ] T011 [US1] Implement ComposeController adapter in internal/adapters/docker/compose/controller.go (#118)
+- [X] T009 [US1] Create internal/adapters/docker/compose/doc.go with package documentation
+- [X] T010 [US1] Implement topological sort in internal/adapters/docker/compose/topology.go
+- [X] T011 [US1] Implement ComposeController adapter in internal/adapters/docker/compose/controller.go (#118)
   - ListStackContainers using com.docker.compose.project label filter
   - StopStack with reverse dependency order
   - StartStack with forward dependency order
   - IsStackRunning checking all container states
-- [ ] T012 [US1] Unit tests for ComposeController in internal/adapters/docker/compose/controller_test.go
-- [ ] T013 [P] [US1] Create internal/adapters/docker/worker/doc.go with package documentation
-- [ ] T014 [US1] Implement WorkerRunner adapter in internal/adapters/docker/worker/runner.go (#119)
+- [X] T012 [US1] Unit tests for ComposeController in internal/adapters/docker/compose/controller_test.go
+- [X] T013 [P] [US1] Create internal/adapters/docker/worker/doc.go with package documentation
+- [X] T014 [US1] Implement WorkerRunner adapter in internal/adapters/docker/worker/runner.go (#119)
   - Container creation with image, env, mounts
   - Log streaming via Docker ContainerLogs
   - Timeout enforcement (SIGTERM → 10s → SIGKILL)
   - Container cleanup (remove unless KeepOnFailure)
-- [ ] T015 [US1] Unit tests for WorkerRunner in internal/adapters/docker/worker/runner_test.go
+- [X] T015 [US1] Unit tests for WorkerRunner in internal/adapters/docker/worker/runner_test.go
 
 ### Application Layer for User Story 1
 
-- [ ] T016 [US1] Create internal/app/executor/doc.go with package documentation
-- [ ] T017 [US1] Implement Executor service in internal/app/executor/executor.go (#121)
+- [X] T016 [US1] Create internal/app/executor/doc.go with package documentation
+- [X] T017 [US1] Implement Executor service in internal/app/executor/executor.go (#121)
   - Constructor with dependency injection (JobDiscoverer, JobPlanner, ComposeController, WorkerRunner)
   - Execute flow: discover → validate image → stop → run → start
   - Guaranteed restart via defer (even on worker failure)
-- [ ] T017.1 [US1] Implement signal handler for graceful Ctrl+C (FR-024)
+- [X] T017.1 [US1] Implement signal handler for graceful Ctrl+C (FR-024)
   - Set up signal.Notify for SIGINT/SIGTERM in cmd/job_run.go
   - Create cancellable context, pass to Executor.Execute()
   - On signal: cancel context → Executor aborts worker → restart stack → exit 16 (ExitInterrupted)
   - Ensure stack restart happens even if worker is killed mid-execution
-- [ ] T018 [US1] Unit tests for Executor in internal/app/executor/executor_test.go
+- [X] T018 [US1] Unit tests for Executor in internal/app/executor/executor_test.go
 
 ### CLI for User Story 1
 
-- [ ] T019 [US1] Implement `bosun job run` command in internal/cmd/job_run.go (#122)
+- [X] T019 [US1] Implement `bosun job run` command in internal/cmd/job_run.go (#122)
   - Cobra command with `run <job-name>` argument
   - Wire up Executor with Docker client and adapters
   - Exit code mapping from errors
@@ -99,11 +99,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Add DryRun method to Executor in internal/app/executor/executor.go
-- [ ] T021 [US2] Add --dry-run flag to job run command in internal/cmd/job_run.go
-- [ ] T022 [US2] Add --format flag (text, json) to job run command in internal/cmd/job_run.go
-- [ ] T023 [US2] Implement JSON output formatter for dry-run results in internal/cmd/job_run.go
-- [ ] T024 [US2] Unit test for dry-run mode in internal/app/executor/executor_test.go
+- [X] T020 [US2] Add DryRun method to Executor in internal/app/executor/executor.go
+- [X] T021 [US2] Add --dry-run flag to job run command in internal/cmd/job_run.go
+- [X] T022 [US2] Add --format flag (text, json) to job run command in internal/cmd/job_run.go
+- [X] T023 [US2] Implement JSON output formatter for dry-run results in internal/cmd/job_run.go
+- [X] T024 [US2] Unit test for dry-run mode in internal/app/executor/executor_test.go
 
 **Checkpoint**: User Stories 1 & 2 (P1) complete - core MVP functionality ready
 

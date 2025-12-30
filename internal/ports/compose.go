@@ -1,10 +1,9 @@
-// Package ports defines contract interfaces for M3 job execution.
-//
-// This file contains the ComposeController interface contract
-// for implementation in #118.
+// Package ports defines the ComposeController interface.
+// This file is a contract definition for implementation in #118.
 //
 // GitHub Issue: #115
 // Spec: specs/009-job-execution-mvp/spec.md
+
 package ports
 
 import (

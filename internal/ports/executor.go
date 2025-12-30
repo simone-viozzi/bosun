@@ -3,10 +3,12 @@
 //
 // GitHub Issue: #114
 // Spec: specs/009-job-execution-mvp/spec.md
+
 package ports
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
@@ -97,9 +99,7 @@ type ExecuteOptions struct {
 
 	// LogWriter receives real-time log output if not nil.
 	// Ignored if Quiet is true.
-	LogWriter interface {
-		Write([]byte) (int, error)
-	}
+	LogWriter io.Writer
 }
 
 // DefaultExecuteOptions returns options with default values.

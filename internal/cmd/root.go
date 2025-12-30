@@ -24,6 +24,7 @@ to define jobs, then use 'bosun plan list' to see discovered jobs and
 	cmd.AddCommand(NewLabelsCmd())
 	cmd.AddCommand(NewConfigCmd())
 	cmd.AddCommand(NewPlanCmd())
+	cmd.AddCommand(NewJobCmd()) // M3: Job execution
 
 	return cmd
 }
