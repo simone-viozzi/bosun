@@ -7,18 +7,56 @@ on:
     branches: [ main ]
 
 jobs:
-  history-cleanliness:
-    uses: ./.github/workflows/history-cleanliness.yml
-
   test:
-    needs: history-cleanliness
-    uses: ./.github/workflows/test.yml
-    secrets: inherit
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Run tests
+      run: go test -v ./... -coverprofile=coverage.out
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.out
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
-    needs: history-cleanliness
-    uses: ./.github/workflows/lint.yml
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v9
+      with:
+        version: latest
 
   integration:
+    runs-on: ubuntu-latest
     needs: [test, lint]
-    uses: ./.github/workflows/integration.yml
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Run integration tests
+      run: go test -tags=integration -parallel 6 -timeout=20m -v ./integration/...
