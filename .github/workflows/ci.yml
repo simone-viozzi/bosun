@@ -2,11 +2,13 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
     branches: [ main ]
 
 jobs:
   history-cleanliness:
     uses: ./.github/workflows/history-cleanliness.yml
+    secrets: inherit
 
   test:
     needs: history-cleanliness
