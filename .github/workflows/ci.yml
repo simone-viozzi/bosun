@@ -58,5 +58,8 @@ jobs:
         cache: true
         cache-dependency-path: go.sum
 
+    - name: Ensure worker image available
+      run: docker pull alpine:latest
+
     - name: Run integration tests
       run: go test -tags=integration -parallel 6 -timeout=20m -v ./integration/...
