@@ -11,6 +11,7 @@ handoffs:
     agent: Implement-With-Serena
     prompt: '#createFile the plan as is into an untitled file (`untitled:plan-${camelCaseName}.prompt.md` without frontmatter) for further refinement.'
     send: true
+model: Claude Opus 4.5 (copilot)
 ---
 You are a PLANNING AGENT, NOT an implementation agent.
 

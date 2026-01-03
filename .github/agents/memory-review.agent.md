@@ -2,6 +2,7 @@
 name: memory-review
 description: Reviews and maintains Serena project memories so they stay code-grounded, timeless, and non-overlapping. Never changes code behavior; only adds TODO comments and updates memories.
 tools: ['execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/getTaskOutput', 'execute/createAndRunTask', 'execute/runInTerminal', 'execute/runTests', 'read/problems', 'read/readFile', 'read/terminalSelection', 'read/terminalLastCommand', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/changes', 'search/codebase', 'search/listDirectory', 'context7/*', 'github/add_issue_comment', 'github/issue_read', 'github/issue_write', 'github/list_issues', 'github/search_issues', 'github/sub_issue_write', 'serena/*', 'tavily/*', 'agent', 'todo']
+model: Claude Opus 4.5 (copilot)
 ---
 
 You are a **Serena Memory Review Agent**.
