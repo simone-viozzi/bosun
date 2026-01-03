@@ -1,6 +1,9 @@
 package schema
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
 
 // Job label schema defines the Docker labels used to configure backup jobs.
 // Labels are applied to containers and volumes to define how Bosun discovers
@@ -24,6 +27,16 @@ type JobLabelConfig struct {
 
 	// WorkerImage specifies the Docker image to use for executing the backup.
 	WorkerImage string `bosun:"key=bosun.job.worker.image,scope=container,type=string,default=bosun-worker:local,doc='Docker image for backup worker'"`
+
+	// M3 additions: Timeout configurations
+	// StopTimeout specifies the timeout for stopping containers before worker execution.
+	StopTimeout time.Duration `bosun:"key=bosun.job.stop-timeout,scope=container,type=duration,default=30s,doc='Timeout for stopping each container (default: 30s)'"`
+
+	// StartTimeout specifies the timeout for starting containers after worker execution.
+	StartTimeout time.Duration `bosun:"key=bosun.job.start-timeout,scope=container,type=duration,default=30s,doc='Timeout for starting each container (default: 30s)'"`
+
+	// WorkerTimeout specifies the maximum execution time for the worker container.
+	WorkerTimeout time.Duration `bosun:"key=bosun.job.timeout,scope=container,type=duration,default=1h,doc='Timeout for worker execution (default: 1h)'"`
 }
 
 // JobVolumeConfig defines the configuration labels that can be applied to volumes
@@ -73,6 +86,14 @@ const (
 	LabelJobName        = "bosun.job.name"
 	LabelJobSchedule    = "bosun.job.schedule"
 	LabelJobWorkerImage = "bosun.job.worker.image"
+
+	// M3 additions: Timeout labels
+	LabelJobStopTimeout   = "bosun.job.stop-timeout"
+	LabelJobStartTimeout  = "bosun.job.start-timeout"
+	LabelJobWorkerTimeout = "bosun.job.timeout"
+
+	// Worker environment variables (prefix-based)
+	LabelJobWorkerEnvPrefix = "bosun.job.worker.env."
 
 	// Volume job labels
 	LabelJobAttach    = "bosun.job.attach"

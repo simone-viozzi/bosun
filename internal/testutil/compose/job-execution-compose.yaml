@@ -1,0 +1,35 @@
+# job-execution-compose.yaml
+#
+# Purpose: Docker Compose stack for job execution integration tests.
+# Used by: integration/job_execution_test.go
+#
+# This fixture creates:
+#   - A simple app service that simulates a running stack
+#   - Job labels configured for execution testing
+#   - A worker that succeeds or fails based on WORKER_MODE env var
+
+services:
+  app:
+    image: nginx:alpine
+    labels:
+      # Job definition on the app service
+      bosun.job.enabled: "true"
+      bosun.job.name: "test-backup"
+      bosun.job.schedule: "0 * * * *"
+      bosun.job.worker.image: "alpine:latest"
+      bosun.job.worker.env.BACKUP_TARGET: "/data"
+    volumes:
+      - app-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost"]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
+
+volumes:
+  app-data:
+    labels:
+      bosun.job.attach: "test-backup"
+      bosun.job.mount.path: "/backup/app"
+      bosun.job.mount.mode: "ro"

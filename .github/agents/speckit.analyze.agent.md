@@ -1,6 +1,6 @@
 ---
 description: Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation.
-tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'serena/*', 'tavily/*', 'problems', 'changes', 'testFailure', 'todos', 'runSubagent']
+tools: ['execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/getTaskOutput', 'execute/createAndRunTask', 'execute/runInTerminal', 'read/problems', 'read/readFile', 'read/terminalSelection', 'read/terminalLastCommand', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/changes', 'search/codebase', 'search/listDirectory', 'github/add_issue_comment', 'github/get_me', 'github/issue_read', 'github/issue_write', 'github/list_issues', 'github/search_issues', 'github/sub_issue_write', 'context7/*', 'serena/*', 'tavily/*', 'agent', 'todo']
 ---
 
 ## User Input
