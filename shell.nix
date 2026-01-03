@@ -28,7 +28,8 @@ pkgs.mkShell {
     # Go workspace
     export GOPATH="$PWD/.direnv/gopath"
     export GOBIN="$GOPATH/bin"
-    export PATH="$GOBIN:$PATH"
+    # Add workspace `bin` so built artifacts (e.g., `bin/bosun`) are on PATH
+    export PATH="$PWD/bin:$GOBIN:$PATH"
 
     # symlink dlv in .direnv to make it available to vscode
     mkdir -p $PWD/.direnv/go-tools
