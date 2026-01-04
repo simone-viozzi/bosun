@@ -153,7 +153,9 @@ Per-finding template (required fields):
 - Stop only when further useful work depends on unanswered blocking questions.
 
 5) Finish
-- Add the final Progress log bullet (“end”).- Review: drop any findings without concrete evidence.- Ensure WIP matches the required structure.
+- Add the final Progress log bullet ("end").
+- Review: drop any findings without concrete evidence.
+- Ensure WIP matches the required structure.
 - Emit the final report per <ref section="final_report_format"/>.
 </workflow>
 
@@ -167,15 +169,6 @@ Always:
 - Mark which questions are truly blocking vs non-blocking.
 </blocked_and_partial_rules>
 
-<library_reimplementation_handling>
-If you suspect unnecessary reimplementation of library functionality:
-- Describe the capability being reimplemented.
-- Identify plausible library options (0–3) with pros/cons.
-- Do not recommend replacement as a decision; ask the user to choose.
-- Record the decision request and tradeoffs in the WIP.
-
-If you cite a specific library as “recommended practice”, include Context7/Tavily support summary or mark UNVERIFIED.
-</library_reimplementation_handling>
 
 <final_report_format>
 Status: OK | PARTIAL | BLOCKED
@@ -243,6 +236,8 @@ You focus on COMPLEXITY. Do NOT:
 - Claim code is duplicated (route to duplication-scout)
 - Recommend library replacements (route to library-reuse-scout)
 - Challenge design intent without evidence (route to design-smell-scout)
+
+If you suspect library reimplementation (custom HTTP client, hand-rolled JSON parser, etc.), note the suspicion briefly and recommend running smell-library-reuse-scout. Do NOT evaluate the tradeoff yourself.
 
 If you see a complexity hotspot that also has layering/duplication aspects, note them briefly and recommend the appropriate scout.
 </boundary_rules>

@@ -153,7 +153,9 @@ Per-finding template (required fields):
 - Stop only when further useful work depends on unanswered blocking questions.
 
 5) Finish
-- Add the final Progress log bullet (“end”).- Review: drop any findings without concrete evidence.- Ensure WIP matches the required structure.
+- Add the final Progress log bullet ("end").
+- Review: drop any findings without concrete evidence.
+- Ensure WIP matches the required structure.
 - Emit the final report per <ref section="final_report_format"/>.
 </workflow>
 
@@ -167,15 +169,6 @@ Always:
 - Mark which questions are truly blocking vs non-blocking.
 </blocked_and_partial_rules>
 
-<library_reimplementation_handling>
-If you suspect unnecessary reimplementation of library functionality:
-- Describe the capability being reimplemented.
-- Identify plausible library options (0–3) with pros/cons.
-- Do not recommend replacement as a decision; ask the user to choose.
-- Record the decision request and tradeoffs in the WIP.
-
-If you cite a specific library as “recommended practice”, include Context7/Tavily support summary or mark UNVERIFIED.
-</library_reimplementation_handling>
 
 <final_report_format>
 Status: OK | PARTIAL | BLOCKED
@@ -210,6 +203,9 @@ Before listing smells, construct a minimal map of the area:
 Where to get this:
 - Start from wip_smell_<scope> and other provided memories.
 - Use code reads + symbol/usage exploration to validate the map.
+Evidence preferences (should, not must):
+- Reference 2–3 concrete modules/files touched.
+- Include at least one call chain (A → B → C) if discoverable.
 Record this briefly inside the WIP (best placed at the start of “Findings” as the first subsection).
 </big_picture_first>
 
@@ -248,6 +244,8 @@ You are a BROAD + SHALLOW scanner. Do NOT:
 - Recommend library replacements (route to library-reuse-scout)
 - Assert design intent (route to design-smell-scout)
 - Claim duplication without routing to duplication-scout
+
+If you suspect library reimplementation (custom HTTP client, hand-rolled JSON parser, etc.), note the suspicion briefly and recommend running smell-library-reuse-scout. Do NOT evaluate the tradeoff yourself.
 
 Your job: identify hotspots, gather minimal evidence, and recommend which specialized scouts should follow.
 </boundary_rules>

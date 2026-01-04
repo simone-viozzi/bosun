@@ -220,7 +220,8 @@ Loop:
 4) Spawn scouts per <ref section="subagent_contract"/> and <ref section="scout_roster"/>.
 5) Ingest scout WIPs:
    - verify they are structured and memory-grounded
-   - if a scout output is generic/un-grounded (no evidence / no memory context), rerun with stricter guidance
+   - drop findings without concrete evidence (path + symbol + usage)
+   - discount findings that lack memory context (note in consolidation)
 6) Consolidate into wip_smell_<scope>:
    - add new smells with next sequential IDs
    - attach evidence pointers to scout WIPs

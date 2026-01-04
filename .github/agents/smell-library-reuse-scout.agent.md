@@ -153,7 +153,9 @@ Per-finding template (required fields):
 - Stop only when further useful work depends on unanswered blocking questions.
 
 5) Finish
-- Add the final Progress log bullet (“end”).- Review: drop any findings without concrete evidence.- Ensure WIP matches the required structure.
+- Add the final Progress log bullet ("end").
+- Review: drop any findings without concrete evidence.
+- Ensure WIP matches the required structure.
 - Emit the final report per <ref section="final_report_format"/>.
 </workflow>
 
