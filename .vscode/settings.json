@@ -8,8 +8,6 @@
             "file": ".github/instructions/commit-msg.instructions.md"
         }
     ],
-    "github.copilot.chat.editor.temporalContext.enabled": true,
-    "github.copilot.chat.edits.temporalContext.enabled": true,
     "github.copilot.enable": {
         "*": true,
         "markdown": false,
@@ -82,5 +80,6 @@
     "chat.tools.terminal.autoApprove": {
         ".specify/scripts/bash/": true,
         ".specify/scripts/powershell/": true
-    }
+    },
+    "chat.customAgentInSubagent.enabled": true
 }

@@ -21,6 +21,7 @@ type Executor struct {
 }
 
 // New creates a new Executor with dependency injection.
+// TODO(#143): Remove unused discoverer param, see smell #4 in wip_smell_milestone3
 func New(
 	discoverer ports.JobDiscoverer, // Not used directly, kept for compatibility
 	planner ports.JobPlanner,

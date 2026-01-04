@@ -2,7 +2,7 @@
 name: Plan-With-Serena
 description: Researches and outlines multi-step plans
 argument-hint: Outline the goal or problem to research
-tools: ['search/listDirectory', 'read/readFile', 'search/codebase', 'serena/activate_project', 'serena/check_onboarding_performed', 'serena/delete_memory', 'serena/edit_memory', 'serena/find_file', 'serena/find_referencing_symbols', 'serena/find_symbol', 'serena/get_current_config', 'serena/get_symbols_overview', 'serena/initial_instructions', 'serena/list_dir', 'serena/list_memories', 'serena/onboarding', 'serena/read_memory', 'serena/search_for_pattern', 'serena/think_about_collected_information', 'serena/think_about_task_adherence', 'serena/think_about_whether_you_are_done', 'serena/write_memory', 'context7/*', 'tavily/*', 'todo', 'agent', 'execute/runTests', 'search/usages', 'read/problems', 'search/changes', 'execute/testFailure']
+tools: ['execute/testFailure', 'execute/runTests', 'read/problems', 'read/readFile', 'search/changes', 'search/codebase', 'search/listDirectory', 'search/usages', 'github/add_issue_comment', 'github/get_me', 'github/issue_read', 'github/list_issues', 'github/search_issues', 'context7/*', 'serena/activate_project', 'serena/check_onboarding_performed', 'serena/delete_memory', 'serena/edit_memory', 'serena/find_file', 'serena/find_referencing_symbols', 'serena/find_symbol', 'serena/get_current_config', 'serena/get_symbols_overview', 'serena/initial_instructions', 'serena/list_dir', 'serena/list_memories', 'serena/onboarding', 'serena/read_memory', 'serena/search_for_pattern', 'serena/think_about_collected_information', 'serena/think_about_task_adherence', 'serena/think_about_whether_you_are_done', 'serena/write_memory', 'tavily/*', 'agent', 'todo']
 handoffs:
   - label: Start Implementation
     agent: Implement-With-Serena
@@ -11,6 +11,7 @@ handoffs:
     agent: Implement-With-Serena
     prompt: '#createFile the plan as is into an untitled file (`untitled:plan-${camelCaseName}.prompt.md` without frontmatter) for further refinement.'
     send: true
+model: Claude Opus 4.5 (copilot)
 ---
 You are a PLANNING AGENT, NOT an implementation agent.
 

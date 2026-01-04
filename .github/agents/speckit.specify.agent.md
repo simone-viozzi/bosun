@@ -1,6 +1,6 @@
 ---
 description: Create or update the feature specification from a natural language feature description.
-tools: ['execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/getTaskOutput', 'execute/createAndRunTask', 'execute/runInTerminal', 'read/problems', 'read/readFile', 'read/terminalSelection', 'read/terminalLastCommand', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/changes', 'search/codebase', 'search/listDirectory', 'context7/*', 'github/issue_read', 'github/list_issues', 'github/search_issues', 'serena/*', 'tavily/*', 'agent', 'todo']
+tools: ['execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/getTaskOutput', 'execute/createAndRunTask', 'execute/runInTerminal', 'read/problems', 'read/readFile', 'read/terminalSelection', 'read/terminalLastCommand', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search/changes', 'search/codebase', 'search/listDirectory', 'github/get_me', 'github/issue_read', 'github/list_issues', 'github/search_issues', 'context7/*', 'serena/*', 'tavily/*', 'agent', 'todo']
 handoffs:
   - label: Build Technical Plan
     agent: speckit.plan

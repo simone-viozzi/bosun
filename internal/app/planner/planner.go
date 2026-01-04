@@ -80,7 +80,9 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 	}
 	steps = append(steps, runWorkerStep)
 
-	// Note: Step 3 (start containers) would be added in a future milestone
+	// TODO(#142): Add StepTypeStartContainers step here, make ExecutionPlan authoritative.
+	// Executor should interpret plan.Steps, not use hardcoded sequence.
+	// See smells #23-24 in wip_smell_milestone3
 
 	plan := jobs.ExecutionPlan{
 		JobName:   job.Name,

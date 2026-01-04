@@ -122,6 +122,7 @@ func FromLabels(spec schema.Spec, labels map[string]string, scope schema.Scope) 
 		// Look up the field spec
 		fieldSpec, exists := spec.Get(key)
 		if !exists {
+			// TODO(#139): Change to warning instead of error, see smell #3 in wip_smell_milestone3
 			errs.AddUnknownKey(key, scope)
 			continue
 		}
