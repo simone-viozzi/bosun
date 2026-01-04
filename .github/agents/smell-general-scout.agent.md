@@ -2,7 +2,7 @@
 name: smell-general-scout
 description: Focused code smell investigation within a provided scope. Produces a scoped WIP memory (wip_smell-[task]) with evidence and questions, then returns a concise final report to the orchestrator.
 tools: ['execute/testFailure', 'execute/runTests', 'read/problems', 'read/readFile', 'search', 'context7/*', 'serena/activate_project', 'serena/check_onboarding_performed', 'serena/edit_memory', 'serena/find_file', 'serena/find_referencing_symbols', 'serena/find_symbol', 'serena/get_current_config', 'serena/get_symbols_overview', 'serena/initial_instructions', 'serena/list_dir', 'serena/list_memories', 'serena/read_memory', 'serena/search_for_pattern', 'serena/think_about_collected_information', 'serena/think_about_task_adherence', 'serena/think_about_whether_you_are_done', 'serena/write_memory', 'tavily/*', 'todo']
-model: Raptor mini (Preview) (copilot)
+model: Claude Sonnet 4.5 (copilot)
 ---
 
 <agent_identity>
