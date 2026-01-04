@@ -1,5 +1,9 @@
 package cmd
 
+// TODO(#141): Move adapter wiring to internal/app/factory or internal/bootstrap,
+// CLI should only parse args and call app-layer services.
+// See smells #16-18 in wip_smell_milestone3
+
 import (
 	"context"
 	"encoding/json"
@@ -339,6 +343,7 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to connect to Docker: %v\n", err)
 		os.Exit(ExitRuntimeError)
+		return nil
 	}
 
 	// Create Docker label source
@@ -346,6 +351,7 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to connect to Docker: %v\n", err)
 		os.Exit(ExitRuntimeError)
+		return nil
 	}
 
 	// Create selector
@@ -362,6 +368,7 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to get Docker snapshot: %v\n", err)
 		os.Exit(ExitRuntimeError)
+		return nil
 	}
 
 	// Create job discoverer
@@ -372,6 +379,7 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to discover jobs: %v\n", err)
 		os.Exit(ExitRuntimeError)
+		return nil
 	}
 
 	// Find job by name
@@ -386,6 +394,7 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	if targetJob == nil {
 		fmt.Fprintf(os.Stderr, "Error: job not found: %s\n", jobName)
 		os.Exit(ExitJobNotFound)
+		return nil
 	}
 
 	// Create planner and compose controller for dry-run
@@ -401,6 +410,7 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to generate execution plan: %v\n", err)
 		os.Exit(ExitRuntimeError)
+		return nil
 	}
 
 	// Set timestamp

@@ -27,6 +27,7 @@ type ContainerConfig struct {
 
 // VolumeConfig contains configuration fields specific to volumes.
 type VolumeConfig struct {
+	// TODO(#140): Rename to JobEnabled or similar, see smell #1 in wip_smell_milestone3
 	// BackupEnabled determines whether volume backups are enabled.
 	BackupEnabled bool `bosun:"key=bosun.volume.backupEnabled,scope=volume,type=bool,default=false,doc='Enable volume backups'"`
 

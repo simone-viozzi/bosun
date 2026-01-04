@@ -1,6 +1,6 @@
 # TODO
 ## internal/app/executor/executor.go
-* [internal/app/executor/executor.go:270](internal/app/executor/executor.go#L270): Add worker env vars from labels (bosun.job.worker.env.*)
+* [internal/app/executor/executor.go:271](internal/app/executor/executor.go#L271): Add worker env vars from labels (bosun.job.worker.env.*)
 
 ## internal/app/planner/planner.go
 * [internal/app/planner/planner.go:57](internal/app/planner/planner.go#L57): In future, verify all target containers are in this stack

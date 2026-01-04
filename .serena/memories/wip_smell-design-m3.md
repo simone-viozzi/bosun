@@ -19,6 +19,17 @@
 
 ---
 
+## Verification of prior findings
+
+### Prior findings verification
+| ID | Title | Status | Notes |
+|----|-------|--------|-------|
+| 4 | Executor API mismatch / unused `discoverer` param | **Confirmed** | `Executor.New` accepts a `JobDiscoverer` but does not use it; `Execute` returns an error — implementation uses `ExecuteJob` (by-job) instead. |
+| 23 | Planner vs Executor mismatch (plan not authoritative) | **Confirmed** | `Planner.Plan` returns an `ExecutionPlan`, but `Executor.ExecuteJob` performs a fixed sequence (stop → worker → restart in defer) rather than interpreting the plan. |
+| 24 | Execution plan incompleteness (no start step, no per-step policies) | **Confirmed** | `Planner` explicitly omits a start step (TODO); `PlanStep` lacks per-step policy fields (retry, timeout, restart policy). |
+| 25 | Error handling & retry policy under-specified | **Confirmed** | `validateImage` fails fast (no pull), `ComposeController` and `WorkerRunner` have no retry/backoff semantics. |
+| 26 | `ports` imports domain types (coupling tradeoff) | **Confirmed (intentional tradeoff)** | `ports.ExecutionResult` and several port types embed `jobs.*` domain types (e.g., `JobRun`, `ExecutionPlan`) — acceptable but increases coupling; consider DTOs if independent evolution desired.
+
 ## Findings
 
 ### 1) Planner vs Executor mismatch (plan not authoritative) ✅
@@ -85,6 +96,90 @@
 
 ---
 
+## New findings (continuing numbering from existing findings)
+
+### #8 — Plan CreatedAt responsibility mismatch (planner vs caller) 🔧
+- **Location(s):** `internal/app/planner/planner.go` (`Plan` sets `CreatedAt`), `internal/domain/jobs/types.go` (comment: "CreatedAt records when the plan was generated. Set by the caller, not the planner").
+- **Evidence:** Planner sets `CreatedAt: time.Now().UTC()` during `Plan()`; domain docs state caller should set `CreatedAt` for determinism.
+- **Why it’s a smell:** Inconsistent responsibility can lead to surprising test behavior and makes it unclear which component owns plan metadata (affects caching, deterministic testing).
+- **Remediation direction:** Choose a single owner: (A) Planner sets `CreatedAt` (remove note in domain docs), or (B) Planner returns plan with zero `CreatedAt` and caller sets it; update tests and DryRun path accordingly.
+- **Questions:** [non-blocking] Which approach is preferred for determinism and testing: planner-owned timestamp or caller-owned timestamp? (Options: "Planner sets CreatedAt", "Caller sets CreatedAt (preferred for determinism)")
+- **Confidence:** High
+
+---
+
+### #9 — Duplicate/overlapping ExecutionResult & StepResult types across `ports` and `domain` 🔗
+- **Location(s):** `internal/ports/executor.go` (`ExecutionResult`, `StepResult`), `internal/domain/jobs/run.go` (`ExecutionResult`, `StepResult`).
+- **Evidence:** Both packages define similarly named structs representing execution results; `ports.ExecutionResult` embeds `jobs.JobRun` and `jobs.ExecutionPlan`, while `domain.ExecutionResult` has its own `JobRun` and `ExecutionResult` shapes.
+- **Why it’s a smell:** Duplicate types can cause confusion about ownership, conversion code, and can lead to accidental drift (two places to change a field). It also complicates API contracts for adapters and consumers.
+- **Remediation direction:** Consolidate on a single representation:
+  - Option A: Keep domain `ExecutionResult` as source of truth and have `ports` reference domain types (accept coupling), or
+  - Option B: Introduce DTOs in `ports` and keep domain types internal; add conversion helpers.
+- **Questions:** [non-blocking] Which model does the team prefer: single domain type (accept coupling) or ports-DTOs (decouple)?
+- **Confidence:** High
+
+---
+
+### #10 — CLI layering & wiring (business logic in CLI + adapter imports) ⚠️
+- **Location(s):** `internal/cmd/job_run.go` — imports `adapters/docker/compose`, `adapters/docker/worker`, `adapters/dockerlabels`, `adapters/joblabels`, creates docker client and performs discovery; constructs `executor` and calls `ExecuteJob`.
+- **Evidence:** CLI creates adapter instances and performs job discovery + selection logic; it also builds execute options and parses flags into execution behavior.
+- **Why it’s a smell:** CLI includes orchestration & discovery logic (business concerns) and directly depends on adapter implementations, increasing coupling and making the CLI harder to unit test in isolation.
+- **Remediation direction:** Move wiring and discovery into an app-level factory or bootstrap package (`internal/bootstrap` or `internal/app/factory`), expose a thin CLI that only converts args and calls app services.
+- **Questions:** [blocking] Should CLI be strictly thin (only argument parsing + presentation) with wiring moved out? (Yes / No)
+- **Best-practice claim:** Prefer thin CLI (UNVERIFIED)
+- **Confidence:** High
+
+---
+
+### #11 — Config merge semantics treat false as zero (surprising semantics) ⚠️
+- **Location(s):** `internal/config/merge/merge.go` (function `isZeroValue` special-cases bool to treat false as zero).
+- **Evidence:** `isZeroValue` returns `!v.Bool()` for bools; comment notes limitation and suggests using defaults to indicate "not set".
+- **Why it’s a smell:** Users cannot distinguish between "explicitly set to false" and "not set"; this makes disabling features via labels non-intuitive and can cause subtle bugs.
+- **Remediation direction:** Use pointer-typed fields for optional booleans or maintain explicit "set" metadata (e.g., a parallel map of set keys), or at minimum document the limitation prominently and provide an opt-in strict merge mode.
+- **Questions:** [non-blocking] Is changing the schema to use pointer bools acceptable now? (Yes / Defer)
+- **Confidence:** High
+
+---
+
+### #12 — Loader rejects unknown keys strictly (validation policy decision) ⚠️
+- **Location(s):** `internal/config/loader/loader.go` (`FromLabels`) — `errs.AddUnknownKey(key, scope)` when a label is not present in spec.
+- **Evidence:** Unknown label keys are treated as validation errors and returned to callers as `ValidationErrors`.
+- **Why it’s a smell:** Strict rejection can make rolling deployments and extensions brittle if labels are added by other tools; sometimes a warning would be preferable.
+- **Remediation direction:** Add a configurable mode: `strict` (error on unknown keys) vs `lenient` (collect warnings), or provide a discovery-only mode that collects unknown keys for a telemetry/diagnostic view.
+- **Questions:** [non-blocking] Preferred default behavior: strict (current) or lenient (warn)?
+- **Confidence:** Medium
+
+---
+
+### #13 — Integration tests are heavy and brittle; limited isolation 🧪
+- **Location(s):** `integration/*.go` (e.g., `integration/job_execution_test.go`) — tests build the binary, run compiled CLI, and depend on `docker compose` externally.
+- **Evidence:** Tests use `exec.Command` to run the built `bosun` binary, and call `docker compose` directly in assertions (system-level dependencies). Many tests are 3-minute timeouts.
+- **Why it’s a smell:** Slow, brittle E2E tests slow developer feedback and are fragile in CI environments. They also provide limited unit-level coverage for internal services (planner, executor) where mocking ports would be faster and more deterministic.
+- **Remediation direction:** Add unit tests that mock ports interfaces (compose/worker/discovery), adopt testcontainers or a harness that can be run in CI reliably, and move slow tests to a separate integration suite that runs less frequently.
+- **Questions:** [non-blocking] Agree to add more unit-level tests and a fast harness? (Yes / Defer)
+- **Confidence:** High
+
+---
+
+### #14 — Adapter error typing and domain coupling (compose returns `jobs.StopError`) ⚠️
+- **Location(s):** `internal/adapters/docker/compose/controller.go` — returns `&jobs.StopError{...}` and `&jobs.StartError{...}`; `internal/adapters/docker/worker/runner.go` returns generic errors on create/start.
+- **Evidence:** Adapter wraps low-level errors into domain-specific error structs from `internal/domain/jobs` which couple adapters to domain error types.
+- **Why it’s a smell:** Adapters referencing domain error types increases coupling and can make adapter reuse harder; it also leaks domain semantics into lower layers.
+- **Remediation direction:** Return port-level errors (e.g., `ports.StopError` / error constants) and let app/domain layer map them into domain error types if needed.
+- **Questions:** [non-blocking] Prefer adapter -> ports errors, or is domain-level error returning acceptable here? (Options: "ports errors", "domain errors OK")
+- **Confidence:** Medium
+
+---
+
+### #15 — Worker runner's timeouts/stop behavior and magic exit codes (clarity & robustness) ⚠️
+- **Location(s):** `internal/adapters/docker/worker/runner.go` (`stopContainer` returns 137 on inspect error; timedOut semantics set based on errCh path)
+- **Evidence:** `stopContainer` returns `137` when ContainerInspect fails, and `timedOut` is set based on an `errCh` read (which may represent timeout or other errors). No retry or backoff is attempted.
+- **Why it’s a smell:** Magic numeric exit codes and ambiguous timeout handling reduce clarity and make it harder to map errors to actionable remediation steps; missing retry behavior reduces robustness to transient Docker API issues.
+- **Remediation direction:** Return explicit error types (or wrap codes), document 137/143 semantics clearly, and consider retry/backoff for transient Docker errors.
+- **Questions:** [non-blocking] Should we introduce a small retry/backoff for container operations (start/stop) in adapters? (Yes / No)
+- **Confidence:** Medium
+
+
 ## Questions for user
 - [blocking] Should `ExecutionPlan` be authoritative and drive execution (i.e., make the Executor execute plan steps) or remain a preview (DryRun only) while Executor uses a fixed internal flow? (options: "Plan-is-source-of-truth", "Plan-is-preview and document it")
 - [blocking] Which API contract should be canonical for job execution?
@@ -105,6 +200,19 @@
 ---
 
 ## Suggested next scout / follow-ups
+
+- Implement a small follow-up scan to trace how `ExecutionPlan` is used by callers and whether any external consumers assume the plan contains start steps (impact analysis for adding start step).
+- If the team prefers plan-driven execution, a focused scout to identify all assumptions in tests and CLI that would need updating.
+
+---
+
+## Progress log
+- **Start:** Opened prior smell memories and confirmed scope (read `wip_smell_milestone3` and `wip_smell-design-m3`). Next step: scan code for concrete evidence.
+- **Mid:** Scanned planner, executor, ports, adapters, CLI and config; confirmed prior smells (#4, #23, #24, #25, #26) and collected evidence for new findings (#8–#15).
+- **End:** Wrote verification table, appended new findings, and recorded questions and remediation directions; awaiting answers to blocking questions to prioritize follow-ups.
+
+---
+
 - Implement a small follow-up scan to trace how `ExecutionPlan` is used by callers and whether any external consumers assume the plan contains start steps (impact analysis for adding start step).
 - If the team prefers plan-driven execution, a focused scout to identify all assumptions in tests and CLI that would need updating.
 
