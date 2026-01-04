@@ -97,50 +97,89 @@ Rules:
 - If a smell has no good anchor, record “no anchor” reason in wip_smell_<scope>.
 </todo_policy>
 
-<known_context_injection>
-Memory-first, especially on later iterations.
+<required_memory_pack>
+Scouts use smaller models and need explicit context. You MUST build a "Required Memory Pack" for each scout invocation.
 
 At session start (after scope is chosen):
-- Read wip_smell_<scope> if it exists (or create it if missing).
-- Treat it as the authoritative “known smells / prior work” index.
+1. Call `list_memories` to see all available memories.
+2. Read `arch_overview` (if exists) to understand intended architecture.
+3. Identify 2-3 `pkg_*` memories relevant to the scope (based on paths/modules in scope).
+4. Read `wip_smell_<scope>` if it exists (or create it if missing).
 
-When spawning any scout:
-- Always include:
-  - scope label + scope definition
-  - “Known smells index: wip_smell_<scope> (read this first)”
-- If this is not the first iteration:
-  - include a short “Known context” summary pulled from wip_smell_<scope>:
-    - existing smell IDs + titles (brief)
-    - any key open questions or decisions already recorded
-- Goal: scouts should link to existing smell IDs instead of rediscovering as “new.”
+Required Memory Pack contents (pass to every scout):
+- `wip_smell_<scope>` (always) — the known smells index
+- `arch_overview` (if exists) — intended architecture and boundaries
+- 2-3 scope-relevant `pkg_*` memories — component design intent
+
+When spawning a scout, you MUST include in the prompt:
+- The explicit list of memory names the scout MUST read
+- A short summary of what each memory contains (1 sentence each)
+- Instruction: "Read these memories FIRST, before any code scanning"
+
+Why this matters:
+- Scouts cannot ask you questions mid-run; they return one final report.
+- Without architectural context, scouts make generic findings that miss project intent.
+- Scouts that skip memory reading produce low-quality, redundant findings.
+</required_memory_pack>
+
+<known_context_injection>
+In addition to the Required Memory Pack, inject known smell context.
+
+If this is not the first iteration:
+- Include a short "Known smells summary" pulled from wip_smell_<scope>:
+  - existing smell IDs + titles (brief list)
+  - any key open questions or decisions already recorded
+  - any "by design" decisions the user already confirmed
+
+Goal: scouts should link to existing smell IDs instead of rediscovering as "new."
+
+Example scout prompt snippet:
+```
+Required Memory Pack (read these FIRST):
+- wip_smell_milestone3: known smells index (32 smells so far)
+- arch_overview: hexagonal architecture, CLI→app→adapters layering
+- pkg_cli: CLI is thin, delegates to app layer
+- pkg_app_executor: executor runs backup jobs via worker adapter
+
+Known smells summary:
+- Smell 1-10: CLI layering issues (decision: will refactor in M4)
+- Smell 15: Executor API mismatch (pending user decision)
+- Open question: should CLI import adapters directly?
+```
 </known_context_injection>
 
 <subagent_contract>
 Subagents are stateless and isolated; each returns one final report.
-Therefore each scout must write a WIP memory and return its exact filename.
+Scouts use smaller/cheaper models and CANNOT ask you questions mid-run.
+Therefore: be explicit, provide full context, and require structured output.
 
 You provide each scout:
-- Scope label + scope definition (included/excluded)
-- Scope boundaries (paths / diff-only / exclusions)
+- Scope label + scope definition (included/excluded paths)
 - Task focus (general or specific smell type)
 - Target WIP memory filename to create/update: wip_smell-[task]
-- Known context injection per <ref section="known_context_injection"/>
+- **Required Memory Pack** per <ref section="required_memory_pack"/> — explicit list of memories to read FIRST
+- **Known context injection** per <ref section="known_context_injection"/> — existing smells summary
 - Known user answers/constraints gathered so far
-- Stop conditions (what “done” looks like)
+- Stop conditions (what "done" looks like)
+- Boundary rules: what this scout should NOT claim (route to other scouts instead)
 
-You require each scout WIP memory to be iterative + structured:
-- Must update the WIP at least 3 times (start / mid / end) and include a short “Progress log”.
-- Must include “Context from memories” (at minimum: what wip_smell_<scope> already says).
-- Must use a consistent per-finding schema (title/locations/evidence/why/remediation/questions/confidence).
-- Best-practice/library claims must include a short Context7/Tavily source summary OR be labeled UNVERIFIED with lowered confidence.
-- Findings that appear to match an existing smell must link to “smell N in wip_smell_<scope>” (or mark “possible duplicate of smell N”).
+Scout WIP memory requirements:
+- Must include "Context from memories" section summarizing what they learned from the Required Memory Pack
+- Must use consistent per-finding schema (title/locations/evidence/why/remediation/confidence)
+- Findings without concrete evidence (file path + symbol + usage pointer) must be DROPPED, not included
+- Best-practice/library claims must include Context7/Tavily source summary OR be labeled UNVERIFIED
+- Findings matching existing smells must link to "smell N in wip_smell_<scope>" or mark "possible duplicate"
 
-You require each scout final report to include:
+Scout final report requirements:
 - Status: OK | PARTIAL | BLOCKED
 - WIP memory filename(s) written/updated
 - Top findings (titles only)
 - Questions for user (bullet list; mark blocking vs non-blocking)
 - Suggested next scout(s) (optional)
+
+Quality gate:
+- If a scout WIP lacks "Context from memories" or contains ungrounded findings, note this in wip_smell_<scope> and discount those findings during consolidation.
+- Do NOT rerun scouts just for compliance issues; instead, filter out low-quality findings.
 </subagent_contract>
 
 <scout_roster>
