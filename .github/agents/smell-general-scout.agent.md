@@ -53,6 +53,7 @@ Quality bar:
 
 <evidence_and_claims_policy>
 Code is the source of truth. Memories provide the big picture.
+List memories and read the read the ones relevant to the scope first. Like architectural memories etc.
 
 Evidence requirements (per finding):
 - Must include file paths and best-available symbol pointers.
