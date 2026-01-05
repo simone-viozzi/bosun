@@ -10,22 +10,28 @@ Implements `ports.JobExecutor` - coordinates ComposeController and WorkerRunner.
 - `executor.go` - Main `Executor` struct implementing `JobExecutor`
 - `doc.go` - Package documentation
 
-### Execution Flow
+### Execution Flow (Plan-Driven)
 ```
 Execute(job)
+    │
+    ├─► 0. Generate execution plan (Planner.Plan)
     │
     ├─► 1. Pre-validate worker image (ImageInspect or Pull)
     │       └─► Fail fast if image missing (stack stays safe)
     │
-    ├─► 2. Stop stack (ComposeController.StopStack)
-    │       └─► Reverse dependency order
-    │
-    ├─► 3. Run worker (WorkerRunner.Run)
-    │       └─► Capture exit code and logs
-    │
-    └─► 4. Start stack (ComposeController.StartStack)
-            └─► Always attempted, even if worker failed
+    └─► 2. Execute plan steps in order:
+            │
+            ├─► StopContainers: Stop stack (ComposeController.StopStack)
+            │       └─► Reverse dependency order
+            │
+            ├─► RunWorker: Run worker (WorkerRunner.Run)
+            │       └─► Capture exit code and logs
+            │
+            └─► StartContainers: Start stack (ComposeController.StartStack)
+                    └─► Always attempted, even if worker failed
 ```
+
+The executor interprets the plan steps rather than hardcoding the flow, ensuring `bosun plan show` output matches actual execution.
 
 ### Timeout Configuration
 | Step | Default | Label | CLI Flag |

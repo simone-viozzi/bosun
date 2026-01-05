@@ -35,11 +35,11 @@ _Append-only. Never renumber IDs._
 
 | ID | Title | Status | Evidence | TODO Anchors | Issue |
 |----|-------|--------|----------|--------------|-------|
-| 1 | Confusing `BackupEnabled` property name | **Ready-For-Issue** | `wip_smell-general-m3` #1 | `internal/config/schema/config_v1.go:30` | #140 |
-| 2 | Duplicate CLI error printing | New | `wip_smell-general-m3` #2 | — | — |
-| 3 | Strict unknown-key rejection (may cause #136) | **Ready-For-Issue** | `wip_smell-general-m3` #3 | `internal/config/loader/loader.go:125` | #139 |
-| 4 | Executor API mismatch / unused `discoverer` param | **Ready-For-Issue** | `wip_smell-general-m3` #4, `wip_smell-design-m3` #2 | `internal/app/executor/executor.go:24` | #143 |
-| 5 | Missing restart step in plan display (#135) | New | `wip_smell-general-m3` #5 | — | — |
+| 1 | Confusing `BackupEnabled` property name | **FIXED** | `wip_smell-general-m3` #1 | — | #140 |
+| 2 | Duplicate CLI error printing | **FIXED** | `wip_smell-general-m3` #2 | — | #133 |
+| 3 | Strict unknown-key rejection (may cause #136) | **FIXED** | `wip_smell-general-m3` #3 | — | #139 |
+| 4 | Executor API mismatch / unused `discoverer` param | **FIXED** | `wip_smell-general-m3` #4, `wip_smell-design-m3` #2 | — | #143 |
+| 5 | Missing restart step in plan display (#135) | **FIXED** | `wip_smell-general-m3` #5 | — | #142 |
 | 6 | Worker runner silent error swallowing / magic 137 | New | `wip_smell-general-m3` #6 | — | — |
 | 7 | JSON/YAML output duplication across CLI commands | New | `wip_smell-general-m3` #7 | — | — |
 | 8 | Brittle integration test harness (needs testcontainers) | New | `wip_smell-general-m3` #8 | — | — |
@@ -57,8 +57,8 @@ _Append-only. Never renumber IDs._
 | 20 | Docker client wiring duplicated across CLI/tests | New | `wip_smell-duplication-m3` #3 | — | — |
 | 21 | Near-identical test setup calls | New | `wip_smell-duplication-m3` #5 | — | — |
 | 22 | Duplicate discovery/wiring sequences (snapshot→discover) | New | `wip_smell-duplication-m3` #6 | — | — |
-| 23 | Planner vs Executor mismatch (plan not authoritative) | **Ready-For-Issue** | `wip_smell-design-m3` #1 | `internal/app/planner/planner.go:84` | #142 |
-| 24 | Execution plan incompleteness (no start step, no per-step policies) | **Ready-For-Issue** | `wip_smell-design-m3` #4 | `internal/app/planner/planner.go:84` | #142 |
+| 23 | Planner vs Executor mismatch (plan not authoritative) | **FIXED** | `wip_smell-design-m3` #1 | — | #142 |
+| 24 | Execution plan incompleteness (no start step, no per-step policies) | **FIXED** | `wip_smell-design-m3` #4 | — | #142 |
 | 25 | Error handling & retry policy under-specified | Confirmed | `wip_smell-design-m3` #6 | — | — |
 | 26 | `ports` imports domain types (coupling tradeoff) | Confirmed | `wip_smell-design-m3` #7 | — | — |
 | 27 | Plan CreatedAt responsibility mismatch (planner vs caller) | New | `wip_smell-design-m3` #8 | — | — |
@@ -202,15 +202,21 @@ _Append-only. Never renumber IDs._
 
 ## Issue Review Summary
 
-### Existing Issues (Ready for Implementation)
+### Issues Implemented (M3.5)
+
+| Issue | Priority | Smells | Status | Resolution |
+|-------|----------|--------|--------|------------|
+| **#133** | P3 | #2 | ✅ FIXED | `SilenceErrors: true` on root command, clean main.go |
+| **#139** | P0 | #3 | ✅ FIXED | Lenient mode default, `--strict` flag for errors |
+| **#140** | P1 | #1 | ✅ FIXED | Renamed `BackupEnabled` → `Enabled` |
+| **#142** | P1 | #5,23,24 | ✅ FIXED | Planner adds `start_containers` step; executor plan-driven |
+| **#143** | P1 | #4 | ✅ FIXED | Interface takes `jobs.Job` directly; removed unused param |
+
+### Deferred Issues (Not In M3.5 Scope)
 
 | Issue | Priority | Smells | Decision | Action |
 |-------|----------|--------|----------|--------|
-| **#139** | P0 | #3 | Lenient/warning | Change loader to warn on unknown `bosun.*` keys instead of error |
-| **#140** | P1 | #1 | Rename now | Rename `BackupEnabled` → `JobEnabled` across schema, labels, docs |
 | **#141** | P2 | #16,17,18 | Thin CLI | Move wiring to `internal/app/factory` or `internal/bootstrap` |
-| **#142** | P1 | #23,24 | Plan-is-truth | Planner adds start step; Executor interprets `plan.Steps` |
-| **#143** | P1 | #4 | Option B | Remove unused `discoverer` param; keep `ExecuteJob(ctx, job)` |
 
 ### New Findings (Not Yet Issued)
 

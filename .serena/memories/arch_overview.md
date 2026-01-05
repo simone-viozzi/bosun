@@ -16,13 +16,18 @@ Bosun is a **job orchestrator for Docker environments**. It discovers job defini
   - `LabelSource`: Discovers labeled Docker entities
   - `JobDiscoverer`: Transforms labels into Jobs
   - `JobPlanner`: Generates ExecutionPlans from Jobs
+  - `JobExecutor`: Orchestrates job execution (plan-driven)
+  - `ComposeController`: Stack lifecycle management
+  - `WorkerRunner`: Worker container execution
 - **Adapters** (`internal/adapters/`): External system integrations
   - `dockerlabels/`: Docker API label discovery
   - `joblabels/`: Job parsing from labels
-  - `docker/`: Container control (future)
+  - `docker/compose/`: Compose stack control (stop/start)
+  - `docker/worker/`: Worker container lifecycle
   - `http/`, `storage/`: Other integrations
 - **Application** (`internal/app/`): Orchestration layer
   - `planner/`: Plan generation service
+  - `executor/`: Plan-driven job execution
 - **Config** (`internal/config/`): Configuration system
   - `schema/`: Code-first schema definitions
   - `loader/`: Label parsing and validation
@@ -32,7 +37,9 @@ Bosun is a **job orchestrator for Docker environments**. It discovers job defini
 ### Key Data Flow
 ```
 Docker Labels → LabelSource.Snapshot() → JobDiscoverer.DiscoverJobs()
-→ JobPlanner.Plan() → ExecutionPlan → [Executor - future]
+→ JobPlanner.Plan() → ExecutionPlan → JobExecutor.Execute()
+    │
+    └─► StopContainers → RunWorker → StartContainers
 ```
 
 ## Why

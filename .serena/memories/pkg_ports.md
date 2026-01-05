@@ -84,7 +84,7 @@ type WorkerRunner interface {
 User pass-through via `bosun.job.worker.env.*` labels.
 
 ### `JobExecutor` (`executor.go`)
-Orchestrates complete job execution.
+Orchestrates complete job execution using plan-driven interpretation.
 ```go
 type JobExecutor interface {
     Execute(ctx context.Context, job jobs.Job, opts ExecuteOptions) (ExecuteResult, error)
@@ -92,11 +92,13 @@ type JobExecutor interface {
 }
 ```
 
-**Execution Flow**:
-1. Pre-validate worker image exists (fail fast)
-2. Stop stack (reverse dependency order)
-3. Run worker container
-4. Start stack (dependency order) - always attempted, even if worker fails
+**Execution Flow** (plan-driven):
+1. Generate execution plan from job
+2. Pre-validate worker image exists (fail fast)
+3. Execute each plan step in order:
+   - `StopContainers` - Stop stack (reverse dependency order)
+   - `RunWorker` - Run worker container
+   - `StartContainers` - Start stack (dependency order) - always attempted, even if worker fails
 
 ## Why
 Ports enable dependency inversion: domain depends on interfaces, adapters implement them. Easy to mock for testing.

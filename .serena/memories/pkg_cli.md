@@ -28,6 +28,7 @@ Validates configuration from Docker labels.
 - `-p, --print` - Print merged config as JSON
 - `-c, --config` - Path to config file
 - `--stopped` - Include stopped containers
+- `--strict` - Treat unknown keys as errors (default: warnings only)
 
 **Exit Codes** (`internal/cmd/exitcodes.go`):
 - `0` - Success
