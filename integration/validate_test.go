@@ -64,8 +64,9 @@ func Test_Integration_ConfigValidate_InvalidConfig(t *testing.T) {
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run bosun config validate
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate")
+	// Run bosun config validate with --strict to treat unknown keys as errors
+	// (Without --strict, unknown keys are only warnings per #139)
+	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate", "--strict")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -83,7 +84,7 @@ func Test_Integration_ConfigValidate_InvalidConfig(t *testing.T) {
 		t.Errorf("Expected validation errors header, got stderr: %s", stderrStr)
 	}
 
-	// Should report unknown key error
+	// Should report unknown key error (with --strict flag)
 	if !strings.Contains(stderrStr, "unknown key") {
 		t.Errorf("Expected unknown key error, got stderr: %s", stderrStr)
 	}
@@ -91,6 +92,51 @@ func Test_Integration_ConfigValidate_InvalidConfig(t *testing.T) {
 	// Should report multiple errors (not just first)
 	if !strings.Contains(stderrStr, "error") {
 		t.Errorf("Expected error count, got stderr: %s", stderrStr)
+	}
+}
+
+// Test_Integration_ConfigValidate_LenientMode verifies that unknown keys are
+// treated as warnings (not errors) by default, while other errors still fail.
+func Test_Integration_ConfigValidate_LenientMode(t *testing.T) {
+	// Note: These tests cannot run in parallel because they all validate ALL
+	// Docker entities with bosun.* labels system-wide
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+
+	// Start a compose stack with invalid labels
+	_ = testutil.StartCompose(t, ctx, "validate-invalid.yaml")
+
+	// Build bosun binary
+	bosunBin := buildBosun(t)
+
+	// Run bosun config validate WITHOUT --strict (lenient mode)
+	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate")
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+
+	// Should still exit non-zero (because of other errors like invalid duration)
+	if err == nil {
+		t.Error("Expected non-zero exit code, got exit 0")
+	}
+
+	// Should report errors to stderr
+	stderrStr := stderr.String()
+	if !strings.Contains(stderrStr, "Validation errors") {
+		t.Errorf("Expected validation errors header, got stderr: %s", stderrStr)
+	}
+
+	// Should NOT report "unknown key" as an error (it's now a warning)
+	if strings.Contains(stderrStr, "unknown key") {
+		t.Errorf("Did not expect unknown key error in lenient mode, got stderr: %s", stderrStr)
+	}
+
+	// Should still report other errors (invalid duration, invalid bool, etc.)
+	if !strings.Contains(stderrStr, "invalid duration") {
+		t.Errorf("Expected invalid duration error, got stderr: %s", stderrStr)
 	}
 }
 
