@@ -32,7 +32,7 @@ func NewJobCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "job",
 		Short: "Job execution commands",
-		Long: `Operations for running backup jobs.
+		Long: `Operations for running jobs.
 
 Bosun executes jobs by stopping the target Compose stack, running a worker
 container with attached volumes, and restarting the stack.`,
@@ -61,8 +61,8 @@ func NewJobRunCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "run <job-name>",
-		Short: "Execute a backup job",
-		Long: `Executes a backup job by name.
+		Short: "Execute a job",
+		Long: `Executes a job by name.
 
 The execution flow:
 1. Discover job by name from Docker labels
@@ -76,22 +76,22 @@ fails. This ensures production services remain available.
 
 Use --dry-run to preview the execution plan without making any changes.`,
 		Example: `  # Run a job
-  bosun job run daily-backup
+  bosun job run daily-job
 
   # Preview what would happen (dry run)
-  bosun job run daily-backup --dry-run
+  bosun job run daily-job --dry-run
 
   # Dry run with JSON output
-  bosun job run daily-backup --dry-run --format json
+  bosun job run daily-job --dry-run --format json
 
   # Run with custom timeout
-  bosun job run daily-backup --timeout 2h
+  bosun job run daily-job --timeout 2h
 
   # Keep stack stopped after execution (maintenance mode)
-  bosun job run daily-backup --keep-stopped
+  bosun job run daily-job --keep-stopped
 
   # Keep worker container on failure for debugging
-  bosun job run daily-backup --keep-failed`,
+  bosun job run daily-job --keep-failed`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

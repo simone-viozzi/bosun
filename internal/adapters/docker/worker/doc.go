@@ -1,4 +1,4 @@
-// Package worker implements backup worker container execution.
+// Package worker implements worker container execution.
 //
 // This package provides an adapter that implements the ports.WorkerRunner
 // interface using the Docker SDK for Go. It manages worker container lifecycle:
@@ -17,7 +17,7 @@
 // # Worker Contract
 //
 // Worker containers must:
-//   - Have a default ENTRYPOINT or CMD that performs backup
+//   - Have a default ENTRYPOINT or CMD that performs the job task
 //   - Exit with code 0 on success, non-zero on failure
 //   - Handle SIGTERM gracefully (optional but recommended)
 //   - Write logs to stdout/stderr

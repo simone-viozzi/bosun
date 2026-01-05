@@ -31,8 +31,8 @@ func NewPlanListCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
-		Short:   "List discovered backup jobs",
-		Long: `Lists all backup jobs discovered from Docker container and volume labels.
+		Short:   "List discovered jobs",
+		Long: `Lists all jobs discovered from Docker container and volume labels.
 
 Jobs are discovered from containers with bosun.job.enabled=true labels.
 Multiple containers with the same bosun.job.name are merged into a single job.
@@ -157,9 +157,9 @@ func renderTextOutput(foundJobs []jobs.Job, validationErrors []ports.ValidationE
 	if len(foundJobs) == 0 && len(validationErrors) == 0 {
 		fmt.Println("No jobs discovered.")
 		fmt.Println("")
-		fmt.Println("To define a backup job, add these labels to a container:")
+		fmt.Println("To define a job, add these labels to a container:")
 		fmt.Println("  bosun.job.enabled: \"true\"")
-		fmt.Println("  bosun.job.name: \"my-backup\"")
+		fmt.Println("  bosun.job.name: \"my-job\"")
 		return
 	}
 

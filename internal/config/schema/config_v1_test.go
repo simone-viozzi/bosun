@@ -24,7 +24,7 @@ func TestConfigV1_ParseTags(t *testing.T) {
 		"bosun.container.healthCheckInterval",
 		"bosun.container.autoRestart",
 		"bosun.container.logLevel",
-		"bosun.volume.backupEnabled",
+		"bosun.volume.enabled",
 		"bosun.volume.maxSize",
 		"bosun.network.priority",
 	}
@@ -153,8 +153,8 @@ func TestConfigV1_DefaultOf(t *testing.T) {
 
 	// Verify volume defaults
 	t.Run("volume defaults", func(t *testing.T) {
-		if cfg.BackupEnabled != false {
-			t.Errorf("BackupEnabled = %v, want false", cfg.BackupEnabled)
+		if cfg.Enabled != false {
+			t.Errorf("Enabled = %v, want false", cfg.Enabled)
 		}
 		expectedSize := int64(10 * 1024 * 1024 * 1024) // 10GB
 		if cfg.MaxSize != expectedSize {

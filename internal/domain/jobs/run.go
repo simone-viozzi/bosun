@@ -1,4 +1,4 @@
-// Package jobs contains domain types and logic for backup job execution.
+// Package jobs contains domain types and logic for job execution.
 package jobs
 
 import (

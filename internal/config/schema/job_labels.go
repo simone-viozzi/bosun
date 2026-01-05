@@ -5,18 +5,18 @@ import (
 	"time"
 )
 
-// Job label schema defines the Docker labels used to configure backup jobs.
+// Job label schema defines the Docker labels used to configure jobs.
 // Labels are applied to containers and volumes to define how Bosun discovers
-// and executes backup jobs.
+// and executes jobs.
 
 // JobLabelConfig defines the configuration labels that can be applied to containers
-// to define backup jobs.
+// to define jobs.
 type JobLabelConfig struct {
-	// Enabled indicates whether this container participates in a backup job.
+	// Enabled indicates whether this container participates in a job.
 	// Containers without this label or with enabled=false are ignored.
 	Enabled bool `bosun:"key=bosun.job.enabled,scope=container,type=bool,default=false,doc='Enable job participation for this container'"`
 
-	// Name is the unique identifier for the backup job.
+	// Name is the unique identifier for the job.
 	// Multiple containers with the same name are merged into one job.
 	// Required when enabled=true.
 	Name string `bosun:"key=bosun.job.name,scope=container,type=string,doc='Unique job identifier'"`
@@ -25,8 +25,8 @@ type JobLabelConfig struct {
 	// Uses standard 5-field cron format: minute hour day-of-month month day-of-week.
 	Schedule string `bosun:"key=bosun.job.schedule,scope=container,type=string,default='0 0 * * *',doc='Cron schedule expression (default: daily at midnight)'"`
 
-	// WorkerImage specifies the Docker image to use for executing the backup.
-	WorkerImage string `bosun:"key=bosun.job.worker.image,scope=container,type=string,default=bosun-worker:local,doc='Docker image for backup worker'"`
+	// WorkerImage specifies the Docker image to use for executing the job.
+	WorkerImage string `bosun:"key=bosun.job.worker.image,scope=container,type=string,default=bosun-worker:local,doc='Docker image for worker'"`
 
 	// M3 additions: Timeout configurations
 	// StopTimeout specifies the timeout for stopping containers before worker execution.
@@ -40,7 +40,7 @@ type JobLabelConfig struct {
 }
 
 // JobVolumeConfig defines the configuration labels that can be applied to volumes
-// to attach them to backup jobs.
+// to attach them to jobs.
 type JobVolumeConfig struct {
 	// Attach specifies which job(s) this volume should be attached to.
 	// The value is a job name (matching bosun.job.name on containers).

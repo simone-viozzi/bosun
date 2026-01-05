@@ -80,7 +80,7 @@
 
 **Checkpoint**: `bosun plan show <job>` shows stop → worker → start. US2 independently testable.
 
-- [ ] T019a 🔒 COMMIT: `feat(planner): add start_containers step to execution plan (#142)`
+- [x] T019a 🔒 COMMIT: `feat(planner): add start_containers step to execution plan (#142)`
 
 ---
 
@@ -92,18 +92,18 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] Rename `BackupEnabled` → `Enabled` in `internal/config/schema/config_v1.go:30`
-- [ ] T021 [P] [US3] Update label key `bosun.volume.backupEnabled` → `bosun.volume.enabled` in `internal/config/schema/config_v1.go`
-- [ ] T022 [P] [US3] Update doc comments in `internal/config/schema/job_labels.go` (remove "backup" references)
-- [ ] T023 [P] [US3] Update package doc in `internal/domain/jobs/run.go` (change "backup job execution" → "job execution")
-- [ ] T024 [P] [US3] Update package doc in `internal/adapters/docker/worker/doc.go` (change "backup worker" → "worker")
-- [ ] T025 [P] [US3] Update CLI description in `internal/cmd/plan_list.go` (change "backup jobs" → "jobs")
-- [ ] T026 [P] [US3] Update CLI description in `internal/cmd/plan_show.go` (change "backup job" → "job")
-- [ ] T027 [P] [US3] Update CLI description in `internal/cmd/job_run.go` (change "backup job" → "job")
-- [ ] T028 [P] [US3] Update package doc in `internal/ports/doc.go` (change "backup job definitions" → "job definitions")
-- [ ] T029 [P] [US3] Update documentation in `docs/config.md` for renamed label
-- [ ] T030 [US3] Update config schema tests in `internal/config/schema/config_v1_test.go` for renamed field
-- [ ] T031 [US3] Update any golden files or test fixtures referencing `BackupEnabled`
+- [x] T020 [P] [US3] Rename `BackupEnabled` → `Enabled` in `internal/config/schema/config_v1.go:30`
+- [x] T021 [P] [US3] Update label key `bosun.volume.backupEnabled` → `bosun.volume.enabled` in `internal/config/schema/config_v1.go`
+- [x] T022 [P] [US3] Update doc comments in `internal/config/schema/job_labels.go` (remove "backup" references)
+- [x] T023 [P] [US3] Update package doc in `internal/domain/jobs/run.go` (change "backup job execution" → "job execution")
+- [x] T024 [P] [US3] Update package doc in `internal/adapters/docker/worker/doc.go` (change "backup worker" → "worker")
+- [x] T025 [P] [US3] Update CLI description in `internal/cmd/plan_list.go` (change "backup jobs" → "jobs")
+- [x] T026 [P] [US3] Update CLI description in `internal/cmd/plan_show.go` (change "backup job" → "job")
+- [x] T027 [P] [US3] Update CLI description in `internal/cmd/job_run.go` (change "backup job" → "job")
+- [x] T028 [P] [US3] Update package doc in `internal/ports/doc.go` (change "backup job definitions" → "job definitions")
+- [x] T029 [P] [US3] Update documentation in `docs/config.md` for renamed label
+- [x] T030 [US3] Update config schema tests in `internal/config/schema/config_v1_test.go` for renamed field
+- [x] T031 [US3] Update any golden files or test fixtures referencing `BackupEnabled`
 
 **Checkpoint**: No "backup" terminology in production code. US3 independently testable.
 
