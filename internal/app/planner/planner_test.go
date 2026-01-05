@@ -57,9 +57,9 @@ func TestPlan_WithContainers(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	// Should have 2 steps: stop + run-worker
-	if len(plan.Steps) != 2 {
-		t.Fatalf("Steps length = %d, want 2", len(plan.Steps))
+	// Should have 3 steps: stop + run-worker + start
+	if len(plan.Steps) != 3 {
+		t.Fatalf("Steps length = %d, want 3", len(plan.Steps))
 	}
 
 	// First step should be stop_containers
@@ -76,6 +76,14 @@ func TestPlan_WithContainers(t *testing.T) {
 	}
 	if plan.Steps[1].WorkerImage != "backup:v1" {
 		t.Errorf("Steps[1].WorkerImage = %q, want %q", plan.Steps[1].WorkerImage, "backup:v1")
+	}
+
+	// Third step should be start_containers
+	if plan.Steps[2].Type != jobs.StepTypeStartContainers {
+		t.Errorf("Steps[2].Type = %q, want %q", plan.Steps[2].Type, jobs.StepTypeStartContainers)
+	}
+	if len(plan.Steps[2].ContainerIDs) != 2 {
+		t.Errorf("Steps[2].ContainerIDs length = %d, want 2", len(plan.Steps[2].ContainerIDs))
 	}
 }
 

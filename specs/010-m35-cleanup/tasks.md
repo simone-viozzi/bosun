@@ -60,7 +60,7 @@
 
 **Checkpoint**: `bosun config validate --project joblabels` passes. US1 independently testable.
 
-- [ ] T014a 🔒 COMMIT: `feat(config): lenient unknown-key handling with --strict override (#139)`
+- [x] T014a 🔒 COMMIT: `feat(config): lenient unknown-key handling with --strict override (#139)`
 
 ---
 
@@ -72,11 +72,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] Add `start_containers` step generation in `internal/app/planner/planner.go` (remove TODO comment at line ~84)
-- [ ] T016 [US2] Create `generateStartDescription` helper function in `internal/app/planner/planner.go`
-- [ ] T017 [US2] Update `Plan()` to append `StepTypeStartContainers` step after `StepTypeRunWorker`
-- [ ] T018 [US2] Update planner unit tests in `internal/app/planner/planner_test.go` to expect 3 steps
-- [ ] T019 [US2] Update integration test assertions in `integration/plan_test.go` for new step
+- [x] T015 [US2] Add `start_containers` step generation in `internal/app/planner/planner.go` (remove TODO comment at line ~84)
+- [x] T016 [US2] Create `generateStartDescription` helper function in `internal/app/planner/planner.go`
+- [x] T017 [US2] Update `Plan()` to append `StepTypeStartContainers` step after `StepTypeRunWorker`
+- [x] T018 [US2] Update planner unit tests in `internal/app/planner/planner_test.go` to expect 3 steps
+- [x] T019 [US2] Update integration test assertions in `integration/plan_test.go` for new step
 
 **Checkpoint**: `bosun plan show <job>` shows stop → worker → start. US2 independently testable.
 

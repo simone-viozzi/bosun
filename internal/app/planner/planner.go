@@ -80,9 +80,28 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 	}
 	steps = append(steps, runWorkerStep)
 
-	// TODO(#142): Add StepTypeStartContainers step here, make ExecutionPlan authoritative.
-	// Executor should interpret plan.Steps, not use hardcoded sequence.
-	// See smells #23-24 in wip_smell_milestone3
+	// Step 3: Start containers (if any were stopped)
+	if len(targetContainers) > 0 {
+		containerNames := extractContainerNames(targetContainers)
+
+		// Use compose start if we used compose stop
+		useComposeStart := false
+		composeProject := ""
+		if len(job.TargetStacks) == 1 {
+			useComposeStart = true
+			composeProject = job.TargetStacks[0]
+		}
+
+		startStep := jobs.PlanStep{
+			Type:           jobs.StepTypeStartContainers,
+			Description:    generateStartDescription(containerNames, useComposeStart, composeProject),
+			ContainerIDs:   targetContainers,
+			ContainerNames: containerNames,
+			UseComposeStop: useComposeStart, // reuses field for compose start
+			ComposeProject: composeProject,
+		}
+		steps = append(steps, startStep)
+	}
 
 	plan := jobs.ExecutionPlan{
 		JobName:   job.Name,
@@ -150,6 +169,33 @@ func generateRunWorkerDescription(workerImage string, volumes []jobs.VolumeAttac
 
 	return fmt.Sprintf("Run worker %q with %d volumes attached",
 		workerImage, len(volumes))
+}
+
+// generateStartDescription creates a human-readable description for a start step.
+func generateStartDescription(containerNames []string, useComposeStart bool, composeProject string) string {
+	if len(containerNames) == 0 {
+		return "No containers to start"
+	}
+
+	if useComposeStart && composeProject != "" {
+		return fmt.Sprintf("Start stack %q using docker compose start (%d container(s))",
+			composeProject, len(containerNames))
+	}
+
+	if len(containerNames) == 1 {
+		return fmt.Sprintf("Start container %q", containerNames[0])
+	}
+
+	// List first few containers, then summarize
+	maxShow := 3
+	if len(containerNames) <= maxShow {
+		return fmt.Sprintf("Start %d containers: %s",
+			len(containerNames), strings.Join(containerNames, ", "))
+	}
+
+	shown := strings.Join(containerNames[:maxShow], ", ")
+	return fmt.Sprintf("Start %d containers: %s, and %d more",
+		len(containerNames), shown, len(containerNames)-maxShow)
 }
 
 // Ensure Planner implements JobPlanner interface.
