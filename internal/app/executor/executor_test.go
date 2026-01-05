@@ -419,7 +419,7 @@ func TestPlanStep_Fields(t *testing.T) {
 		VolumeMounts: []jobs.VolumeAttachment{
 			{Name: "pgdata", MountPath: "/data/pg", Mode: "ro"},
 		},
-		UseComposeStop: true,
+		UseCompose:     true,
 		ComposeProject: "mystack",
 	}
 
@@ -444,8 +444,8 @@ func TestPlanStep_Fields(t *testing.T) {
 	if len(step.VolumeMounts) != 1 {
 		t.Errorf("VolumeMounts length = %d, want 1", len(step.VolumeMounts))
 	}
-	if !step.UseComposeStop {
-		t.Error("UseComposeStop = false, want true")
+	if !step.UseCompose {
+		t.Error("UseCompose = false, want true")
 	}
 	if step.ComposeProject != "mystack" {
 		t.Errorf("ComposeProject = %q, want %q", step.ComposeProject, "mystack")

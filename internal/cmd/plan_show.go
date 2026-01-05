@@ -207,7 +207,7 @@ func renderPlanTextOutput(plan jobs.ExecutionPlan, job jobs.Job) {
 		// Show details based on step type
 		switch step.Type {
 		case jobs.StepTypeStopContainers:
-			if step.UseComposeStop {
+			if step.UseCompose {
 				fmt.Printf("   Method: docker compose stop (project: %s)\n", step.ComposeProject)
 			} else {
 				fmt.Printf("   Method: docker stop\n")

@@ -448,7 +448,7 @@ func printDryRunText(plan jobs.ExecutionPlan) {
 				fmt.Printf("     - %s → %s (%s)\n", mount.Name, mount.MountPath, mount.Mode)
 			}
 		}
-		if step.UseComposeStop {
+		if step.UseCompose {
 			fmt.Printf("   Uses: docker compose stop %s\n", step.ComposeProject)
 		}
 	}

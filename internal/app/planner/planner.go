@@ -65,7 +65,7 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 			Description:    generateStopDescription(containerNames, useComposeStop, composeProject),
 			ContainerIDs:   targetContainers,
 			ContainerNames: containerNames,
-			UseComposeStop: useComposeStop,
+			UseCompose:     useComposeStop,
 			ComposeProject: composeProject,
 		}
 		steps = append(steps, stopStep)
@@ -97,7 +97,7 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 			Description:    generateStartDescription(containerNames, useComposeStart, composeProject),
 			ContainerIDs:   targetContainers,
 			ContainerNames: containerNames,
-			UseComposeStop: useComposeStart, // reuses field for compose start
+			UseCompose:     useComposeStart,
 			ComposeProject: composeProject,
 		}
 		steps = append(steps, startStep)

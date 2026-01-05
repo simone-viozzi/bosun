@@ -182,8 +182,8 @@ func TestPlan_UseComposeStop(t *testing.T) {
 		}
 
 		stopStep := plan.Steps[0]
-		if !stopStep.UseComposeStop {
-			t.Error("UseComposeStop should be true for single stack")
+		if !stopStep.UseCompose {
+			t.Error("UseCompose should be true for single stack")
 		}
 		if stopStep.ComposeProject != "mystack" {
 			t.Errorf("ComposeProject = %q, want %q", stopStep.ComposeProject, "mystack")
@@ -204,8 +204,8 @@ func TestPlan_UseComposeStop(t *testing.T) {
 		}
 
 		stopStep := plan.Steps[0]
-		if stopStep.UseComposeStop {
-			t.Error("UseComposeStop should be false for multiple stacks")
+		if stopStep.UseCompose {
+			t.Error("UseCompose should be false for multiple stacks")
 		}
 	})
 
@@ -223,8 +223,8 @@ func TestPlan_UseComposeStop(t *testing.T) {
 		}
 
 		stopStep := plan.Steps[0]
-		if stopStep.UseComposeStop {
-			t.Error("UseComposeStop should be false when no stacks")
+		if stopStep.UseCompose {
+			t.Error("UseCompose should be false when no stacks")
 		}
 	})
 }
