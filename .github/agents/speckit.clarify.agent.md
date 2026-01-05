@@ -1,6 +1,6 @@
 ---
 description: Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.
-tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'serena/*', 'tavily/*', 'problems', 'changes', 'testFailure', 'todos', 'runSubagent']
+tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'read/readFile', 'search/codebase', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'execute/createAndRunTask', 'execute/getTaskOutput', 'execute/runTask', 'context7/*', 'serena/*', 'tavily/*', 'read/problems', 'search/changes', 'execute/testFailure', 'todo', 'agent']
 handoffs:
   - label: Build Technical Plan
     agent: speckit.plan
@@ -134,6 +134,7 @@ Execution steps:
     - If no valid questions exist at start, immediately report no critical ambiguities.
 
 5. Integration after EACH accepted answer (incremental update approach):
+    - Use EditFiles tool to modify the spec file in place.
     - Maintain in-memory representation of the spec (loaded once at start) plus the raw file contents.
     - For the first integrated answer in this session:
        - Ensure a `## Clarifications` section exists (create it just after the highest-level contextual/overview section per the spec template if missing).
