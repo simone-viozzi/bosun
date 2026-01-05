@@ -135,7 +135,7 @@
 
 **Checkpoint**: Executor interprets plan steps. DryRun matches Execute. US4 independently testable.
 
-- [ ] T044a 🔒 COMMIT: `feat(executor): plan-driven step interpreter with JobExecutor interface (#143)`
+- [x] T044a 🔒 COMMIT: `feat(executor): plan-driven step interpreter with JobExecutor interface (#143)`
 
 ---
 
@@ -147,13 +147,13 @@
 
 ### Implementation for User Story 5
 
-- [ ] T045 [US5] Identify duplicate error printing source in `internal/cmd/root.go` or `cmd/bosun/main.go`
-- [ ] T046 [US5] Fix duplicate error handling — ensure Cobra's `SilenceErrors` or error propagation is correct
-- [ ] T047 [US5] Verify fix with manual testing of invalid commands
+- [x] T045 [US5] Identify duplicate error printing source in `internal/cmd/root.go` or `cmd/bosun/main.go`
+- [x] T046 [US5] Fix duplicate error handling — ensure Cobra's `SilenceErrors` or error propagation is correct
+- [x] T047 [US5] Verify fix with manual testing of invalid commands
 
 **Checkpoint**: Errors appear once. US5 independently testable.
 
-- [ ] T047a 🔒 COMMIT: `fix(cli): deduplicate error output (#133)`
+- [x] T047a 🔒 COMMIT: `fix(cli): deduplicate error output (#133)`
 
 ---
 
