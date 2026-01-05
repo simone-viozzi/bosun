@@ -276,7 +276,7 @@ func outputResults(result ValidationResult, opts ValidateOptions) error {
 				entityErr.Entity.Name,
 				truncateID(entityErr.Entity.ID))
 
-			for _, verr := range entityErr.Errors {
+			for _, verr := range entityErr.Errors.Errors {
 				fmt.Fprintf(os.Stderr, "  - %s\n", verr.Message)
 				totalErrors++
 			}

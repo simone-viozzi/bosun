@@ -10,6 +10,13 @@ import (
 
 const bosunLabelPrefix = "bosun."
 
+// LoadOptions configures label loading behavior.
+type LoadOptions struct {
+	// Strict enables strict validation mode where unknown keys are errors.
+	// When false (default), unknown keys generate warnings instead of errors.
+	Strict bool
+}
+
 // filterBosunLabels returns only labels that have the "bosun." prefix.
 func filterBosunLabels(labels map[string]string) map[string]string {
 	result := make(map[string]string)

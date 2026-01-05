@@ -268,12 +268,12 @@ func TestFromLabels_UnknownKey(t *testing.T) {
 		t.Fatalf("Error should be ValidationErrors, got %T", err)
 	}
 
-	if len(verrs) != 1 {
-		t.Fatalf("Expected 1 error, got %d", len(verrs))
+	if len(verrs.Errors) != 1 {
+		t.Fatalf("Expected 1 error, got %d", len(verrs.Errors))
 	}
 
-	if !strings.Contains(verrs[0].Message, "unknown key") {
-		t.Errorf("Error message should contain 'unknown key', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "unknown key") {
+		t.Errorf("Error message should contain 'unknown key', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -297,8 +297,8 @@ func TestFromLabels_MultipleUnknownKeys(t *testing.T) {
 		t.Fatalf("Error should be ValidationErrors, got %T", err)
 	}
 
-	if len(verrs) != 3 {
-		t.Fatalf("Expected 3 errors, got %d", len(verrs))
+	if len(verrs.Errors) != 3 {
+		t.Fatalf("Expected 3 errors, got %d", len(verrs.Errors))
 	}
 }
 
@@ -323,8 +323,8 @@ func TestFromLabels_AllErrorsReported(t *testing.T) {
 	}
 
 	// Should have at least 3 errors
-	if len(verrs) < 3 {
-		t.Fatalf("Expected at least 3 errors, got %d: %v", len(verrs), verrs)
+	if len(verrs.Errors) < 3 {
+		t.Fatalf("Expected at least 3 errors, got %d: %v", len(verrs.Errors), verrs)
 	}
 }
 
@@ -347,12 +347,12 @@ func TestFromLabels_ScopeMismatch(t *testing.T) {
 		t.Fatalf("Error should be ValidationErrors, got %T", err)
 	}
 
-	if len(verrs) != 1 {
-		t.Fatalf("Expected 1 error, got %d", len(verrs))
+	if len(verrs.Errors) != 1 {
+		t.Fatalf("Expected 1 error, got %d", len(verrs.Errors))
 	}
 
-	if !strings.Contains(verrs[0].Message, "not allowed on scope") {
-		t.Errorf("Error message should contain 'not allowed on scope', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "not allowed on scope") {
+		t.Errorf("Error message should contain 'not allowed on scope', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -447,8 +447,8 @@ func TestFromLabels_InvalidDuration(t *testing.T) {
 		t.Fatalf("Error should be ValidationErrors, got %T", err)
 	}
 
-	if !strings.Contains(verrs[0].Message, "invalid duration") {
-		t.Errorf("Error message should contain 'invalid duration', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid duration") {
+		t.Errorf("Error message should contain 'invalid duration', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -470,8 +470,8 @@ func TestFromLabels_InvalidBool(t *testing.T) {
 		t.Fatalf("Error should be ValidationErrors, got %T", err)
 	}
 
-	if !strings.Contains(verrs[0].Message, "invalid bool") {
-		t.Errorf("Error message should contain 'invalid bool', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid bool") {
+		t.Errorf("Error message should contain 'invalid bool', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -493,8 +493,8 @@ func TestFromLabels_InvalidSize(t *testing.T) {
 		t.Fatalf("Error should be ValidationErrors, got %T", err)
 	}
 
-	if !strings.Contains(verrs[0].Message, "invalid size") {
-		t.Errorf("Error message should contain 'invalid size', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid size") {
+		t.Errorf("Error message should contain 'invalid size', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -516,13 +516,13 @@ func TestFromLabels_InvalidEnum(t *testing.T) {
 		t.Fatalf("Error should be ValidationErrors, got %T", err)
 	}
 
-	if !strings.Contains(verrs[0].Message, "invalid enum") {
-		t.Errorf("Error message should contain 'invalid enum', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid enum") {
+		t.Errorf("Error message should contain 'invalid enum', got %q", verrs.Errors[0].Message)
 	}
 
 	// Should list valid values
-	if !strings.Contains(verrs[0].Message, "debug") {
-		t.Errorf("Error message should list valid values, got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "debug") {
+		t.Errorf("Error message should list valid values, got %q", verrs.Errors[0].Message)
 	}
 }
 
