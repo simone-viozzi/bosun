@@ -101,20 +101,28 @@ func setReflectValue(field reflect.Value, value any) {
 //   - spec: Schema specification from ParseTags[ConfigV1]()
 //   - labels: Raw Docker labels map (e.g., from container inspection)
 //   - scope: The entity scope (container, volume, network)
+//   - opts: Optional LoadOptions (default: lenient mode where unknown keys are warnings)
 //
 // Returns:
 //   - cfg: Parsed configuration (partial if errors)
-//   - err: ValidationErrors if any validation failed, nil on success
+//   - result: ValidationErrors containing any errors and warnings
 //
 // Behavior:
 //   - Filters labels to only those with "bosun." prefix
-//   - Validates all keys are known in spec
+//   - Validates all keys are known in spec (warning in lenient mode, error in strict)
 //   - Validates scope matches (global allowed anywhere)
 //   - Parses values according to declared types
 //   - Returns ALL errors, not just first one
-func FromLabels(spec schema.Spec, labels map[string]string, scope schema.Scope) (schema.ConfigV1, error) {
+//   - Callers should check result.HasErrors() to determine success
+func FromLabels(spec schema.Spec, labels map[string]string, scope schema.Scope, opts ...LoadOptions) (schema.ConfigV1, ValidationErrors) {
 	var cfg schema.ConfigV1
 	var errs ValidationErrors
+
+	// Merge options (default is lenient mode)
+	var opt LoadOptions
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
 
 	// Filter to only bosun.* labels
 	bosunLabels := filterBosunLabels(labels)
@@ -129,8 +137,12 @@ func FromLabels(spec schema.Spec, labels map[string]string, scope schema.Scope) 
 		// Look up the field spec
 		fieldSpec, exists := spec.Get(key)
 		if !exists {
-			// TODO(#139): Change to warning instead of error, see smell #3 in wip_smell_milestone3
-			errs.AddUnknownKey(key, scope)
+			// Unknown key: error in strict mode, warning in lenient mode
+			if opt.Strict {
+				errs.AddUnknownKey(key, scope)
+			} else {
+				errs.AddUnknownKeyWarning(key, scope)
+			}
 			continue
 		}
 
@@ -162,10 +174,7 @@ func FromLabels(spec schema.Spec, labels map[string]string, scope schema.Scope) 
 		}
 	}
 
-	if errs.HasErrors() {
-		return cfg, errs
-	}
-	return cfg, nil
+	return cfg, errs
 }
 
 // isScopeAllowed checks if a field scope is allowed on an entity scope.
