@@ -165,15 +165,15 @@
 
 ### Implementation for User Story 6
 
-- [ ] T048 [P] [US6] Add "Running Jobs" section to `README.md` after existing sections
-- [ ] T049 [P] [US6] Document `bosun job run <job>` usage with flags in `README.md`
-- [ ] T050 [P] [US6] Document `--dry-run` flag with example output in `README.md`
-- [ ] T051 [P] [US6] Add example compose file snippet showing job labels in `README.md`
-- [ ] T052 [US6] Verify README examples work with test compose files
+- [x] T048 [P] [US6] Add "Running Jobs" section to `README.md` after existing sections
+- [x] T049 [P] [US6] Document `bosun job run <job>` usage with flags in `README.md`
+- [x] T050 [P] [US6] Document `--dry-run` flag with example output in `README.md`
+- [x] T051 [P] [US6] Add example compose file snippet showing job labels in `README.md`
+- [x] T052 [US6] Verify README examples work with test compose files
 
 **Checkpoint**: README has working "Running Jobs" section. US6 independently testable.
 
-- [ ] T052a 🔒 COMMIT: `docs(readme): add Running Jobs section with examples (#120)`
+- [x] T052a 🔒 COMMIT: `docs(readme): add Running Jobs section with examples (#120)` (already complete)
 
 ---
 

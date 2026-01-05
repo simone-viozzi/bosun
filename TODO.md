@@ -10,3 +10,8 @@
 
 ## internal/testutil/harness.go
 * [internal/testutil/harness.go:23](internal/testutil/harness.go#L23): use testcontainers-go to up / down compose stacks. do not rely on CLI.
+
+## internal/testutil/worker/Dockerfile
+* [internal/testutil/worker/Dockerfile:11](internal/testutil/worker/Dockerfile#L11): Document test worker in README or docs/testing.md
+* [internal/testutil/worker/Dockerfile:12](internal/testutil/worker/Dockerfile#L12): Add failure mode variants (exit 1, timeout, etc.) for error path testing
+* [internal/testutil/worker/Dockerfile:13](internal/testutil/worker/Dockerfile#L13): Consider publishing to a test registry for CI reproducibility
