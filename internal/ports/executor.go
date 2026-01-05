@@ -17,12 +17,12 @@ import (
 // JobExecutor orchestrates the full job execution lifecycle.
 //
 // Execution Flow:
-//  1. Discover job by name (via JobDiscoverer)
-//  2. Generate execution plan (via JobPlanner)
-//  3. Pre-validate worker image (fail fast)
-//  4. Stop target stack (via ComposeController)
-//  5. Run worker container (via WorkerRunner)
-//  6. Restart stack (via ComposeController) - ALWAYS, even on worker failure
+//  1. Generate execution plan (via JobPlanner)
+//  2. Pre-validate worker image (fail fast)
+//  3. Execute each step in the plan:
+//     - StepTypeStopContainers: Stop target stack
+//     - StepTypeRunWorker: Run worker container
+//     - StepTypeStartContainers: Restart stack
 //
 // Signal Handling:
 //   - On Ctrl+C (SIGINT) or SIGTERM: Cancel in-flight operations
@@ -34,32 +34,29 @@ import (
 //   - Worker failure: Restart stack anyway, return worker error
 //   - Start failure: Return error, stack may be partially started
 type JobExecutor interface {
-	// Execute runs a job by name.
+	// Execute runs a job.
 	//
 	// Behavior:
-	//   1. Look up job by name
+	//   1. Generate execution plan
 	//   2. Validate worker image is available
-	//   3. Stop target stack
-	//   4. Run worker container
-	//   5. Restart stack (always, unless KeepStopped)
+	//   3. Execute each step in plan.Steps
 	//
 	// Returns:
 	//   - ExecutionResult with full execution details
 	//   - Error for fatal failures (not for worker non-zero exit)
-	Execute(ctx context.Context, jobName string, opts ExecuteOptions) (ExecutionResult, error)
+	Execute(ctx context.Context, job jobs.Job, opts ExecuteOptions) (ExecutionResult, error)
 
 	// DryRun returns the execution plan without performing any actions.
 	// Useful for previewing what Execute would do.
 	//
 	// Behavior:
-	//   1. Look up job by name
-	//   2. Generate execution plan
-	//   3. Return plan without execution
+	//   1. Generate execution plan
+	//   2. Return plan without execution
 	//
 	// Returns:
 	//   - ExecutionPlan describing planned steps
-	//   - Error if job not found or plan generation fails
-	DryRun(ctx context.Context, jobName string) (jobs.ExecutionPlan, error)
+	//   - Error if plan generation fails
+	DryRun(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, error)
 }
 
 // ExecuteOptions configures job execution.

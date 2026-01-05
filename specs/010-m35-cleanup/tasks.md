@@ -107,7 +107,7 @@
 
 **Checkpoint**: No "backup" terminology in production code. US3 independently testable.
 
-- [ ] T031a 🔒 COMMIT: `refactor(schema): rename BackupEnabled to Enabled, remove backup terminology (#140)`
+- [x] T031a 🔒 COMMIT: `refactor(schema): rename BackupEnabled to Enabled, remove backup terminology (#140)`
 
 ---
 
@@ -119,19 +119,19 @@
 
 ### Implementation for User Story 4
 
-- [ ] T032 [US4] Update `JobExecutor` interface in `internal/ports/executor.go` to use `jobs.Job` parameter
-- [ ] T033 [US4] Remove unused `discoverer` parameter from `Executor.New()` in `internal/app/executor/executor.go`
-- [ ] T034 [US4] Rename `ExecuteJob` → `Execute` in `internal/app/executor/executor.go`
-- [ ] T035 [US4] Remove stub `Execute(ctx, jobName)` method that returns "not implemented"
-- [ ] T036 [US4] Add `executeStep(ctx, step, opts)` helper method in `internal/app/executor/executor.go`
-- [ ] T037 [US4] Refactor `Execute` to iterate `plan.Steps` and call `executeStep` for each
-- [ ] T038 [US4] Implement step handler for `StepTypeStopContainers` in `executeStep`
-- [ ] T039 [US4] Implement step handler for `StepTypeRunWorker` in `executeStep`
-- [ ] T040 [US4] Implement step handler for `StepTypeStartContainers` in `executeStep`
-- [ ] T041 [US4] Update `StepResult` recording to capture per-step outcomes
-- [ ] T042 [US4] Update CLI callers in `internal/cmd/job_run.go` for new interface signature
-- [ ] T043 [US4] Update executor unit tests in `internal/app/executor/executor_test.go`
-- [ ] T044 [US4] Update integration tests in `integration/job_execution_test.go`
+- [x] T032 [US4] Update `JobExecutor` interface in `internal/ports/executor.go` to use `jobs.Job` parameter
+- [x] T033 [US4] Remove unused `discoverer` parameter from `Executor.New()` in `internal/app/executor/executor.go`
+- [x] T034 [US4] Rename `ExecuteJob` → `Execute` in `internal/app/executor/executor.go`
+- [x] T035 [US4] Remove stub `Execute(ctx, jobName)` method that returns "not implemented"
+- [x] T036 [US4] Add `executeStep(ctx, step, opts)` helper method in `internal/app/executor/executor.go`
+- [x] T037 [US4] Refactor `Execute` to iterate `plan.Steps` and call `executeStep` for each
+- [x] T038 [US4] Implement step handler for `StepTypeStopContainers` in `executeStep`
+- [x] T039 [US4] Implement step handler for `StepTypeRunWorker` in `executeStep`
+- [x] T040 [US4] Implement step handler for `StepTypeStartContainers` in `executeStep`
+- [x] T041 [US4] Update `StepResult` recording to capture per-step outcomes
+- [x] T042 [US4] Update CLI callers in `internal/cmd/job_run.go` for new interface signature
+- [x] T043 [US4] Update executor unit tests in `internal/app/executor/executor_test.go`
+- [x] T044 [US4] Update integration tests in `integration/job_execution_test.go`
 
 **Checkpoint**: Executor interprets plan steps. DryRun matches Execute. US4 independently testable.
 

@@ -240,7 +240,7 @@ func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, er
 	workerRunner := worker.NewRunner(dockerClient)
 
 	// Create executor
-	exec := executor.New(discoverer, jobPlanner, composeController, workerRunner, dockerClient)
+	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient)
 
 	// Build execute options
 	executeOpts := ports.DefaultExecuteOptions()
@@ -275,7 +275,7 @@ func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, er
 	}
 
 	// Execute job
-	result, err := exec.ExecuteJob(ctx, *targetJob, executeOpts)
+	result, err := exec.Execute(ctx, *targetJob, executeOpts)
 
 	// Print result
 	printExecutionResult(result)
@@ -403,10 +403,10 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	workerRunner := worker.NewRunner(dockerClient)
 
 	// Create executor
-	exec := executor.New(discoverer, jobPlanner, composeController, workerRunner, dockerClient)
+	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient)
 
 	// Execute dry-run
-	plan, err := exec.DryRunJob(ctx, *targetJob)
+	plan, err := exec.DryRun(ctx, *targetJob)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to generate execution plan: %v\n", err)
 		os.Exit(ExitRuntimeError)

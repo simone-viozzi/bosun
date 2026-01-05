@@ -21,9 +21,7 @@ type Executor struct {
 }
 
 // New creates a new Executor with dependency injection.
-// TODO(#143): Remove unused discoverer param, see smell #4 in wip_smell_milestone3
 func New(
-	discoverer ports.JobDiscoverer, // Not used directly, kept for compatibility
 	planner ports.JobPlanner,
 	compose ports.ComposeController,
 	worker ports.WorkerRunner,
@@ -37,8 +35,8 @@ func New(
 	}
 }
 
-// ExecuteJob runs a job directly (used by CLI).
-func (e *Executor) ExecuteJob(ctx context.Context, job jobs.Job, opts ports.ExecuteOptions) (ports.ExecutionResult, error) {
+// Execute runs a job (implements ports.JobExecutor).
+func (e *Executor) Execute(ctx context.Context, job jobs.Job, opts ports.ExecuteOptions) (ports.ExecutionResult, error) {
 	// Initialize result
 	runID := uuid.New().String()
 	run := jobs.JobRun{
@@ -204,26 +202,14 @@ func (e *Executor) ExecuteJob(ctx context.Context, job jobs.Job, opts ports.Exec
 	return result, nil
 }
 
-// DryRunJob returns the execution plan without executing (used by CLI).
-func (e *Executor) DryRunJob(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, error) {
+// DryRun returns the execution plan without executing (implements ports.JobExecutor).
+func (e *Executor) DryRun(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, error) {
 	plan, err := e.planner.Plan(ctx, job)
 	if err != nil {
 		return jobs.ExecutionPlan{}, err
 	}
 
 	return plan, nil
-}
-
-// Execute implements ports.JobExecutor (for interface compatibility).
-// For M3, use ExecuteJob instead.
-func (e *Executor) Execute(ctx context.Context, jobName string, opts ports.ExecuteOptions) (ports.ExecutionResult, error) {
-	return ports.ExecutionResult{}, fmt.Errorf("Execute by name not implemented in M3 - use ExecuteJob")
-}
-
-// DryRun implements ports.JobExecutor (for interface compatibility).
-// For M3, use DryRunJob instead.
-func (e *Executor) DryRun(ctx context.Context, jobName string) (jobs.ExecutionPlan, error) {
-	return jobs.ExecutionPlan{}, fmt.Errorf("DryRun by name not implemented in M3 - use DryRunJob")
 }
 
 // validateImage checks if the worker image is available.
