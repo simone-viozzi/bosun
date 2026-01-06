@@ -43,7 +43,7 @@ services:
   no-job-labels:
     image: nginx:alpine
     labels:
-      bosun.other: "value"
+      com.example.other: "value"  # Non-bosun label to test filtering
 
 volumes:
   pgdata:
@@ -65,4 +65,4 @@ volumes:
 networks:
   backend:
     labels:
-      bosun.network: "true"
+      bosun.network.priority: "100"

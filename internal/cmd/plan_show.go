@@ -32,26 +32,26 @@ func NewPlanShowCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show <job-name>",
 		Short: "Show execution plan for a job",
-		Long: `Shows the execution plan for a specific backup job.
+		Long: `Shows the execution plan for a specific job.
 
 The plan displays the exact steps Bosun would take to execute the job:
 1. Stop containers (if any are targeted)
 2. Run the worker container with attached volumes
-3. Restart containers (future milestone)
+3. Restart containers
 
 The plan is deterministic - running this command multiple times with
 the same job configuration will produce identical output.`,
 		Example: `  # Show plan for a job
-  bosun plan show daily-backup
+  bosun plan show daily-job
 
   # Show plan in JSON format
-  bosun plan show daily-backup --format json
+  bosun plan show daily-job --format json
 
   # Include stopped containers in discovery
-  bosun plan show daily-backup --stopped
+  bosun plan show daily-job --stopped
 
   # Show plan for job in specific project
-  bosun plan show daily-backup --project myapp`,
+  bosun plan show daily-job --project myapp`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -159,7 +159,7 @@ func runPlanShow(ctx context.Context, jobName string, format string, includeStop
 // formatJobNotFoundError creates a helpful error message when a job is not found.
 func formatJobNotFoundError(jobName string, availableJobs []jobs.Job) error {
 	if len(availableJobs) == 0 {
-		return fmt.Errorf("job %q not found\n\nNo jobs discovered. To define a job, add these labels to a container:\n  bosun.job.enabled: \"true\"\n  bosun.job.name: \"my-backup\"\n\nRun 'bosun plan list' to see discovered jobs", jobName)
+		return fmt.Errorf("job %q not found\n\nNo jobs discovered. To define a job, add these labels to a container:\n  bosun.job.enabled: \"true\"\n  bosun.job.name: \"my-job\"\n\nRun 'bosun plan list' to see discovered jobs", jobName)
 	}
 
 	// Sort jobs by name for consistent output
@@ -207,7 +207,7 @@ func renderPlanTextOutput(plan jobs.ExecutionPlan, job jobs.Job) {
 		// Show details based on step type
 		switch step.Type {
 		case jobs.StepTypeStopContainers:
-			if step.UseComposeStop {
+			if step.UseCompose {
 				fmt.Printf("   Method: docker compose stop (project: %s)\n", step.ComposeProject)
 			} else {
 				fmt.Printf("   Method: docker stop\n")

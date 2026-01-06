@@ -36,25 +36,31 @@ func (e ValidationError) Unwrap() error {
 	return e.Err
 }
 
-// ValidationErrors is a collection of validation errors.
+// ValidationErrors is a collection of validation errors and warnings.
 // It implements the error interface, allowing it to be returned from functions
 // that return error while still providing access to individual errors.
-type ValidationErrors []ValidationError
+// Warnings are non-fatal issues (e.g., unknown keys in lenient mode).
+type ValidationErrors struct {
+	// Errors contains fatal validation failures that should halt processing.
+	Errors []ValidationError
+	// Warnings contains non-fatal issues that should be reported but don't halt processing.
+	Warnings []ValidationError
+}
 
 // Error implements the error interface.
 // It returns a formatted string containing all validation errors.
 func (e ValidationErrors) Error() string {
-	if len(e) == 0 {
+	if len(e.Errors) == 0 {
 		return "no validation errors"
 	}
 
-	if len(e) == 1 {
-		return e[0].Message
+	if len(e.Errors) == 1 {
+		return e.Errors[0].Message
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("%d validation errors:\n", len(e)))
-	for i, ve := range e {
+	sb.WriteString(fmt.Sprintf("%d validation errors:\n", len(e.Errors)))
+	for i, ve := range e.Errors {
 		sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, ve.Message))
 	}
 	return strings.TrimRight(sb.String(), "\n")
@@ -62,17 +68,36 @@ func (e ValidationErrors) Error() string {
 
 // HasErrors returns true if there are any validation errors.
 func (e ValidationErrors) HasErrors() bool {
-	return len(e) > 0
+	return len(e.Errors) > 0
+}
+
+// HasWarnings returns true if there are any validation warnings.
+func (e ValidationErrors) HasWarnings() bool {
+	return len(e.Warnings) > 0
 }
 
 // Add appends a validation error to the collection.
 func (e *ValidationErrors) Add(err ValidationError) {
-	*e = append(*e, err)
+	e.Errors = append(e.Errors, err)
 }
 
-// AddUnknownKey adds an error for an unknown configuration key.
+// AddWarning appends a validation warning to the collection.
+func (e *ValidationErrors) AddWarning(warn ValidationError) {
+	e.Warnings = append(e.Warnings, warn)
+}
+
+// AddUnknownKey adds an error for an unknown configuration key (strict mode).
 func (e *ValidationErrors) AddUnknownKey(key string, scope schema.Scope) {
 	e.Add(ValidationError{
+		Key:     key,
+		Scope:   scope,
+		Message: fmt.Sprintf("unknown key: %s", key),
+	})
+}
+
+// AddUnknownKeyWarning adds a warning for an unknown configuration key (lenient mode).
+func (e *ValidationErrors) AddUnknownKeyWarning(key string, scope schema.Scope) {
+	e.AddWarning(ValidationError{
 		Key:     key,
 		Scope:   scope,
 		Message: fmt.Sprintf("unknown key: %s", key),

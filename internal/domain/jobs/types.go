@@ -98,9 +98,9 @@ type PlanStep struct {
 	// VolumeMounts lists volumes to attach (for run_worker steps only).
 	VolumeMounts []VolumeAttachment `json:"volumeMounts,omitempty"`
 
-	// UseComposeStop indicates if `docker compose stop` should be used.
-	// True when all containers in a stack are being stopped.
-	UseComposeStop bool `json:"useComposeStop,omitempty"`
+	// UseCompose indicates if docker compose commands should be used.
+	// True when all containers in a step belong to a single compose stack.
+	UseCompose bool `json:"useCompose,omitempty"`
 
 	// ComposeProject is the project name for compose commands.
 	ComposeProject string `json:"composeProject,omitempty"`

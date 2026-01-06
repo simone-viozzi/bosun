@@ -21,7 +21,7 @@
 
 | Key | Type | Default | Required | Allowed Values | Description |
 |-----|------|---------|----------|----------------|-------------|
-| `bosun.volume.backupEnabled` | boolean | false | No | - | Enable volume backups |
+| `bosun.volume.enabled` | boolean | false | No | - | Enable volume processing |
 | `bosun.volume.maxSize` | byte size | 10GB | No | - | Maximum volume size |
 
 ## Network Configuration

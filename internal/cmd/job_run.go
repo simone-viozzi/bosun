@@ -32,7 +32,7 @@ func NewJobCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "job",
 		Short: "Job execution commands",
-		Long: `Operations for running backup jobs.
+		Long: `Operations for running jobs.
 
 Bosun executes jobs by stopping the target Compose stack, running a worker
 container with attached volumes, and restarting the stack.`,
@@ -61,8 +61,8 @@ func NewJobRunCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "run <job-name>",
-		Short: "Execute a backup job",
-		Long: `Executes a backup job by name.
+		Short: "Execute a job",
+		Long: `Executes a job by name.
 
 The execution flow:
 1. Discover job by name from Docker labels
@@ -76,22 +76,22 @@ fails. This ensures production services remain available.
 
 Use --dry-run to preview the execution plan without making any changes.`,
 		Example: `  # Run a job
-  bosun job run daily-backup
+  bosun job run daily-job
 
   # Preview what would happen (dry run)
-  bosun job run daily-backup --dry-run
+  bosun job run daily-job --dry-run
 
   # Dry run with JSON output
-  bosun job run daily-backup --dry-run --format json
+  bosun job run daily-job --dry-run --format json
 
   # Run with custom timeout
-  bosun job run daily-backup --timeout 2h
+  bosun job run daily-job --timeout 2h
 
   # Keep stack stopped after execution (maintenance mode)
-  bosun job run daily-backup --keep-stopped
+  bosun job run daily-job --keep-stopped
 
   # Keep worker container on failure for debugging
-  bosun job run daily-backup --keep-failed`,
+  bosun job run daily-job --keep-failed`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -153,7 +153,7 @@ type jobRunOptions struct {
 
 // runJobRun executes the job run command logic.
 func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, error) {
-	// Set up signal handler for graceful shutdown (FR-024)
+	// Set up signal handler for graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -240,7 +240,7 @@ func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, er
 	workerRunner := worker.NewRunner(dockerClient)
 
 	// Create executor
-	exec := executor.New(discoverer, jobPlanner, composeController, workerRunner, dockerClient)
+	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient)
 
 	// Build execute options
 	executeOpts := ports.DefaultExecuteOptions()
@@ -275,7 +275,7 @@ func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, er
 	}
 
 	// Execute job
-	result, err := exec.ExecuteJob(ctx, *targetJob, executeOpts)
+	result, err := exec.Execute(ctx, *targetJob, executeOpts)
 
 	// Print result
 	printExecutionResult(result)
@@ -403,10 +403,10 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	workerRunner := worker.NewRunner(dockerClient)
 
 	// Create executor
-	exec := executor.New(discoverer, jobPlanner, composeController, workerRunner, dockerClient)
+	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient)
 
 	// Execute dry-run
-	plan, err := exec.DryRunJob(ctx, *targetJob)
+	plan, err := exec.DryRun(ctx, *targetJob)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to generate execution plan: %v\n", err)
 		os.Exit(ExitRuntimeError)
@@ -415,6 +415,13 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 
 	// Set timestamp
 	plan.CreatedAt = time.Now()
+
+	// TODO: DESIGN ISSUE - Plan rendering is in CLI instead of planner/app layer.
+	// If ExecutionPlan schema changes (e.g., new fields in PlanStep), this CLI code
+	// must also change. Violates Single Responsibility: CLI should only parse args
+	// and call services, not know how to render domain types.
+	// Fix: Move printDryRunText to internal/presentation or as a method on ExecutionPlan.
+	// See: smell #16-18 in wip_smell_milestone3 (CLI layering issues)
 
 	// Output based on format
 	switch format {
@@ -428,6 +435,9 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 
 // printDryRunText prints the execution plan in text format.
 func printDryRunText(plan jobs.ExecutionPlan) {
+	// TODO: why we have printDryRunText here instead of in the planner itself?
+	//		what happens if the schema of the planner changes?
+	//		do we need to also change this function here?
 	fmt.Printf("\n=== Dry Run: %s ===\n", plan.JobName)
 	fmt.Printf("Generated: %s\n", plan.CreatedAt.Format("2006-01-02 15:04:05"))
 	fmt.Printf("\nExecution Plan (%d steps):\n", len(plan.Steps))
@@ -448,7 +458,7 @@ func printDryRunText(plan jobs.ExecutionPlan) {
 				fmt.Printf("     - %s → %s (%s)\n", mount.Name, mount.MountPath, mount.Mode)
 			}
 		}
-		if step.UseComposeStop {
+		if step.UseCompose {
 			fmt.Printf("   Uses: docker compose stop %s\n", step.ComposeProject)
 		}
 	}

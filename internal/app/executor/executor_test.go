@@ -89,13 +89,13 @@ func (m *mockWorkerRunner) Run(ctx context.Context, config ports.WorkerConfig) (
 }
 
 func TestNew(t *testing.T) {
-	exec := New(nil, &mockPlanner{}, &mockComposeController{}, &mockWorkerRunner{}, nil)
+	exec := New(&mockPlanner{}, &mockComposeController{}, &mockWorkerRunner{}, nil)
 	if exec == nil {
 		t.Fatal("New() returned nil")
 	}
 }
 
-func TestDryRunJob_Success(t *testing.T) {
+func TestDryRun_Success(t *testing.T) {
 	expectedPlan := jobs.ExecutionPlan{
 		JobName: "test-job",
 		Steps: []jobs.PlanStep{
@@ -108,7 +108,7 @@ func TestDryRunJob_Success(t *testing.T) {
 	compose := &mockComposeController{}
 	worker := &mockWorkerRunner{}
 
-	exec := New(nil, planner, compose, worker, nil)
+	exec := New(planner, compose, worker, nil)
 
 	job := jobs.Job{
 		Name:         "test-job",
@@ -116,7 +116,7 @@ func TestDryRunJob_Success(t *testing.T) {
 		WorkerImage:  "worker:v1",
 	}
 
-	plan, err := exec.DryRunJob(context.Background(), job)
+	plan, err := exec.DryRun(context.Background(), job)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -141,26 +141,26 @@ func TestDryRunJob_Success(t *testing.T) {
 	}
 }
 
-func TestDryRunJob_PlannerError(t *testing.T) {
+func TestDryRun_PlannerError(t *testing.T) {
 	plannerErr := errors.New("planner failed")
 	planner := &mockPlanner{planErr: plannerErr}
 
-	exec := New(nil, planner, &mockComposeController{}, &mockWorkerRunner{}, nil)
+	exec := New(planner, &mockComposeController{}, &mockWorkerRunner{}, nil)
 
 	job := jobs.Job{Name: "test-job", TargetStacks: []string{"mystack"}}
 
-	_, err := exec.DryRunJob(context.Background(), job)
+	_, err := exec.DryRun(context.Background(), job)
 	if err == nil {
 		t.Error("expected error, got nil")
 	}
 }
 
-func TestExecuteJob_PlannerError(t *testing.T) {
+func TestExecute_PlannerError(t *testing.T) {
 	plannerErr := errors.New("planner failed")
 	planner := &mockPlanner{planErr: plannerErr}
 	compose := &mockComposeController{}
 
-	exec := New(nil, planner, compose, &mockWorkerRunner{}, nil)
+	exec := New(planner, compose, &mockWorkerRunner{}, nil)
 
 	job := jobs.Job{
 		Name:         "test-job",
@@ -168,7 +168,7 @@ func TestExecuteJob_PlannerError(t *testing.T) {
 		WorkerImage:  "worker:v1",
 	}
 
-	result, err := exec.ExecuteJob(context.Background(), job, ports.DefaultExecuteOptions())
+	result, err := exec.Execute(context.Background(), job, ports.DefaultExecuteOptions())
 	if err == nil {
 		t.Error("expected error, got nil")
 	}
@@ -419,7 +419,7 @@ func TestPlanStep_Fields(t *testing.T) {
 		VolumeMounts: []jobs.VolumeAttachment{
 			{Name: "pgdata", MountPath: "/data/pg", Mode: "ro"},
 		},
-		UseComposeStop: true,
+		UseCompose:     true,
 		ComposeProject: "mystack",
 	}
 
@@ -444,8 +444,8 @@ func TestPlanStep_Fields(t *testing.T) {
 	if len(step.VolumeMounts) != 1 {
 		t.Errorf("VolumeMounts length = %d, want 1", len(step.VolumeMounts))
 	}
-	if !step.UseComposeStop {
-		t.Error("UseComposeStop = false, want true")
+	if !step.UseCompose {
+		t.Error("UseCompose = false, want true")
 	}
 	if step.ComposeProject != "mystack" {
 		t.Errorf("ComposeProject = %q, want %q", step.ComposeProject, "mystack")
@@ -480,7 +480,7 @@ func TestDryRun_NoSideEffects(t *testing.T) {
 		},
 	}
 
-	exec := New(nil, planner, compose, worker, nil)
+	exec := New(planner, compose, worker, nil)
 
 	job := jobs.Job{
 		Name:         "test-job",
@@ -489,9 +489,9 @@ func TestDryRun_NoSideEffects(t *testing.T) {
 	}
 
 	// Execute dry-run
-	plan, err := exec.DryRunJob(context.Background(), job)
+	plan, err := exec.DryRun(context.Background(), job)
 	if err != nil {
-		t.Fatalf("DryRunJob error: %v", err)
+		t.Fatalf("DryRun error: %v", err)
 	}
 
 	// Verify plan was returned

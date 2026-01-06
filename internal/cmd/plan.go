@@ -16,7 +16,7 @@ then generates execution plans that coordinate container stops and worker execut
 
 Examples:
   bosun plan list                  # List all discovered jobs
-  bosun plan show daily-backup     # Preview execution plan for a job
+  bosun plan show daily-job        # Preview execution plan for a job
   bosun plan list --project myapp  # List jobs for a specific Compose project`,
 	}
 

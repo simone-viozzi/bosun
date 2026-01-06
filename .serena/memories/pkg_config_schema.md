@@ -38,7 +38,7 @@ Code-first configuration schema in `internal/config/schema/`.
 ### ConfigV1 Structure
 - `GlobalConfig` - Instance field
 - `ContainerConfig` - StopGracePeriod, HealthCheckInterval, AutoRestart, LogLevel
-- `VolumeConfig` - BackupEnabled, MaxSize
+- `VolumeConfig` - Enabled (whether volume participates in jobs), MaxSize
 - `NetworkConfig` - Priority
 
 ### Job Labels (separate)

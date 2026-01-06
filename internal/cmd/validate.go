@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -37,6 +36,7 @@ type ValidateOptions struct {
 	PrintConfig    bool         // --print flag
 	ConfigFile     string       // --config flag (future)
 	IncludeStopped bool         // --stopped flag
+	Strict         bool         // --strict flag
 }
 
 // EntityValidationError wraps validation errors with entity context
@@ -91,6 +91,8 @@ Exit codes:
 		"Path to config file")
 	cmd.Flags().BoolVar(&opts.IncludeStopped, "stopped", false,
 		"Include stopped containers")
+	cmd.Flags().BoolVar(&opts.Strict, "strict", false,
+		"Strict mode: treat unknown keys as errors instead of warnings")
 
 	return cmd
 }
@@ -209,6 +211,11 @@ func validateEntities(entities []dlabels.LabeledEntity, opts ValidateOptions) Va
 		Valid: true,
 	}
 
+	// Build loader options from CLI options
+	loadOpts := loader.LoadOptions{
+		Strict: opts.Strict,
+	}
+
 	// Collect all entity configs for merging
 	labelConfigs := make([]schema.ConfigV1, 0, len(entities))
 
@@ -219,16 +226,21 @@ func validateEntities(entities []dlabels.LabeledEntity, opts ValidateOptions) Va
 		configLabels := filterJobLabels(entity.Labels)
 
 		// Validate config labels for this entity
-		cfg, err := loader.FromLabels(spec, configLabels, scope)
-		if err != nil {
-			var verrs loader.ValidationErrors
-			if errors.As(err, &verrs) {
-				result.Valid = false
-				result.EntityErrors = append(result.EntityErrors, EntityValidationError{
-					Entity: entity,
-					Errors: verrs,
-				})
-			}
+		cfg, verrs := loader.FromLabels(spec, configLabels, scope, loadOpts)
+
+		// Check for hard errors
+		if verrs.HasErrors() {
+			result.Valid = false
+			result.EntityErrors = append(result.EntityErrors, EntityValidationError{
+				Entity: entity,
+				Errors: verrs,
+			})
+		}
+
+		// Collect warnings from this entity
+		for _, warn := range verrs.Warnings {
+			result.Warnings = append(result.Warnings,
+				fmt.Sprintf("%s %q: %s", entity.Kind, entity.Name, warn.Message))
 		}
 
 		// Collect config for merging (even if there were errors)
@@ -276,7 +288,7 @@ func outputResults(result ValidationResult, opts ValidateOptions) error {
 				entityErr.Entity.Name,
 				truncateID(entityErr.Entity.ID))
 
-			for _, verr := range entityErr.Errors {
+			for _, verr := range entityErr.Errors.Errors {
 				fmt.Fprintf(os.Stderr, "  - %s\n", verr.Message)
 				totalErrors++
 			}

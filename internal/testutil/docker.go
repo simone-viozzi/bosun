@@ -89,6 +89,10 @@ func DumpLogs(t *testing.T, ctx context.Context, project, outDir string) {
 			t.Logf("create log file %s: %v", fp, err)
 			continue
 		}
+		// TODO: BUG - Same as runner.go: missing stdcopy.StdCopy demultiplexing!
+		// Docker logs have 8-byte headers when TTY=false, io.Copy produces corrupted output.
+		// Fix: Use github.com/docker/docker/pkg/stdcopy.StdCopy
+		// See: wip_smell_runner_run_investigation
 		_, err = io.Copy(f, rc)
 		if err != nil {
 			t.Logf("copy logs to %s: %v", fp, err)

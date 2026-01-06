@@ -27,9 +27,8 @@ type ContainerConfig struct {
 
 // VolumeConfig contains configuration fields specific to volumes.
 type VolumeConfig struct {
-	// TODO(#140): Rename to JobEnabled or similar, see smell #1 in wip_smell_milestone3
-	// BackupEnabled determines whether volume backups are enabled.
-	BackupEnabled bool `bosun:"key=bosun.volume.backupEnabled,scope=volume,type=bool,default=false,doc='Enable volume backups'"`
+	// Enabled determines whether volume processing is enabled for jobs.
+	Enabled bool `bosun:"key=bosun.volume.enabled,scope=volume,type=bool,default=false,doc='Enable volume processing'"`
 
 	// MaxSize is the maximum size limit for the volume in bytes.
 	MaxSize int64 `bosun:"key=bosun.volume.maxSize,scope=volume,type=size,default=10GB,doc='Maximum volume size'"`

@@ -1,7 +1,6 @@
 package loader
 
 import (
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -23,9 +22,9 @@ func TestFromLabels_StringType(t *testing.T) {
 		"bosun.instance": "my-instance",
 	}
 
-	cfg, err := FromLabels(spec, labels, schema.ScopeGlobal)
-	if err != nil {
-		t.Fatalf("FromLabels() error = %v", err)
+	cfg, verrs := FromLabels(spec, labels, schema.ScopeGlobal)
+	if verrs.HasErrors() {
+		t.Fatalf("FromLabels() error = %v", verrs)
 	}
 
 	if cfg.Instance != "my-instance" {
@@ -56,9 +55,9 @@ func TestFromLabels_BoolType(t *testing.T) {
 				"bosun.container.autoRestart": tt.value,
 			}
 
-			cfg, err := FromLabels(spec, labels, schema.ScopeContainer)
-			if err != nil {
-				t.Fatalf("FromLabels() error = %v", err)
+			cfg, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+			if verrs.HasErrors() {
+				t.Fatalf("FromLabels() error = %v", verrs)
 			}
 
 			if cfg.AutoRestart != tt.want {
@@ -89,9 +88,9 @@ func TestFromLabels_IntType(t *testing.T) {
 				"bosun.network.priority": tt.value,
 			}
 
-			cfg, err := FromLabels(spec, labels, schema.ScopeNetwork)
-			if err != nil {
-				t.Fatalf("FromLabels() error = %v", err)
+			cfg, verrs := FromLabels(spec, labels, schema.ScopeNetwork)
+			if verrs.HasErrors() {
+				t.Fatalf("FromLabels() error = %v", verrs)
 			}
 
 			if cfg.Priority != tt.want {
@@ -123,9 +122,9 @@ func TestFromLabels_DurationType(t *testing.T) {
 				"bosun.container.stopGracePeriod": tt.value,
 			}
 
-			cfg, err := FromLabels(spec, labels, schema.ScopeContainer)
-			if err != nil {
-				t.Fatalf("FromLabels() error = %v", err)
+			cfg, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+			if verrs.HasErrors() {
+				t.Fatalf("FromLabels() error = %v", verrs)
 			}
 
 			if cfg.StopGracePeriod != tt.want {
@@ -158,9 +157,9 @@ func TestFromLabels_SizeType(t *testing.T) {
 				"bosun.volume.maxSize": tt.value,
 			}
 
-			cfg, err := FromLabels(spec, labels, schema.ScopeVolume)
-			if err != nil {
-				t.Fatalf("FromLabels() error = %v", err)
+			cfg, verrs := FromLabels(spec, labels, schema.ScopeVolume)
+			if verrs.HasErrors() {
+				t.Fatalf("FromLabels() error = %v", verrs)
 			}
 
 			if cfg.MaxSize != tt.want {
@@ -191,9 +190,9 @@ func TestFromLabels_EnumType(t *testing.T) {
 				"bosun.container.logLevel": tt.value,
 			}
 
-			cfg, err := FromLabels(spec, labels, schema.ScopeContainer)
-			if err != nil {
-				t.Fatalf("FromLabels() error = %v", err)
+			cfg, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+			if verrs.HasErrors() {
+				t.Fatalf("FromLabels() error = %v", verrs)
 			}
 
 			if cfg.LogLevel != tt.want {
@@ -250,7 +249,7 @@ func TestFromLabels_ListType(t *testing.T) {
 	}
 }
 
-// TestFromLabels_UnknownKey tests that unknown keys are rejected.
+// TestFromLabels_UnknownKey tests that unknown keys are rejected in strict mode.
 func TestFromLabels_UnknownKey(t *testing.T) {
 	spec := getTestSpec(t)
 
@@ -258,26 +257,49 @@ func TestFromLabels_UnknownKey(t *testing.T) {
 		"bosun.container.unknownKey": "value",
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err == nil {
-		t.Fatal("FromLabels() should return error for unknown key")
+	// In strict mode, unknown keys should be errors
+	_, verrs := FromLabels(spec, labels, schema.ScopeContainer, LoadOptions{Strict: true})
+	if !verrs.HasErrors() {
+		t.Fatal("FromLabels() should return error for unknown key in strict mode")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
+	if len(verrs.Errors) != 1 {
+		t.Fatalf("Expected 1 error, got %d", len(verrs.Errors))
 	}
 
-	if len(verrs) != 1 {
-		t.Fatalf("Expected 1 error, got %d", len(verrs))
-	}
-
-	if !strings.Contains(verrs[0].Message, "unknown key") {
-		t.Errorf("Error message should contain 'unknown key', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "unknown key") {
+		t.Errorf("Error message should contain 'unknown key', got %q", verrs.Errors[0].Message)
 	}
 }
 
-// TestFromLabels_MultipleUnknownKeys tests that multiple unknown keys are all reported.
+// TestFromLabels_UnknownKey_LenientMode tests that unknown keys become warnings in lenient mode.
+func TestFromLabels_UnknownKey_LenientMode(t *testing.T) {
+	spec := getTestSpec(t)
+
+	labels := map[string]string{
+		"bosun.container.unknownKey": "value",
+	}
+
+	// In lenient mode (default), unknown keys should be warnings, not errors
+	_, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+	if verrs.HasErrors() {
+		t.Fatal("FromLabels() should not return errors for unknown key in lenient mode")
+	}
+
+	if !verrs.HasWarnings() {
+		t.Fatal("FromLabels() should return warnings for unknown key in lenient mode")
+	}
+
+	if len(verrs.Warnings) != 1 {
+		t.Fatalf("Expected 1 warning, got %d", len(verrs.Warnings))
+	}
+
+	if !strings.Contains(verrs.Warnings[0].Message, "unknown key") {
+		t.Errorf("Warning message should contain 'unknown key', got %q", verrs.Warnings[0].Message)
+	}
+}
+
+// TestFromLabels_MultipleUnknownKeys tests that multiple unknown keys are all reported in strict mode.
 func TestFromLabels_MultipleUnknownKeys(t *testing.T) {
 	spec := getTestSpec(t)
 
@@ -287,18 +309,13 @@ func TestFromLabels_MultipleUnknownKeys(t *testing.T) {
 		"bosun.container.unknownKey3": "value3",
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err == nil {
-		t.Fatal("FromLabels() should return error for unknown keys")
+	_, verrs := FromLabels(spec, labels, schema.ScopeContainer, LoadOptions{Strict: true})
+	if !verrs.HasErrors() {
+		t.Fatal("FromLabels() should return error for unknown keys in strict mode")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
-	}
-
-	if len(verrs) != 3 {
-		t.Fatalf("Expected 3 errors, got %d", len(verrs))
+	if len(verrs.Errors) != 3 {
+		t.Fatalf("Expected 3 errors, got %d", len(verrs.Errors))
 	}
 }
 
@@ -312,19 +329,14 @@ func TestFromLabels_AllErrorsReported(t *testing.T) {
 		"bosun.container.autoRestart":     "not-a-bool",
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err == nil {
+	_, verrs := FromLabels(spec, labels, schema.ScopeContainer, LoadOptions{Strict: true})
+	if !verrs.HasErrors() {
 		t.Fatal("FromLabels() should return error")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
-	}
-
-	// Should have at least 3 errors
-	if len(verrs) < 3 {
-		t.Fatalf("Expected at least 3 errors, got %d: %v", len(verrs), verrs)
+	// Should have 3 errors: 1 unknown key (strict mode) + 2 parse errors
+	if len(verrs.Errors) < 3 {
+		t.Fatalf("Expected at least 3 errors, got %d: %v", len(verrs.Errors), verrs)
 	}
 }
 
@@ -337,22 +349,17 @@ func TestFromLabels_ScopeMismatch(t *testing.T) {
 		"bosun.container.stopGracePeriod": "30s",
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeVolume)
-	if err == nil {
+	_, verrs := FromLabels(spec, labels, schema.ScopeVolume)
+	if !verrs.HasErrors() {
 		t.Fatal("FromLabels() should return error for scope mismatch")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
+	if len(verrs.Errors) != 1 {
+		t.Fatalf("Expected 1 error, got %d", len(verrs.Errors))
 	}
 
-	if len(verrs) != 1 {
-		t.Fatalf("Expected 1 error, got %d", len(verrs))
-	}
-
-	if !strings.Contains(verrs[0].Message, "not allowed on scope") {
-		t.Errorf("Error message should contain 'not allowed on scope', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "not allowed on scope") {
+		t.Errorf("Error message should contain 'not allowed on scope', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -366,27 +373,27 @@ func TestFromLabels_GlobalScopeAllowed(t *testing.T) {
 	}
 
 	// Test on container scope
-	cfg, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err != nil {
-		t.Fatalf("FromLabels() error = %v", err)
+	cfg, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+	if verrs.HasErrors() {
+		t.Fatalf("FromLabels() error = %v", verrs)
 	}
 	if cfg.Instance != "my-instance" {
 		t.Errorf("Instance = %q, want %q", cfg.Instance, "my-instance")
 	}
 
 	// Test on volume scope
-	cfg, err = FromLabels(spec, labels, schema.ScopeVolume)
-	if err != nil {
-		t.Fatalf("FromLabels() error = %v", err)
+	cfg, verrs = FromLabels(spec, labels, schema.ScopeVolume)
+	if verrs.HasErrors() {
+		t.Fatalf("FromLabels() error = %v", verrs)
 	}
 	if cfg.Instance != "my-instance" {
 		t.Errorf("Instance = %q, want %q", cfg.Instance, "my-instance")
 	}
 
 	// Test on network scope
-	cfg, err = FromLabels(spec, labels, schema.ScopeNetwork)
-	if err != nil {
-		t.Fatalf("FromLabels() error = %v", err)
+	cfg, verrs = FromLabels(spec, labels, schema.ScopeNetwork)
+	if verrs.HasErrors() {
+		t.Fatalf("FromLabels() error = %v", verrs)
 	}
 	if cfg.Instance != "my-instance" {
 		t.Errorf("Instance = %q, want %q", cfg.Instance, "my-instance")
@@ -421,9 +428,9 @@ func TestFromLabels_MatchingScope(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := FromLabels(spec, tt.labels, tt.scope)
-			if err != nil {
-				t.Fatalf("FromLabels() error = %v", err)
+			_, verrs := FromLabels(spec, tt.labels, tt.scope)
+			if verrs.HasErrors() {
+				t.Fatalf("FromLabels() error = %v", verrs)
 			}
 		})
 	}
@@ -437,18 +444,13 @@ func TestFromLabels_InvalidDuration(t *testing.T) {
 		"bosun.container.stopGracePeriod": "not-a-duration",
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err == nil {
+	_, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+	if !verrs.HasErrors() {
 		t.Fatal("FromLabels() should return error for invalid duration")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
-	}
-
-	if !strings.Contains(verrs[0].Message, "invalid duration") {
-		t.Errorf("Error message should contain 'invalid duration', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid duration") {
+		t.Errorf("Error message should contain 'invalid duration', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -460,18 +462,13 @@ func TestFromLabels_InvalidBool(t *testing.T) {
 		"bosun.container.autoRestart": "maybe",
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err == nil {
+	_, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+	if !verrs.HasErrors() {
 		t.Fatal("FromLabels() should return error for invalid bool")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
-	}
-
-	if !strings.Contains(verrs[0].Message, "invalid bool") {
-		t.Errorf("Error message should contain 'invalid bool', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid bool") {
+		t.Errorf("Error message should contain 'invalid bool', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -483,18 +480,13 @@ func TestFromLabels_InvalidSize(t *testing.T) {
 		"bosun.volume.maxSize": "not-a-size",
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeVolume)
-	if err == nil {
+	_, verrs := FromLabels(spec, labels, schema.ScopeVolume)
+	if !verrs.HasErrors() {
 		t.Fatal("FromLabels() should return error for invalid size")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
-	}
-
-	if !strings.Contains(verrs[0].Message, "invalid size") {
-		t.Errorf("Error message should contain 'invalid size', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid size") {
+		t.Errorf("Error message should contain 'invalid size', got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -506,23 +498,18 @@ func TestFromLabels_InvalidEnum(t *testing.T) {
 		"bosun.container.logLevel": "verbose", // Not a valid log level
 	}
 
-	_, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err == nil {
+	_, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+	if !verrs.HasErrors() {
 		t.Fatal("FromLabels() should return error for invalid enum")
 	}
 
-	var verrs ValidationErrors
-	if !errors.As(err, &verrs) {
-		t.Fatalf("Error should be ValidationErrors, got %T", err)
-	}
-
-	if !strings.Contains(verrs[0].Message, "invalid enum") {
-		t.Errorf("Error message should contain 'invalid enum', got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "invalid enum") {
+		t.Errorf("Error message should contain 'invalid enum', got %q", verrs.Errors[0].Message)
 	}
 
 	// Should list valid values
-	if !strings.Contains(verrs[0].Message, "debug") {
-		t.Errorf("Error message should list valid values, got %q", verrs[0].Message)
+	if !strings.Contains(verrs.Errors[0].Message, "debug") {
+		t.Errorf("Error message should list valid values, got %q", verrs.Errors[0].Message)
 	}
 }
 
@@ -545,9 +532,9 @@ func TestFromLabels_NonBosunLabelsIgnored(t *testing.T) {
 		"bosun.container.stopGracePeriod": "30s",
 	}
 
-	cfg, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err != nil {
-		t.Fatalf("FromLabels() error = %v", err)
+	cfg, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+	if verrs.HasErrors() {
+		t.Fatalf("FromLabels() error = %v", verrs)
 	}
 
 	if cfg.StopGracePeriod != 30*time.Second {
@@ -559,9 +546,9 @@ func TestFromLabels_NonBosunLabelsIgnored(t *testing.T) {
 func TestFromLabels_EmptyLabels(t *testing.T) {
 	spec := getTestSpec(t)
 
-	cfg, err := FromLabels(spec, map[string]string{}, schema.ScopeContainer)
-	if err != nil {
-		t.Fatalf("FromLabels() error = %v", err)
+	cfg, verrs := FromLabels(spec, map[string]string{}, schema.ScopeContainer)
+	if verrs.HasErrors() {
+		t.Fatalf("FromLabels() error = %v", verrs)
 	}
 
 	// Should return zero-value config
@@ -581,9 +568,9 @@ func TestFromLabels_MultipleValidLabels(t *testing.T) {
 		"bosun.container.logLevel":            "debug",
 	}
 
-	cfg, err := FromLabels(spec, labels, schema.ScopeContainer)
-	if err != nil {
-		t.Fatalf("FromLabels() error = %v", err)
+	cfg, verrs := FromLabels(spec, labels, schema.ScopeContainer)
+	if verrs.HasErrors() {
+		t.Fatalf("FromLabels() error = %v", verrs)
 	}
 
 	if cfg.StopGracePeriod != 45*time.Second {

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,6 +16,7 @@ func main() {
 
 	rootCmd := cmd.NewRootCmd()
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
 }

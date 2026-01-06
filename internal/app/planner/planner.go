@@ -45,27 +45,29 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 		return attachVolumes[i].Name < attachVolumes[j].Name
 	})
 
+	// Determine compose usage once for both stop and start steps.
+	// TODO: DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if
+	// len(TargetStacks)==1, but doesn't verify that ALL target containers actually
+	// belong to that stack AND are ALL containers in the stack.
+	// Correct logic: "compose stop" only if all containers belong to same stack
+	// AND they are ALL containers in that stack. Otherwise, stop individually
+	// while being mindful of container interdependencies.
+	useCompose := len(job.TargetStacks) == 1
+	composeProject := ""
+	if useCompose {
+		composeProject = job.TargetStacks[0]
+	}
+
 	// Step 1: Stop containers (if any)
 	if len(targetContainers) > 0 {
-		// Generate container names for description
 		containerNames := extractContainerNames(targetContainers)
-
-		// Check if all containers belong to the same stack (useComposeStop)
-		useComposeStop := false
-		composeProject := ""
-		if len(job.TargetStacks) == 1 {
-			// TODO: In future, verify all target containers are in this stack
-			// For now, we'll set useComposeStop if there's exactly one stack
-			useComposeStop = true
-			composeProject = job.TargetStacks[0]
-		}
 
 		stopStep := jobs.PlanStep{
 			Type:           jobs.StepTypeStopContainers,
-			Description:    generateStopDescription(containerNames, useComposeStop, composeProject),
+			Description:    generateStopDescription(containerNames, useCompose, composeProject),
 			ContainerIDs:   targetContainers,
 			ContainerNames: containerNames,
-			UseComposeStop: useComposeStop,
+			UseCompose:     useCompose,
 			ComposeProject: composeProject,
 		}
 		steps = append(steps, stopStep)
@@ -80,9 +82,21 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 	}
 	steps = append(steps, runWorkerStep)
 
-	// TODO(#142): Add StepTypeStartContainers step here, make ExecutionPlan authoritative.
-	// Executor should interpret plan.Steps, not use hardcoded sequence.
-	// See smells #23-24 in wip_smell_milestone3
+	// Step 3: Start containers (if any were stopped)
+	if len(targetContainers) > 0 {
+		containerNames := extractContainerNames(targetContainers)
+
+		// Reuse useCompose decision from stop step to ensure consistency
+		startStep := jobs.PlanStep{
+			Type:           jobs.StepTypeStartContainers,
+			Description:    generateStartDescription(containerNames, useCompose, composeProject),
+			ContainerIDs:   targetContainers,
+			ContainerNames: containerNames,
+			UseCompose:     useCompose,
+			ComposeProject: composeProject,
+		}
+		steps = append(steps, startStep)
+	}
 
 	plan := jobs.ExecutionPlan{
 		JobName:   job.Name,
@@ -150,6 +164,33 @@ func generateRunWorkerDescription(workerImage string, volumes []jobs.VolumeAttac
 
 	return fmt.Sprintf("Run worker %q with %d volumes attached",
 		workerImage, len(volumes))
+}
+
+// generateStartDescription creates a human-readable description for a start step.
+func generateStartDescription(containerNames []string, useComposeStart bool, composeProject string) string {
+	if len(containerNames) == 0 {
+		return "No containers to start"
+	}
+
+	if useComposeStart && composeProject != "" {
+		return fmt.Sprintf("Start stack %q using docker compose start (%d container(s))",
+			composeProject, len(containerNames))
+	}
+
+	if len(containerNames) == 1 {
+		return fmt.Sprintf("Start container %q", containerNames[0])
+	}
+
+	// List first few containers, then summarize
+	maxShow := 3
+	if len(containerNames) <= maxShow {
+		return fmt.Sprintf("Start %d containers: %s",
+			len(containerNames), strings.Join(containerNames, ", "))
+	}
+
+	shown := strings.Join(containerNames[:maxShow], ", ")
+	return fmt.Sprintf("Start %d containers: %s, and %d more",
+		len(containerNames), shown, len(containerNames)-maxShow)
 }
 
 // Ensure Planner implements JobPlanner interface.

@@ -4,8 +4,8 @@
 // Key interfaces:
 //   - LabelSource: Discovers labeled entities from external sources (e.g., Docker)
 //   - Selector: Criteria for filtering discovered entities
-//   - JobDiscoverer: Converts labeled entities to backup job definitions
-//   - JobPlanner: Plans execution order for backup jobs
+//   - JobDiscoverer: Converts labeled entities to job definitions
+//   - JobPlanner: Plans execution order for jobs
 //
 // Adapters in internal/adapters implement these interfaces.
 package ports

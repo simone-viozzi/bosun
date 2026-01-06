@@ -7,13 +7,20 @@ Label parsing and validation in `internal/config/loader/`.
 
 ### Main Function
 ```go
-FromLabels(spec, labels, scope) (ConfigV1, error)
+FromLabels(spec, labels, scope, opts LoadOptions) (ConfigV1, ValidationErrors)
 ```
 - Filters `bosun.*` labels
-- Validates keys against spec
+- Validates keys against spec (unknown keys → warnings by default, errors with `Strict: true`)
 - Validates scope (global allowed anywhere)
 - Parses values by type
-- Returns ALL errors (not just first)
+- Returns ALL errors and warnings (not just first)
+
+### LoadOptions
+```go
+type LoadOptions struct {
+    Strict bool  // treat unknown keys as errors instead of warnings
+}
+```
 
 ### Parse Functions
 - `parseBool(s)` - `strconv.ParseBool`
@@ -29,7 +36,10 @@ FromLabels(spec, labels, scope) (ConfigV1, error)
 - `Key`, `Value`, `Scope`, `Message`, `Err`
 
 **`ValidationErrors`** - Collection with helpers
+- `Errors []ValidationError` - Fatal validation failures
+- `Warnings []ValidationError` - Non-fatal issues (e.g., unknown keys in lenient mode)
 - `AddUnknownKey`, `AddScopeMismatch`, `AddTypeParseFailed`, etc.
+- `HasErrors() bool`, `HasWarnings() bool` - Query methods
 
 ### Error Messages
 | Type | Format |
