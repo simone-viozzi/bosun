@@ -86,12 +86,12 @@ func (e *ValidationErrors) AddWarning(warn ValidationError) {
 	e.Warnings = append(e.Warnings, warn)
 }
 
-// AddUnknownKey adds an error for an unknown configuration key.
+// AddUnknownKey adds an error for an unknown configuration key (strict mode).
 func (e *ValidationErrors) AddUnknownKey(key string, scope schema.Scope) {
 	e.Add(ValidationError{
 		Key:     key,
 		Scope:   scope,
-		Message: fmt.Sprintf("unknown key: %s", key),
+		Message: fmt.Sprintf("unknown key: %s (rejected in strict mode)", key),
 	})
 }
 
@@ -100,7 +100,7 @@ func (e *ValidationErrors) AddUnknownKeyWarning(key string, scope schema.Scope) 
 	e.AddWarning(ValidationError{
 		Key:     key,
 		Scope:   scope,
-		Message: fmt.Sprintf("unknown key: %s", key),
+		Message: fmt.Sprintf("unknown key: %s (ignored)", key),
 	})
 }
 

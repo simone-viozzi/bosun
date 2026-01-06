@@ -64,8 +64,9 @@ func Test_Integration_ConfigValidate_InvalidConfig(t *testing.T) {
 	// Build bosun binary
 	bosunBin := buildBosun(t)
 
-	// Run bosun config validate with --strict to treat unknown keys as errors
-	// (Without --strict, unknown keys are only warnings per #139)
+	// Run bosun config validate with --strict to treat unknown keys as errors.
+	// Without --strict, unknown keys are only warnings per #139, but this test
+	// still expects errors due to other validation failures (invalid duration, etc.).
 	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate", "--strict")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

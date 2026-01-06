@@ -118,7 +118,8 @@ func FromLabels(spec schema.Spec, labels map[string]string, scope schema.Scope, 
 	var cfg schema.ConfigV1
 	var errs ValidationErrors
 
-	// Merge options (default is lenient mode)
+	// Merge options (default is lenient mode).
+	// Note: If multiple LoadOptions are passed, only the first is used.
 	var opt LoadOptions
 	if len(opts) > 0 {
 		opt = opts[0]

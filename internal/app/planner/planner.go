@@ -50,22 +50,22 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 		// Generate container names for description
 		containerNames := extractContainerNames(targetContainers)
 
-		// Check if all containers belong to the same stack (useComposeStop)
-		useComposeStop := false
+		// Check if all containers belong to the same stack
+		useComposeForStop := false
 		composeProject := ""
 		if len(job.TargetStacks) == 1 {
 			// TODO: In future, verify all target containers are in this stack
-			// For now, we'll set useComposeStop if there's exactly one stack
-			useComposeStop = true
+			// For now, we'll set useComposeForStop if there's exactly one stack
+			useComposeForStop = true
 			composeProject = job.TargetStacks[0]
 		}
 
 		stopStep := jobs.PlanStep{
 			Type:           jobs.StepTypeStopContainers,
-			Description:    generateStopDescription(containerNames, useComposeStop, composeProject),
+			Description:    generateStopDescription(containerNames, useComposeForStop, composeProject),
 			ContainerIDs:   targetContainers,
 			ContainerNames: containerNames,
-			UseCompose:     useComposeStop,
+			UseCompose:     useComposeForStop,
 			ComposeProject: composeProject,
 		}
 		steps = append(steps, stopStep)
@@ -85,19 +85,19 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 		containerNames := extractContainerNames(targetContainers)
 
 		// Use compose start if we used compose stop
-		useComposeStart := false
+		useComposeForStart := false
 		composeProject := ""
 		if len(job.TargetStacks) == 1 {
-			useComposeStart = true
+			useComposeForStart = true
 			composeProject = job.TargetStacks[0]
 		}
 
 		startStep := jobs.PlanStep{
 			Type:           jobs.StepTypeStartContainers,
-			Description:    generateStartDescription(containerNames, useComposeStart, composeProject),
+			Description:    generateStartDescription(containerNames, useComposeForStart, composeProject),
 			ContainerIDs:   targetContainers,
 			ContainerNames: containerNames,
-			UseCompose:     useComposeStart,
+			UseCompose:     useComposeForStart,
 			ComposeProject: composeProject,
 		}
 		steps = append(steps, startStep)

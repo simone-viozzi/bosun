@@ -334,7 +334,7 @@ func TestFromLabels_AllErrorsReported(t *testing.T) {
 		t.Fatal("FromLabels() should return error")
 	}
 
-	// Should have at least 3 errors (unknown key + 2 parse errors)
+	// Should have 3 errors: 1 unknown key (strict mode) + 2 parse errors
 	if len(verrs.Errors) < 3 {
 		t.Fatalf("Expected at least 3 errors, got %d: %v", len(verrs.Errors), verrs)
 	}
