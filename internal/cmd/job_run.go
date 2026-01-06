@@ -435,6 +435,9 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 
 // printDryRunText prints the execution plan in text format.
 func printDryRunText(plan jobs.ExecutionPlan) {
+	// TODO: why we have printDryRunText here instead of in the planner itself?
+	//		what happens if the schema of the planner changes?
+	//		do we need to also change this function here?
 	fmt.Printf("\n=== Dry Run: %s ===\n", plan.JobName)
 	fmt.Printf("Generated: %s\n", plan.CreatedAt.Format("2006-01-02 15:04:05"))
 	fmt.Printf("\nExecution Plan (%d steps):\n", len(plan.Steps))
