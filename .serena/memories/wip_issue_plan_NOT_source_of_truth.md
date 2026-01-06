@@ -1,6 +1,8 @@
 # WIP Issue: ExecutionPlan NOT Source of Truth
 
-## Status: NOT FIXED (was marked FIXED in PR #151)
+## Status: FIXED (2026-01-06)
+
+**Resolution**: Implemented step interpreter pattern in executor. Executor now iterates `plan.Steps` and calls `executeStep` for each step type.
 
 ## Decision (from wip_smell_milestone3, Decision #4)
 

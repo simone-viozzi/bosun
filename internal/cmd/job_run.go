@@ -153,7 +153,7 @@ type jobRunOptions struct {
 
 // runJobRun executes the job run command logic.
 func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, error) {
-	// Set up signal handler for graceful shutdown (FR-024)
+	// Set up signal handler for graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 

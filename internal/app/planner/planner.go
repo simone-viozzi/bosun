@@ -45,34 +45,29 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 		return attachVolumes[i].Name < attachVolumes[j].Name
 	})
 
+	// Determine compose usage once for both stop and start steps.
+	// TODO: DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if
+	// len(TargetStacks)==1, but doesn't verify that ALL target containers actually
+	// belong to that stack AND are ALL containers in the stack.
+	// Correct logic: "compose stop" only if all containers belong to same stack
+	// AND they are ALL containers in that stack. Otherwise, stop individually
+	// while being mindful of container interdependencies.
+	useCompose := len(job.TargetStacks) == 1
+	composeProject := ""
+	if useCompose {
+		composeProject = job.TargetStacks[0]
+	}
+
 	// Step 1: Stop containers (if any)
 	if len(targetContainers) > 0 {
-		// Generate container names for description
 		containerNames := extractContainerNames(targetContainers)
-
-		// Check if all containers belong to the same stack
-		// TODO: DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if
-		// len(TargetStacks)==1, but doesn't verify that ALL target containers actually
-		// belong to that stack AND are ALL containers in the stack.
-		// Correct logic per user: "compose stop" only if all containers belong to same
-		// stack AND they are ALL containers in that stack. Otherwise, stop individually
-		// while being mindful of container interdependencies.
-		// See: smell #23 in wip_smell_milestone3
-		useComposeForStop := false
-		composeProject := ""
-		if len(job.TargetStacks) == 1 {
-			// TODO: In future, verify all target containers are in this stack
-			// For now, we'll set useComposeForStop if there's exactly one stack
-			useComposeForStop = true
-			composeProject = job.TargetStacks[0]
-		}
 
 		stopStep := jobs.PlanStep{
 			Type:           jobs.StepTypeStopContainers,
-			Description:    generateStopDescription(containerNames, useComposeForStop, composeProject),
+			Description:    generateStopDescription(containerNames, useCompose, composeProject),
 			ContainerIDs:   targetContainers,
 			ContainerNames: containerNames,
-			UseCompose:     useComposeForStop,
+			UseCompose:     useCompose,
 			ComposeProject: composeProject,
 		}
 		steps = append(steps, stopStep)
@@ -91,25 +86,13 @@ func (p *Planner) Plan(ctx context.Context, job jobs.Job) (jobs.ExecutionPlan, e
 	if len(targetContainers) > 0 {
 		containerNames := extractContainerNames(targetContainers)
 
-		// TODO: DESIGN ISSUE - This duplicates the useCompose logic from Step 1 instead of
-		// referencing useComposeForStop variable. Comment says "if we used compose stop"
-		// but we're re-evaluating the condition rather than checking what we actually did.
-		// Fix: Either store useComposeForStop in a variable and reuse it here,
-		// or extract the decision logic to a helper function.
-		// See: smell #23 in wip_smell_milestone3 (related to plan authority)
-		useComposeForStart := false
-		composeProject := ""
-		if len(job.TargetStacks) == 1 {
-			useComposeForStart = true
-			composeProject = job.TargetStacks[0]
-		}
-
+		// Reuse useCompose decision from stop step to ensure consistency
 		startStep := jobs.PlanStep{
 			Type:           jobs.StepTypeStartContainers,
-			Description:    generateStartDescription(containerNames, useComposeForStart, composeProject),
+			Description:    generateStartDescription(containerNames, useCompose, composeProject),
 			ContainerIDs:   targetContainers,
 			ContainerNames: containerNames,
-			UseCompose:     useComposeForStart,
+			UseCompose:     useCompose,
 			ComposeProject: composeProject,
 		}
 		steps = append(steps, startStep)

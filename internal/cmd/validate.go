@@ -281,7 +281,7 @@ func outputResults(result ValidationResult, opts ValidateOptions) error {
 
 		totalErrors := 0
 
-		// Print config label errors (entity-grouped, excluding warnings)
+		// Print config label errors (entity-grouped)
 		for _, entityErr := range result.EntityErrors {
 			fmt.Fprintf(os.Stderr, "%s %q (%s):\n",
 				entityErr.Entity.Kind,

@@ -190,6 +190,47 @@
 
 ---
 
+## Phase 10: PR #151 Review Fixes
+
+**Purpose**: Address review comments from PR #151
+
+**Source**: Review comments in `pr151-review.md` and `wip_smell_milestone3.md` (smell #23 NOT FIXED)
+
+### Critical: Executor Step Interpreter (Smell #23)
+
+- [x] T059 [US4] Implement step interpreter pattern in `internal/app/executor/executor.go`:
+  - Add `stepExecutionContext` struct to hold shared state across steps
+  - Add `executeStep(ctx, step, execCtx)` method with switch on `step.Type`
+  - Add `executeStopStep`, `executeWorkerStep`, `executeStartStep` helper methods
+  - Refactor `Execute` to iterate `plan.Steps` and call `executeStep` for each
+  - Remove hardcoded stop→worker→start sequence
+
+### Planner Logic Cleanup
+
+- [x] T060 [US2] Fix duplicated useCompose logic in `internal/app/planner/planner.go`:
+  - Extract `useCompose` decision once before Step 1
+  - Reuse for both stop and start steps
+  - Update TODO comment to clarify correct compose stop logic
+
+### Comment Fixes (Per Reviewer Suggestions)
+
+- [x] T061 [P] Fix `internal/cmd/job_run.go:156` - Remove `(FR-024)` from signal handler comment
+- [x] T062 [P] Add TODO in `internal/cmd/job_run.go` near `printDryRunText` noting layering concern
+- [x] T063 [P] Fix `internal/cmd/validate.go:284` - Change comment to "Print config label errors (entity-grouped)"
+- [x] T064 [P] Fix `integration/validate_test.go:69` - Simplify comment per reviewer suggestion
+- [x] T065 [P] Fix `internal/config/loader/errors.go:94` - Make error messages consistent (remove mode mentions)
+
+### Final Verification
+
+- [x] T066 Update `wip_smell_milestone3.md` to mark smell #23 as FIXED
+- [x] T067 Run `make build && make test && make lint` to verify all fixes
+
+**Checkpoint**: All PR review comments addressed. Ready for re-review.
+
+- [x] T067a 🔒 COMMIT: `fix(executor): implement step interpreter pattern, address PR review comments`
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

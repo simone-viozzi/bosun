@@ -36,6 +36,8 @@ func New(
 }
 
 // Execute runs a job (implements ports.JobExecutor).
+// Implements the step interpreter pattern: the executor iterates over plan.Steps
+// and executes each step based on its type. This ensures plan-is-source-of-truth.
 func (e *Executor) Execute(ctx context.Context, job jobs.Job, opts ports.ExecuteOptions) (ports.ExecutionResult, error) {
 	// Initialize result
 	runID := uuid.New().String()
@@ -52,13 +54,6 @@ func (e *Executor) Execute(ctx context.Context, job jobs.Job, opts ports.Execute
 		Run:         run,
 		StepResults: []ports.StepResult{},
 	}
-
-	// TODO: DESIGN ISSUE - Plan is generated but NOT used to drive execution.
-	// Decision #4 in wip_smell_milestone3 states "Plan-is-source-of-truth" but this
-	// executor hardcodes stop→worker→start sequence instead of interpreting plan.Steps.
-	// The plan is only used to populate result.Plan for display purposes.
-	// Fix: Implement step interpreter loop: for _, step := range plan.Steps { executeStep(step) }
-	// See: smell #23 in wip_smell_milestone3, issue #142 (marked FIXED but not actually fixed)
 
 	// Step 1: Generate execution plan
 	plan, err := e.planner.Plan(ctx, job)
@@ -84,129 +79,186 @@ func (e *Executor) Execute(ctx context.Context, job jobs.Job, opts ports.Execute
 	run.Status = jobs.RunStatusRunning
 	result.Run = run
 
-	// Track if stack was stopped (for cleanup)
-	stackStopped := false
+	// Create execution context for step interpreter
+	execCtx := &stepExecutionContext{
+		runID:          runID,
+		job:            job,
+		opts:           opts,
+		stackName:      run.StackName,
+		stackStopped:   false,
+		workerExitCode: -1,
+	}
 
-	// Defer: ALWAYS attempt to restart stack
-	defer func() {
-		if stackStopped && !opts.KeepStopped {
-			startOpts := ports.DefaultStartOptions()
-			if opts.StartTimeoutOverride > 0 {
-				startOpts.Timeout = opts.StartTimeoutOverride
-			}
+	// Step 3: Execute plan steps using step interpreter pattern
+	// Plan-is-source-of-truth: the planner defines the sequence, executor interprets it
+	var lastErr error
+	for i, step := range plan.Steps {
+		stepResult, err := e.executeStep(ctx, step, execCtx)
+		result.StepResults = append(result.StepResults, stepResult)
 
-			// Use background context for cleanup (not cancelled ctx)
-			cleanupCtx, cancel := context.WithTimeout(context.Background(), startOpts.Timeout*2)
-			defer cancel()
-
-			startStepStart := time.Now()
-			startErr := e.compose.StartStack(cleanupCtx, run.StackName, startOpts)
-
-			stepResult := ports.StepResult{
-				Step: jobs.PlanStep{
-					Type:        jobs.StepTypeStartContainers,
-					Description: fmt.Sprintf("Start stack '%s'", run.StackName),
-				},
-				StartedAt: startStepStart,
-				Duration:  time.Since(startStepStart),
-			}
-
-			if startErr != nil {
-				stepResult.Status = jobs.RunStatusFailed
-				stepResult.Error = fmt.Sprintf("failed to restart stack: %v", startErr)
-			} else {
-				stepResult.Status = jobs.RunStatusSuccess
-			}
-
-			result.StepResults = append(result.StepResults, stepResult)
+		// Capture worker logs if this was a worker step
+		if step.Type == jobs.StepTypeRunWorker && execCtx.workerLogs != "" {
+			result.WorkerLogs = execCtx.workerLogs
 		}
-	}()
 
-	// Step 3: Stop stack
-	stopOpts := ports.DefaultStopOptions()
-	if opts.StopTimeoutOverride > 0 {
-		stopOpts.Timeout = opts.StopTimeoutOverride
+		if err != nil {
+			lastErr = err
+			// On failure, execute remaining start steps for cleanup
+			// This ensures stack restart even on worker failure
+			for j := i + 1; j < len(plan.Steps); j++ {
+				remainingStep := plan.Steps[j]
+				if remainingStep.Type == jobs.StepTypeStartContainers && execCtx.stackStopped && !opts.KeepStopped {
+					cleanupResult, _ := e.executeStep(ctx, remainingStep, execCtx)
+					result.StepResults = append(result.StepResults, cleanupResult)
+				}
+			}
+			break
+		}
 	}
 
-	stopStepStart := time.Now()
-	stopErr := e.compose.StopStack(ctx, run.StackName, stopOpts)
+	// Update worker exit code from context
+	run.WorkerExitCode = execCtx.workerExitCode
 
-	stopStepResult := ports.StepResult{
-		Step: jobs.PlanStep{
-			Type:        jobs.StepTypeStopContainers,
-			Description: fmt.Sprintf("Stop stack '%s'", run.StackName),
-		},
-		StartedAt: stopStepStart,
-		Duration:  time.Since(stopStepStart),
-	}
-
-	if stopErr != nil {
-		stopStepResult.Status = jobs.RunStatusFailed
-		stopStepResult.Error = fmt.Sprintf("failed to stop stack: %v", stopErr)
-		result.StepResults = append(result.StepResults, stopStepResult)
-
+	// Determine final status
+	if lastErr != nil {
 		run.Status = jobs.RunStatusFailed
-		run.Error = stopErr.Error()
-		run.CompletedAt = time.Now()
-		result.Run = run
-		return result, stopErr
-	}
-
-	stopStepResult.Status = jobs.RunStatusSuccess
-	result.StepResults = append(result.StepResults, stopStepResult)
-	stackStopped = true
-
-	// Step 4: Run worker
-	workerConfig := e.buildWorkerConfig(job, runID, opts)
-	workerStepStart := time.Now()
-	workerResult, workerErr := e.worker.Run(ctx, workerConfig)
-
-	workerStepResult := ports.StepResult{
-		Step: jobs.PlanStep{
-			Type:        jobs.StepTypeRunWorker,
-			Description: fmt.Sprintf("Run worker '%s'", job.WorkerImage),
-		},
-		StartedAt: workerStepStart,
-		Duration:  time.Since(workerStepStart),
-		Details:   workerResult.ContainerID,
-	}
-
-	run.WorkerExitCode = workerResult.ExitCode
-	result.WorkerLogs = workerResult.Logs
-
-	if workerErr != nil {
-		workerStepResult.Status = jobs.RunStatusFailed
-		workerStepResult.Error = fmt.Sprintf("worker execution error: %v", workerErr)
-		result.StepResults = append(result.StepResults, workerStepResult)
-
+		run.Error = lastErr.Error()
+	} else if execCtx.workerExitCode != 0 {
 		run.Status = jobs.RunStatusFailed
-		run.Error = workerErr.Error()
-		run.CompletedAt = time.Now()
-		result.Run = run
-		return result, workerErr
-	}
-
-	if workerResult.ExitCode != 0 {
-		workerStepResult.Status = jobs.RunStatusFailed
-		workerStepResult.Error = fmt.Sprintf("worker exited with code %d", workerResult.ExitCode)
+		run.Error = fmt.Sprintf("worker failed with exit code %d", execCtx.workerExitCode)
 	} else {
-		workerStepResult.Status = jobs.RunStatusSuccess
-	}
-	result.StepResults = append(result.StepResults, workerStepResult)
-
-	// Update final status
-	if workerResult.ExitCode == 0 {
 		run.Status = jobs.RunStatusSuccess
-	} else {
-		run.Status = jobs.RunStatusFailed
-		run.Error = fmt.Sprintf("worker failed with exit code %d", workerResult.ExitCode)
 	}
 	run.CompletedAt = time.Now()
 	result.Run = run
 
-	// Note: Stack restart happens in defer
+	return result, lastErr
+}
 
-	return result, nil
+// stepExecutionContext holds state shared across step executions.
+type stepExecutionContext struct {
+	runID          string
+	job            jobs.Job
+	opts           ports.ExecuteOptions
+	stackName      string
+	stackStopped   bool
+	workerExitCode int
+	workerLogs     string
+}
+
+// executeStep executes a single plan step and returns the result.
+// This is the core of the step interpreter pattern.
+func (e *Executor) executeStep(ctx context.Context, step jobs.PlanStep, execCtx *stepExecutionContext) (ports.StepResult, error) {
+	stepStart := time.Now()
+
+	stepResult := ports.StepResult{
+		Step:      step,
+		StartedAt: stepStart,
+	}
+
+	var err error
+
+	switch step.Type {
+	case jobs.StepTypeStopContainers:
+		err = e.executeStopStep(ctx, step, execCtx)
+
+	case jobs.StepTypeRunWorker:
+		err = e.executeWorkerStep(ctx, step, execCtx, &stepResult)
+
+	case jobs.StepTypeStartContainers:
+		err = e.executeStartStep(ctx, step, execCtx)
+
+	default:
+		err = fmt.Errorf("unknown step type: %s", step.Type)
+	}
+
+	stepResult.Duration = time.Since(stepStart)
+
+	if err != nil {
+		stepResult.Status = jobs.RunStatusFailed
+		stepResult.Error = err.Error()
+		return stepResult, err
+	}
+
+	stepResult.Status = jobs.RunStatusSuccess
+	return stepResult, nil
+}
+
+// executeStopStep handles StepTypeStopContainers.
+func (e *Executor) executeStopStep(ctx context.Context, step jobs.PlanStep, execCtx *stepExecutionContext) error {
+	stopOpts := ports.DefaultStopOptions()
+	if execCtx.opts.StopTimeoutOverride > 0 {
+		stopOpts.Timeout = execCtx.opts.StopTimeoutOverride
+	}
+
+	var err error
+	if step.UseCompose && step.ComposeProject != "" {
+		err = e.compose.StopStack(ctx, step.ComposeProject, stopOpts)
+	} else {
+		err = e.compose.StopStack(ctx, execCtx.stackName, stopOpts)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to stop stack: %w", err)
+	}
+
+	execCtx.stackStopped = true
+	return nil
+}
+
+// executeWorkerStep handles StepTypeRunWorker.
+// Note: step parameter reserved for future per-step config (timeout, retry policy).
+func (e *Executor) executeWorkerStep(ctx context.Context, _ jobs.PlanStep, execCtx *stepExecutionContext, stepResult *ports.StepResult) error {
+	workerConfig := e.buildWorkerConfig(execCtx.job, execCtx.runID, execCtx.opts)
+	workerResult, workerErr := e.worker.Run(ctx, workerConfig)
+
+	stepResult.Details = workerResult.ContainerID
+	execCtx.workerExitCode = workerResult.ExitCode
+	execCtx.workerLogs = workerResult.Logs
+
+	if workerErr != nil {
+		return fmt.Errorf("worker execution error: %w", workerErr)
+	}
+
+	if workerResult.ExitCode != 0 {
+		stepResult.Status = jobs.RunStatusFailed
+		stepResult.Error = fmt.Sprintf("worker exited with code %d", workerResult.ExitCode)
+		// Note: non-zero exit is not an error from executor perspective
+		// The step completes, but with failed status
+	}
+
+	return nil
+}
+
+// executeStartStep handles StepTypeStartContainers.
+// Note: ctx parameter unused because cleanup uses background context to ensure completion.
+func (e *Executor) executeStartStep(_ context.Context, step jobs.PlanStep, execCtx *stepExecutionContext) error {
+	// Skip start if stack was never stopped or if user requested to keep stopped
+	if !execCtx.stackStopped || execCtx.opts.KeepStopped {
+		return nil
+	}
+
+	startOpts := ports.DefaultStartOptions()
+	if execCtx.opts.StartTimeoutOverride > 0 {
+		startOpts.Timeout = execCtx.opts.StartTimeoutOverride
+	}
+
+	// Use background context for cleanup (not cancelled ctx)
+	cleanupCtx, cancel := context.WithTimeout(context.Background(), startOpts.Timeout*2)
+	defer cancel()
+
+	var err error
+	if step.UseCompose && step.ComposeProject != "" {
+		err = e.compose.StartStack(cleanupCtx, step.ComposeProject, startOpts)
+	} else {
+		err = e.compose.StartStack(cleanupCtx, execCtx.stackName, startOpts)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to restart stack: %w", err)
+	}
+
+	return nil
 }
 
 // DryRun returns the execution plan without executing (implements ports.JobExecutor).

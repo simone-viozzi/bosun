@@ -8,13 +8,10 @@
 * [internal/adapters/docker/worker/runner.go:179](internal/adapters/docker/worker/runner.go#L179): BUG - This produces corrupted output! Docker logs have 8-byte headers.
 
 ## internal/app/executor/executor.go
-* [internal/app/executor/executor.go:56](internal/app/executor/executor.go#L56): DESIGN ISSUE - Plan is generated but NOT used to drive execution.
-* [internal/app/executor/executor.go:264](internal/app/executor/executor.go#L264): Add worker env vars from labels (bosun.job.worker.env.*)
+* [internal/app/executor/executor.go:316](internal/app/executor/executor.go#L316): Add worker env vars from labels (bosun.job.worker.env.*)
 
 ## internal/app/planner/planner.go
-* [internal/app/planner/planner.go:54](internal/app/planner/planner.go#L54): DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if
-* [internal/app/planner/planner.go:64](internal/app/planner/planner.go#L64): In future, verify all target containers are in this stack
-* [internal/app/planner/planner.go:94](internal/app/planner/planner.go#L94): DESIGN ISSUE - This duplicates the useCompose logic from Step 1 instead of
+* [internal/app/planner/planner.go:49](internal/app/planner/planner.go#L49): DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if
 
 ## internal/cmd/job_run.go
 * [internal/cmd/job_run.go:419](internal/cmd/job_run.go#L419): DESIGN ISSUE - Plan rendering is in CLI instead of planner/app layer.

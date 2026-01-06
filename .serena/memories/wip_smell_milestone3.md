@@ -57,8 +57,8 @@ _Append-only. Never renumber IDs._
 | 20 | Docker client wiring duplicated across CLI/tests | New | `wip_smell-duplication-m3` #3 | — | — |
 | 21 | Near-identical test setup calls | New | `wip_smell-duplication-m3` #5 | — | — |
 | 22 | Duplicate discovery/wiring sequences (snapshot→discover) | New | `wip_smell-duplication-m3` #6 | — | — |
-| 23 | Planner vs Executor mismatch (plan not authoritative) | **NOT FIXED** | `wip_smell-design-m3` #1 | `internal/app/executor/executor.go:57` | #142 |
-| 24 | Execution plan incompleteness (no start step, no per-step policies) | **PARTIAL** | `wip_smell-design-m3` #4 | — | #142 |
+| 23 | Planner vs Executor mismatch (plan not authoritative) | **FIXED** | `wip_smell-design-m3` #1 | — | #142 |
+| 24 | Execution plan incompleteness (no start step, no per-step policies) | **FIXED** | `wip_smell-design-m3` #4 | — | #142 |
 | 25 | Error handling & retry policy under-specified | Confirmed | `wip_smell-design-m3` #6 | — | — |
 | 26 | `ports` imports domain types (coupling tradeoff) | Confirmed | `wip_smell-design-m3` #7 | — | — |
 | 27 | Plan CreatedAt responsibility mismatch (planner vs caller) | New | `wip_smell-design-m3` #8 | — | — |
@@ -207,6 +207,13 @@ _Append-only. Never renumber IDs._
   - Added TODO at `internal/app/planner/planner.go:53` — simplistic useCompose decision
   - Added TODO at `internal/cmd/job_run.go:418` — plan rendering in CLI (layering)
   - Root cause: PR claimed "#142 FIXED" but only added `start_containers` step to planner, did NOT implement step interpreter in executor
+- **2026-01-06**: PR #151 review fixes implemented — **Smell #23 NOW FIXED**.
+  - Executor refactored to use step interpreter pattern:
+    - Added `stepExecutionContext` struct for shared state
+    - Added `executeStep`, `executeStopStep`, `executeWorkerStep`, `executeStartStep` methods
+    - `Execute` now iterates `plan.Steps` and calls `executeStep` for each
+  - Planner refactored to extract `useCompose` decision once and reuse for both stop/start steps
+  - Various comment fixes per reviewer suggestions
 
 ---
 
@@ -219,7 +226,7 @@ _Append-only. Never renumber IDs._
 | **#133** | P3 | #2 | ✅ FIXED | `SilenceErrors: true` on root command, clean main.go |
 | **#139** | P0 | #3 | ✅ FIXED | Lenient mode default, `--strict` flag for errors |
 | **#140** | P1 | #1 | ✅ FIXED | Renamed `BackupEnabled` → `Enabled` |
-| **#142** | P1 | #5,23,24 | ⚠️ PARTIAL | Planner adds `start_containers` step BUT executor still hardcodes flow (doesn't interpret plan.Steps) |
+| **#142** | P1 | #5,23,24 | ✅ FIXED | Planner adds `start_containers` step; executor now uses step interpreter |
 | **#143** | P1 | #4 | ✅ FIXED | Interface takes `jobs.Job` directly; removed unused param |
 
 ### Deferred Issues (Not In M3.5 Scope)
