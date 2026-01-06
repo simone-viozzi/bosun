@@ -131,8 +131,15 @@ func (r *Runner) Run(ctx context.Context, config ports.WorkerConfig) (ports.Work
 
 // stopContainer stops a container with SIGTERM→SIGKILL grace period.
 // Returns the exit code after stop.
+//
+// TODO: BUG - Magic 137 exit code when ContainerInspect fails is misleading.
+// We're claiming SIGKILL when we don't actually know what happened.
+// Fix: Return (int, error) and let caller handle unknown exit code.
+// See: wip_smell_runner_run_investigation, smell #32
 func (r *Runner) stopContainer(ctx context.Context, containerID string) int {
 	// Send SIGTERM with grace period
+	// TODO: SMELL - ContainerStop error is silently ignored.
+	// At minimum, log the error for debugging.
 	timeout := int(jobs.GracePeriod.Seconds())
 	_ = r.docker.ContainerStop(ctx, containerID, container.StopOptions{
 		Timeout: &timeout,
@@ -141,6 +148,8 @@ func (r *Runner) stopContainer(ctx context.Context, containerID string) int {
 	// Inspect to get exit code
 	inspect, err := r.docker.ContainerInspect(ctx, containerID)
 	if err != nil {
+		// TODO: BUG - Returning 137 here is wrong. We don't know if container
+		// was killed, network failed, or container was already removed.
 		return 137 // Assume SIGKILL (128 + 9)
 	}
 
@@ -149,6 +158,12 @@ func (r *Runner) stopContainer(ctx context.Context, containerID string) int {
 
 // streamLogs streams stdout/stderr from a container to the writer.
 // This function blocks until the container exits or context is cancelled.
+//
+// TODO: BUG - Missing stdcopy.StdCopy demultiplexing!
+// Docker multiplexes stdout/stderr with 8-byte headers when TTY=false.
+// Current io.Copy produces CORRUPTED output with binary header bytes.
+// Fix: Use github.com/docker/docker/pkg/stdcopy.StdCopy(stdout, stderr, reader)
+// See: wip_smell_runner_run_investigation, smell #6
 func (r *Runner) streamLogs(ctx context.Context, containerID string, writer io.Writer) {
 	reader, err := r.docker.ContainerLogs(ctx, containerID, container.LogsOptions{
 		ShowStdout: true,
@@ -156,10 +171,12 @@ func (r *Runner) streamLogs(ctx context.Context, containerID string, writer io.W
 		Follow:     true, // Stream until container exits
 	})
 	if err != nil {
+		// TODO: SMELL - Error is silently swallowed. At minimum, log it.
 		return // Best effort - ignore errors
 	}
 	defer func() { _ = reader.Close() }()
 
+	// TODO: BUG - This produces corrupted output! Docker logs have 8-byte headers.
 	// Docker multiplexes stdout/stderr with 8-byte header
 	// Use stdcopy.StdCopy to demux, or just copy raw for combined output
 	_, _ = io.Copy(writer, reader)

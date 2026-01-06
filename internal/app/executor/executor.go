@@ -53,6 +53,13 @@ func (e *Executor) Execute(ctx context.Context, job jobs.Job, opts ports.Execute
 		StepResults: []ports.StepResult{},
 	}
 
+	// TODO: DESIGN ISSUE - Plan is generated but NOT used to drive execution.
+	// Decision #4 in wip_smell_milestone3 states "Plan-is-source-of-truth" but this
+	// executor hardcodes stop→worker→start sequence instead of interpreting plan.Steps.
+	// The plan is only used to populate result.Plan for display purposes.
+	// Fix: Implement step interpreter loop: for _, step := range plan.Steps { executeStep(step) }
+	// See: smell #23 in wip_smell_milestone3, issue #142 (marked FIXED but not actually fixed)
+
 	// Step 1: Generate execution plan
 	plan, err := e.planner.Plan(ctx, job)
 	if err != nil {

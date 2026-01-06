@@ -416,6 +416,13 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	// Set timestamp
 	plan.CreatedAt = time.Now()
 
+	// TODO: DESIGN ISSUE - Plan rendering is in CLI instead of planner/app layer.
+	// If ExecutionPlan schema changes (e.g., new fields in PlanStep), this CLI code
+	// must also change. Violates Single Responsibility: CLI should only parse args
+	// and call services, not know how to render domain types.
+	// Fix: Move printDryRunText to internal/presentation or as a method on ExecutionPlan.
+	// See: smell #16-18 in wip_smell_milestone3 (CLI layering issues)
+
 	// Output based on format
 	switch format {
 	case "json":
