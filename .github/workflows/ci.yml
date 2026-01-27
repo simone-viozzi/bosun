@@ -19,13 +19,25 @@ jobs:
         cache-dependency-path: go.sum
 
     - name: Run tests
-      run: go test -v ./... -coverprofile=coverage.out
+      run: |
+        go test -v ./... -coverprofile=coverage.out -coverpkg=./...
+        go tool cover -func coverage.out | tee coverage.txt
+        go tool cover -html coverage.out -o coverage.html
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
         files: ./coverage.out
         token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: |
+          coverage.out
+          coverage.txt
+          coverage.html
 
   lint:
     runs-on: ubuntu-latest
