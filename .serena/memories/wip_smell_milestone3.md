@@ -40,35 +40,35 @@ _Append-only. Never renumber IDs._
 | 3 | Strict unknown-key rejection (may cause #136) | **FIXED** | `wip_smell-general-m3` #3 | — | #139 |
 | 4 | Executor API mismatch / unused `discoverer` param | **FIXED** | `wip_smell-general-m3` #4, `wip_smell-design-m3` #2 | — | #143 |
 | 5 | Missing restart step in plan display (#135) | **FIXED** | `wip_smell-general-m3` #5 | — | #142 |
-| 6 | Worker runner silent error swallowing / magic 137 | **Confirmed (BUG)** | `wip_smell-general-m3` #6, `wip_smell_runner_run_investigation` | `internal/adapters/docker/worker/runner.go:134,159` | — |
-| 7 | JSON/YAML output duplication across CLI commands | New | `wip_smell-general-m3` #7 | — | — |
-| 8 | Brittle integration test harness (needs testcontainers) | New | `wip_smell-general-m3` #8 | — | — |
-| 9 | TODOs without issue links | New | `wip_smell-general-m3` #9 | — | — |
-| 10 | Magic strings for Mode (`ro`/`rw`) and container state | New | `wip_smell-general-m3` #10 | — | — |
-| 11 | `Executor.ExecuteJob` too large (~167 lines, many responsibilities) | New | `wip_smell-complexity-m3` #1 | — | — |
-| 12 | `Runner.Run` too complex (~103 lines, concurrency + lifecycle) | New | `wip_smell-complexity-m3` #2 | — | — |
-| 13 | `FromLabels` + reflection helpers complex | New | `wip_smell-complexity-m3` #3 | — | — |
-| 14 | `ValidateJobLabels` too large (~159 lines) | New | `wip_smell-complexity-m3` #4 | — | — |
-| 15 | `Planner.Plan` slightly over threshold (~69 lines) | New | `wip_smell-complexity-m3` #5 | — | — |
+| 6 | Worker runner silent error swallowing / magic 137 | **Tracked** | `wip_smell-general-m3` #6, `wip_smell_runner_run_investigation` | `internal/adapters/docker/worker/runner.go:134,159` | #144 |
+| 7 | JSON/YAML output duplication across CLI commands | **Tracked** | `wip_smell-general-m3` #7 | — | #147 |
+| 8 | Brittle integration test harness (needs testcontainers) | **Tracked** | `wip_smell-general-m3` #8 | — | #145 |
+| 9 | TODOs without issue links | **Tracked** | `wip_smell-general-m3` #9 | — | #155 |
+| 10 | Magic strings for Mode (`ro`/`rw`) and container state | **Tracked** | `wip_smell-general-m3` #10 | — | #148 |
+| 11 | `Executor.ExecuteJob` too large (~167 lines, many responsibilities) | **Tracked** | `wip_smell-complexity-m3` #1 | — | #146 |
+| 12 | `Runner.Run` too complex (~103 lines, concurrency + lifecycle) | **Tracked** | `wip_smell-complexity-m3` #2 | — | #146 |
+| 13 | `FromLabels` + reflection helpers complex | **Tracked** | `wip_smell-complexity-m3` #3 | — | #155 |
+| 14 | `ValidateJobLabels` too large (~159 lines) | **Tracked** | `wip_smell-complexity-m3` #4 | — | #146 |
+| 15 | `Planner.Plan` slightly over threshold (~69 lines) | **Tracked** | `wip_smell-complexity-m3` #5 | — | #155 |
 | 16 | CLI imports adapters directly (layering violation) | **Ready-For-Issue** | `wip_smell-layering-m3` #1, `wip_smell-design-m3` #10 | `internal/cmd/job_run.go:1` | #141 |
 | 17 | Business logic in CLI handlers (discovery, selection) | **Ready-For-Issue** | `wip_smell-layering-m3` #2, `wip_smell-design-m3` #10 | `internal/cmd/job_run.go:1` | #141 |
 | 18 | CLI performs low-level Docker client wiring | **Ready-For-Issue** | `wip_smell-layering-m3` #3, `wip_smell-design-m3` #10 | `internal/cmd/job_run.go:1` | #141 |
-| 19 | Duplicated CLI flag setup & format validation | New | `wip_smell-duplication-m3` #2 | — | — |
-| 20 | Docker client wiring duplicated across CLI/tests | New | `wip_smell-duplication-m3` #3 | — | — |
-| 21 | Near-identical test setup calls | New | `wip_smell-duplication-m3` #5 | — | — |
-| 22 | Duplicate discovery/wiring sequences (snapshot→discover) | New | `wip_smell-duplication-m3` #6 | — | — |
+| 19 | Duplicated CLI flag setup & format validation | **Tracked** | `wip_smell-duplication-m3` #2 | — | #147 |
+| 20 | Docker client wiring duplicated across CLI/tests | **Tracked** | `wip_smell-duplication-m3` #3 | — | #154 |
+| 21 | Near-identical test setup calls | **Tracked** | `wip_smell-duplication-m3` #5 | — | #145 |
+| 22 | Duplicate discovery/wiring sequences (snapshot→discover) | **Tracked** | `wip_smell-duplication-m3` #6 | — | #154 |
 | 23 | Planner vs Executor mismatch (plan not authoritative) | **FIXED** | `wip_smell-design-m3` #1 | — | #142 |
 | 24 | Execution plan incompleteness (no start step, no per-step policies) | **FIXED** | `wip_smell-design-m3` #4 | — | #142 |
-| 25 | Error handling & retry policy under-specified | Confirmed | `wip_smell-design-m3` #6 | — | — |
-| 26 | `ports` imports domain types (coupling tradeoff) | Confirmed | `wip_smell-design-m3` #7 | — | — |
-| 27 | Plan CreatedAt responsibility mismatch (planner vs caller) | New | `wip_smell-design-m3` #8 | — | — |
-| 28 | Duplicate ExecutionResult & StepResult types (ports vs domain) | New | `wip_smell-design-m3` #9 | — | — |
-| 29 | Config merge treats false as zero (surprising semantics) | New | `wip_smell-design-m3` #11 | — | — |
-| 30 | Integration tests heavy/brittle; limited isolation | New | `wip_smell-design-m3` #13 | — | — |
-| 31 | Adapter error typing (compose returns domain errors) | New | `wip_smell-design-m3` #14 | — | — |
-| 32 | Worker runner magic exit codes (137) & timeout handling | **Confirmed (BUG)** | `wip_smell-design-m3` #15, `wip_smell_runner_run_investigation` | `internal/adapters/docker/worker/runner.go:144` | — |
-| 33 | Missing stdcopy.StdCopy — corrupted log output | **Confirmed (BUG)** | `wip_smell_runner_run_investigation` | `internal/adapters/docker/worker/runner.go:171`, `internal/testutil/docker.go:92` | — |
-| 34 | Docker client creation duplicated across modules | New | `wip_smell_runner_run_investigation` | — | — |
+| 25 | Error handling & retry policy under-specified | **Tracked** | — | — | #156 |
+| 26 | `ports` imports domain types (coupling tradeoff) | **Tracked** | — | — | #156 |
+| 27 | Plan CreatedAt responsibility mismatch (planner vs caller) | **Tracked** | — | — | #156 |
+| 28 | Duplicate ExecutionResult & StepResult types (ports vs domain) | **Tracked** | — | — | #156 |
+| 29 | Config merge treats false as zero (surprising semantics) | **Tracked** | — | — | #156 |
+| 30 | Integration tests heavy/brittle; limited isolation | **Tracked** | — | — | #145 |
+| 31 | Adapter error typing (compose returns domain errors) | **Tracked** | — | — | #156 |
+| 32 | Worker runner magic exit codes (137) & timeout handling | **Tracked** | `wip_smell_runner_run_investigation` | `internal/adapters/docker/worker/runner.go:144` | #144 |
+| 33 | Missing stdcopy.StdCopy — corrupted log output | **Tracked (BUG)** | `wip_smell_runner_run_investigation` | `internal/adapters/docker/worker/runner.go:171`, `internal/testutil/docker.go:92` | #153 |
+| 34 | Docker client creation duplicated across modules | **Tracked** | `wip_smell_runner_run_investigation` | — | #154 |
 
 ---
 
@@ -207,13 +207,20 @@ _Append-only. Never renumber IDs._
   - Added TODO at `internal/app/planner/planner.go:53` — simplistic useCompose decision
   - Added TODO at `internal/cmd/job_run.go:418` — plan rendering in CLI (layering)
   - Root cause: PR claimed "#142 FIXED" but only added `start_containers` step to planner, did NOT implement step interpreter in executor
-- **2026-01-06**: PR #151 review fixes implemented — **Smell #23 NOW FIXED**.
-  - Executor refactored to use step interpreter pattern:
-    - Added `stepExecutionContext` struct for shared state
-    - Added `executeStep`, `executeStopStep`, `executeWorkerStep`, `executeStartStep` methods
-    - `Execute` now iterates `plan.Steps` and calls `executeStep` for each
-  - Planner refactored to extract `useCompose` decision once and reuse for both stop/start steps
-  - Various comment fixes per reviewer suggestions
+$1
+- **2026-01-27**: Memory cleanup after PR #151 merge.
+  - Deleted `wip_issue_plan_NOT_source_of_truth` (issue resolved, tracked here)
+  - Deleted `wip_smell-design-m3` (all items either FIXED or tracked in smell list)
+  - Updated Evidence column to remove deleted memory references
+- **2026-01-27**: Issue review session — linked all untracked smells to GitHub issues.
+  - Created issues #153-#156 for untracked smells
+  - Updated smell list: 23 smells now tracked with issue numbers
+  - Smells #6, #32 → #144 (worker error handling)
+  - Smell #33 → #153 (stdcopy bug - P0)
+  - Smells #20, #22, #34 → #154 (Docker client duplication)
+  - Smells #9, #13, #15 → #155 (TODO hygiene)
+  - Smells #25-29, #31 → #156 (type design questions)
+  - Linked existing issues: #7, #19 → #147; #8, #21, #30 → #145; #10 → #148; #11, #12, #14 → #146
 
 ---
 
@@ -234,24 +241,17 @@ _Append-only. Never renumber IDs._
 | Issue | Priority | Smells | Decision | Action |
 |-------|----------|--------|----------|--------|
 | **#141** | P2 | #16,17,18 | Thin CLI | Move wiring to `internal/app/factory` or `internal/bootstrap` |
-### New Findings (Not Yet Issued)
+### Tracking Summary
 
-| Smell | Title | Priority | Suggested Action |
-|-------|-------|----------|------------------|
-| #2 | Duplicate CLI error printing | Low | Centralize error formatting |
-| #5 | Missing restart step in plan display | Med | Covered by #142 |
-| #6 | Worker runner silent error swallowing | Med | Return/log errors; name magic codes |
-| #7 | JSON/YAML output duplication | Low | Extract output helpers |
-| #8, #30 | Brittle integration tests | Med | Adopt testcontainers |
-| #9 | TODOs without issue links | Low | Triage and link |
-| #10 | Magic strings (Mode, state) | Low | Introduce typed constants |
-| #11 | `ExecuteJob` too large | Med | Extract helper methods |
-| #12 | `Runner.Run` too complex | Med | Extract lifecycle methods |
-| #13, #14 | Loader complexity | Low | Defer unless causing bugs |
-| #19–22 | CLI/test duplication | Low | Extract shared helpers |
-| #25 | Error handling under-specified | Med | Define retry/backoff policy |
-| #26, #28 | ports↔domain coupling | Low | Decide DTO vs coupling |
-| #27 | CreatedAt ownership | Low | Pick planner or caller |
-| #29 | Merge treats false=zero | Med | Use pointer bools or doc |
-| #31 | Adapter returns domain errors | Low | Decide ports vs domain errors |
-| #32 | Worker magic exit codes | Med | Name constants, add retry |
+All 34 smells are now tracked. Status breakdown:
+
+| Status | Count | Issues |
+|--------|-------|--------|
+| **FIXED** | 5 | #133, #139, #140, #142, #143 |
+| **Tracked** | 23 | #144, #145, #146, #147, #148, #153, #154, #155, #156, #141 |
+| **Ready-For-Issue** | 3 | #141 (smells #16-18 already tracked) |
+| **WIP** | 3 | See notes below |
+
+#### WIP Smells (No Issue Yet)
+
+None — all smells now have associated issues.
