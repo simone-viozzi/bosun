@@ -10,7 +10,6 @@ pkgs.mkShell {
     delve             # Go debugger
     gotools           # goimports, stringer, etc.
     gofumpt           # stricter gofmt
-    golangci-lint     # Go linter
     uv
     pre-commit
 
