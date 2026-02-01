@@ -32,7 +32,7 @@ func Test_Integration_JobExecution_HappyPath(t *testing.T) {
 
 	// Run job execution (using alpine as worker, with echo command)
 	// The job's worker.image is alpine:latest, we'll run with a short command
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"job", "run", "test-backup",
 		"--project", stack.Project,
 		"--timeout", "60s",
@@ -76,7 +76,7 @@ func Test_Integration_JobExecution_WorkerFailure(t *testing.T) {
 	// Note: We can't override the worker command via CLI in M3, so we'll test
 	// with the default job which should succeed. This test is a placeholder
 	// for when we add worker command override support.
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"job", "run", "test-backup",
 		"--project", stack.Project,
 		"--timeout", "60s",
@@ -125,7 +125,7 @@ func Test_Integration_JobExecution_DryRun(t *testing.T) {
 	beforeIDs := getContainerIDs(t, ctx, stack)
 
 	// Run dry-run
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"job", "run", "test-backup",
 		"--project", stack.Project,
 		"--dry-run",
@@ -173,7 +173,7 @@ func Test_Integration_JobExecution_JobNotFound(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Try to run non-existent job
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"job", "run", "nonexistent-job",
 		"--project", stack.Project,
 	)
@@ -212,7 +212,7 @@ func Test_Integration_JobExecution_PlanListWithJob(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run plan list to show available jobs
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"plan", "list",
 		"--project", stack.Project,
 	)
@@ -259,7 +259,7 @@ func Test_Integration_JobExecution_TimeoutFlag(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Test with valid timeout duration
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"job", "run", "test-backup",
 		"--project", stack.Project,
 		"--timeout", "5m",
@@ -293,7 +293,7 @@ func Test_Integration_JobExecution_InvalidTimeout(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Test with invalid timeout duration
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"job", "run", "test-backup",
 		"--project", stack.Project,
 		"--timeout", "invalid-duration",
@@ -333,7 +333,7 @@ func Test_Integration_JobExecution_QuietMode(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run with --quiet flag
-	cmd := exec.CommandContext(ctx, bosunBin,
+	cmd := runBosun(ctx, t, bosunBin,
 		"job", "run", "test-backup",
 		"--project", stack.Project,
 		"--quiet",

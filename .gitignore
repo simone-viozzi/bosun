@@ -52,6 +52,12 @@
 *.out
 coverage.html
 coverage.txt
+coverage.all.html
+coverage.all.txt
+covdata/
+covdata-unit/
+covdata-integration/
+covdata-merged/
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

@@ -1,43 +1,43 @@
 # WIP: Test Coverage Integration (Issue #150)
 
-## Current Phase: Basic Coverage Setup
+## Current Phase: Integration Test Coverage (Phase 2) — COMPLETED ✅
 
-### Completed
+### Phase 1 Completed
 - ✅ Add `make coverage` and `make coverage-html` targets (tested locally, 11% coverage baseline)
 - ✅ Update CI to use `-coverpkg=./...` for cross-package coverage
 - ✅ Generate and upload HTML coverage artifacts in CI
 - ✅ Add VS Code coverage settings (opt-in, gutter-style decorators)
 - ✅ Update .gitignore for coverage files
 
-### In Progress
-None - basic phase complete.
+### Phase 2 Completed ✅
+- ✅ Created `internal/testutil/coverage.go` with `BuildBosunBinary()` and `RunBosunWithCoverage()` helpers
+- ✅ Added `coverageEnabled()` helper and global `globalCoverDir` in `integration/main_test.go`
+- ✅ Updated all integration tests (validate, plan, job_execution) to use `runBosun()` wrapper that auto-enables coverage via `BOSUN_TEST_COVERAGE=1` env var
+- ✅ Added Makefile targets:
+  - `make it-cover` — runs integration tests with coverage, converts to `coverage.integration.out`
+  - `make coverage-integration` — standalone target to convert `covdata/` to profile
+  - `make coverage-all` — merges unit + integration coverage, generates unified HTML report
+- ✅ Updated CI `.github/workflows/ci.yml` integration job:
+  - Collects integration coverage with `GOCOVERDIR`
+  - Downloads unit coverage artifacts from test job
+  - Merges profiles with `gocovmerge`
+  - Uploads merged `coverage.all.out` to Codecov (Option C: clean dashboard)
+  - Archives all three profiles (unit, integration, merged) as artifacts for debugging
+- ✅ Updated `.gitignore` for `covdata/`, `coverage.all.html`, `coverage.all.txt`
 
-## Future Phases (Out of Scope for Initial PR)
+**Implementation Notes:**
+- Used Go 1.20+ binary coverage: build with `-cover`, run with `GOCOVERDIR`, convert with `go tool covdata textfmt`
+- Global `covdata/` directory shared across parallel tests (Go handles merging automatically)
+- Each test builds its own binary (per-test isolation for parallel safety)
+- Backward compatible: `make it` still runs without coverage (fast), `make it-cover` opts in
 
-### Phase 2: Integration Test Coverage
-Integration tests run with `-tags=integration` in `integration/` package. Two approaches:
+### Phase 3: Coverage Thresholds/Gating (Future)
+**Approach Used:** Go 1.20+ binary coverage (Advanced method), because integration tests execute the `bosun` binary via `exec.Command()`.
 
-1. **Simple**: If tests are still `_test.go` files, run with coverage:
-   ```bash
-   go test -tags=integration ./integration/... -coverprofile=coverage.integration.out -coverpkg=./...
-   ```
-
-2. **Advanced** (Go 1.20+): For E2E tests that run a binary:
-   - Build with `go build -cover -o bin/bosun ./cmd/bosun`
-   - Run with `GOCOVERDIR=covdata bin/bosun ...`
-   - Convert with `go tool covdata textfmt -i=covdata -o coverage.e2e.out`
-
-### Phase 3: Merge Multiple Coverage Profiles
-Use `gocovmerge` to combine unit + integration coverage:
-```bash
-go install github.com/wadey/gocovmerge@latest
-gocovmerge coverage.out coverage.integration.out > coverage.all.out
-```
-
-### Phase 4: Coverage Thresholds/Gating
+### Phase 3: Coverage Thresholds/Gating (Future)
 Add CI step to fail build if coverage drops below threshold using `vladopajic/go-test-coverage` action.
 
-### Phase 5: Enhanced Visualization
+### Phase 4: Enhanced Visualization (Future)
 Consider Codecov PR comments, coverage badges, or other UI enhancements.
 
 ## References
