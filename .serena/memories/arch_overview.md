@@ -24,7 +24,7 @@ Bosun is a **job orchestrator for Docker environments**. It discovers job defini
   - `joblabels/`: Job parsing from labels
   - `docker/compose/`: Compose stack control (stop/start)
   - `docker/worker/`: Worker container lifecycle
-  - `http/`, `storage/`: Other integrations
+  _(Empty placeholder directories like `http/`, `storage/` have been removed; add new adapters here as needed.)_
 - **Application** (`internal/app/`): Orchestration layer
   - `planner/`: Plan generation service
   - `executor/`: Plan-driven job execution

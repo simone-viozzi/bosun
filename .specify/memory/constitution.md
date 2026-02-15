@@ -1,12 +1,16 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.1.0 → 1.2.0 (MINOR - align with current Serena memories, update principles)
-Modified principles:
-  - II: Updated validation behavior (lenient by default, --strict for errors)
-  - III: Clarified integration test patterns
-Added sections: None
-Removed sections: None
+Version change: 1.2.0 → 1.3.0 (MINOR - memory review: cleanup, dedup, index update)
+Modified principles: None
+Added memories:
+  - arch_decisions_from_research (trimmed from patterns_from_similar_projects)
+Removed memories:
+  - wip_coverage_integration (info folded into arch_development_lifecycle)
+  - template_repo_research (meta-template, not project knowledge)
+  - patterns_from_similar_projects (replaced by arch_decisions_from_research)
+  - m3_ci_pull_alpine (merged into arch_testing)
+Updated memory index: Added arch_decisions_from_research, updated descriptions
 Templates requiring updates: None
 Follow-up TODOs: None
 -->
@@ -117,9 +121,10 @@ All implementation details live in Serena memories (`.serena/memories/`):
 | Memory | Contents |
 |--------|----------|
 | `arch_overview` | Hexagonal architecture, package structure, data flow |
-| `arch_testing` | Test infrastructure and patterns |
-| `arch_code_style` | Go conventions and formatting |
-| `arch_development_lifecycle` | Development workflow and commands |
+| `arch_testing` | Test infrastructure, harness, CI notes |
+| `arch_code_style` | Go conventions, formatting, error handling |
+| `arch_development_lifecycle` | Build, test, coverage, lint commands |
+| `arch_decisions_from_research` | Design decisions informed by Watchtower/Portainer analysis |
 
 ### Packages
 | Memory | Contents |
@@ -154,4 +159,4 @@ This constitution supersedes all other development practices for Bosun.
 - **Exceptions**: Any deviation MUST be documented with justification in the PR description
 - **Guidance**: See `.github/copilot-instructions.md` for runtime AI development guidance
 
-**Version**: 1.2.0 | **Ratified**: 2025-11-30 | **Last Amended**: 2026-01-05
+**Version**: 1.3.0 | **Ratified**: 2025-11-30 | **Last Amended**: 2026-02-15

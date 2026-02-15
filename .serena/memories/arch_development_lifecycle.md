@@ -12,16 +12,23 @@ Commands, workflows, and conventions for developing and testing Bosun.
 
 ### Testing
 - `make test` - Unit tests (`go test ./...`)
-- `make it` - Integration tests (requires Docker)
+- `make it` - Integration tests (requires Docker, `-parallel 6 -timeout=20m`)
 - `make itv` - Verbose integration tests
 - Integration tests use `//go:build integration` tag
 
+### Coverage
+- `make coverage` - Unit test coverage profile → `coverage/coverage.out`
+- `make coverage-html` - HTML coverage report → `coverage/coverage.html`
+- `make it-cover` - Integration tests with coverage (binary instrumentation via `GOCOVERDIR`)
+- `make coverage-integration` - Convert integration coverage data to text profile
+- `make coverage-all` - Merge unit + integration coverage → `coverage/coverage.all.out` + HTML
+
 ### Code Quality
-- `make fmt` - Format code (`go fmt ./...`)
+- `make fmt` - Format code (`go fmt` + `goimports` with local module grouping)
 - `make vet` - Static analysis (`go vet ./...`)
+- `make lint` - Comprehensive linting (`golangci-lint run`)
 - `make tidy` - Dependency management (`go mod tidy`)
 - `pre-commit run --all-files` - All quality checks
-- `golangci-lint run` - Comprehensive linting
 
 ### Documentation
 - `make docs` - Generate config docs and JSON schema
