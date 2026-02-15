@@ -129,6 +129,21 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 				builder.workerImage = workerImage
 			}
 		}
+
+		// Merge overlap policy (detect conflicts)
+		if overlapPolicy := entity.Labels[schema.LabelJobOverlapPolicy]; overlapPolicy != "" {
+			if builder.overlapPolicy != "" && builder.overlapPolicy != overlapPolicy {
+				validationErrors = append(validationErrors, ports.ValidationError{
+					EntityKind: string(entity.Kind),
+					EntityID:   entity.ID,
+					EntityName: entity.Name,
+					Field:      schema.LabelJobOverlapPolicy,
+					Message:    fmt.Sprintf("conflicting overlap policy %q (previously %q)", overlapPolicy, builder.overlapPolicy),
+				})
+			} else {
+				builder.overlapPolicy = overlapPolicy
+			}
+		}
 	}
 
 	// Phase 2: Attach volumes to jobs
@@ -208,6 +223,8 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 		job := jobs.Job{
 			Name:             name,
 			Schedule:         schedule,
+			OverlapPolicy:    jobs.ParseOverlapPolicy(builder.overlapPolicy),
+			Enabled:          true, // Only enabled containers reach this point.
 			TargetContainers: builder.targetContainers,
 			TargetStacks:     targetStacks,
 			WorkerImage:      workerImage,
@@ -225,6 +242,7 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 type jobBuilder struct {
 	name             string
 	schedule         string
+	overlapPolicy    string
 	workerImage      string
 	sourceContainers []string
 	targetContainers []string

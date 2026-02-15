@@ -40,6 +40,7 @@ container with attached volumes, and restarting the stack.`,
 
 	// Add subcommands
 	cmd.AddCommand(NewJobRunCmd())
+	cmd.AddCommand(NewJobListCmd()) // M4: Job listing
 
 	return cmd
 }
@@ -240,7 +241,7 @@ func runJobRun(ctx context.Context, jobName string, opts jobRunOptions) (int, er
 	workerRunner := worker.NewRunner(dockerClient)
 
 	// Create executor
-	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient)
+	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient, nil)
 
 	// Build execute options
 	executeOpts := ports.DefaultExecuteOptions()
@@ -403,7 +404,7 @@ func runDryRun(ctx context.Context, jobName, format string, includeStopped bool,
 	workerRunner := worker.NewRunner(dockerClient)
 
 	// Create executor
-	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient)
+	exec := executor.New(jobPlanner, composeController, workerRunner, dockerClient, nil)
 
 	// Execute dry-run
 	plan, err := exec.DryRun(ctx, *targetJob)

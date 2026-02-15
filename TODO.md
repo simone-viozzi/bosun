@@ -1,13 +1,13 @@
 # TODO
 ## internal/app/executor/executor.go
-* [internal/app/executor/executor.go:316](internal/app/executor/executor.go#L316): Add worker env vars from labels (bosun.job.worker.env.*)
+* [internal/app/executor/executor.go:319](internal/app/executor/executor.go#L319): Add worker env vars from labels (bosun.job.worker.env.*)
 
 ## internal/app/planner/planner.go
 * [internal/app/planner/planner.go:49](internal/app/planner/planner.go#L49): DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if
 
 ## internal/cmd/job_run.go
-* [internal/cmd/job_run.go:419](internal/cmd/job_run.go#L419): DESIGN ISSUE - Plan rendering is in CLI instead of planner/app layer.
-* [internal/cmd/job_run.go:438](internal/cmd/job_run.go#L438): why we have printDryRunText here instead of in the planner itself? what happens if the schema of the planner changes? do we need to also change this function here?
+* [internal/cmd/job_run.go:420](internal/cmd/job_run.go#L420): DESIGN ISSUE - Plan rendering is in CLI instead of planner/app layer.
+* [internal/cmd/job_run.go:439](internal/cmd/job_run.go#L439): why we have printDryRunText here instead of in the planner itself? what happens if the schema of the planner changes? do we need to also change this function here?
 
 ## internal/domain/labels/types.go
 * [internal/domain/labels/types.go:9](internal/domain/labels/types.go#L9): Consider a better way of handling shared label constants.

@@ -28,6 +28,14 @@ type Job struct {
 	// Default: "0 0 * * *" (daily at midnight).
 	Schedule string `json:"schedule"`
 
+	// OverlapPolicy defines behavior when a job is scheduled while
+	// a previous run is still active. Default: "queue".
+	OverlapPolicy OverlapPolicy `json:"overlapPolicy"`
+
+	// Enabled indicates whether this job should be scheduled.
+	// Default: true. When false, the job is skipped during discovery.
+	Enabled bool `json:"enabled"`
+
 	// TargetContainers lists container IDs that participate in this job.
 	// These containers will be stopped before the worker runs.
 	TargetContainers []string `json:"targetContainers"`

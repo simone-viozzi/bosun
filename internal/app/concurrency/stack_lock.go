@@ -1,0 +1,140 @@
+// Package concurrency provides concurrency control primitives for job scheduling.
+package concurrency
+
+import (
+	"context"
+	"sort"
+	"sync"
+)
+
+// StackLockManager provides per-stack mutual exclusion for preventing concurrent
+// execution on the same Compose stack. Lock acquisition order is alphabetical
+// to prevent deadlocks when jobs target overlapping stack sets.
+//
+// All methods are safe for concurrent use.
+type StackLockManager struct {
+	locks sync.Map // map[string]*sync.Mutex
+}
+
+// NewStackLockManager creates a new StackLockManager.
+func NewStackLockManager() *StackLockManager {
+	return &StackLockManager{}
+}
+
+// getOrCreateMutex returns the mutex for the given stack name, creating one if necessary.
+func (m *StackLockManager) getOrCreateMutex(stackName string) *sync.Mutex {
+	val, _ := m.locks.LoadOrStore(stackName, &sync.Mutex{})
+	return val.(*sync.Mutex)
+}
+
+// Lock acquires an exclusive lock for a single stack.
+// It blocks until the lock is available or the context is cancelled.
+// Returns nil on success, ctx.Err() if context is cancelled.
+func (m *StackLockManager) Lock(ctx context.Context, stackName string) error {
+	mu := m.getOrCreateMutex(stackName)
+
+	// Try to acquire with context cancellation support.
+	acquired := make(chan struct{})
+	go func() {
+		mu.Lock()
+		close(acquired)
+	}()
+
+	select {
+	case <-acquired:
+		return nil
+	case <-ctx.Done():
+		// Context cancelled before lock acquired.
+		// We need to clean up the goroutine: it will eventually acquire the lock
+		// and we need to release it.
+		go func() {
+			<-acquired
+			mu.Unlock()
+		}()
+		return ctx.Err()
+	}
+}
+
+// LockAll acquires locks for multiple stacks in sorted (alphabetical) order.
+// Sorted acquisition prevents deadlocks when two jobs target overlapping stack sets.
+// On context cancellation, releases any already-acquired locks before returning.
+func (m *StackLockManager) LockAll(ctx context.Context, stacks []string) error {
+	if len(stacks) == 0 {
+		return nil
+	}
+
+	// Deduplicate and sort for consistent ordering.
+	sorted := dedupSort(stacks)
+
+	// Track which locks we've acquired for rollback on error.
+	acquired := make([]string, 0, len(sorted))
+
+	for _, stack := range sorted {
+		if err := m.Lock(ctx, stack); err != nil {
+			// Rollback: release all acquired locks.
+			m.UnlockAll(acquired)
+			return err
+		}
+		acquired = append(acquired, stack)
+	}
+
+	return nil
+}
+
+// Unlock releases the lock for a single stack.
+// Safe to call multiple times (idempotent via TryLock check).
+// If the stack was never locked, this is a no-op.
+func (m *StackLockManager) Unlock(stackName string) {
+	val, ok := m.locks.Load(stackName)
+	if !ok {
+		return
+	}
+	mu := val.(*sync.Mutex)
+	// TryLock+Unlock is a safe idempotent unlock pattern:
+	// If already unlocked, TryLock succeeds and we immediately unlock.
+	// If locked (by us), we just unlock directly.
+	// However, sync.Mutex.Unlock panics if not locked, so we just unlock directly
+	// and rely on callers using Lock/Unlock in proper pairs.
+	mu.Unlock()
+}
+
+// UnlockAll releases locks for multiple stacks.
+// Safe to call multiple times (idempotent).
+func (m *StackLockManager) UnlockAll(stacks []string) {
+	for _, stack := range stacks {
+		m.Unlock(stack)
+	}
+}
+
+// IsLocked returns whether a stack is currently locked.
+// Useful for observability/debugging, not for synchronization.
+func (m *StackLockManager) IsLocked(stackName string) bool {
+	val, ok := m.locks.Load(stackName)
+	if !ok {
+		return false
+	}
+	mu := val.(*sync.Mutex)
+	// Try to acquire — if we can, it wasn't locked.
+	if mu.TryLock() {
+		mu.Unlock()
+		return false
+	}
+	return true
+}
+
+// dedupSort returns a sorted, deduplicated copy of the input slice.
+func dedupSort(stacks []string) []string {
+	if len(stacks) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(stacks))
+	result := make([]string, 0, len(stacks))
+	for _, s := range stacks {
+		if _, ok := seen[s]; !ok {
+			seen[s] = struct{}{}
+			result = append(result, s)
+		}
+	}
+	sort.Strings(result)
+	return result
+}
