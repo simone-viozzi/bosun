@@ -31,7 +31,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload coverage artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: coverage-report
         path: |
@@ -80,7 +80,7 @@ jobs:
         go tool cover -func coverage.integration.out | tee coverage.integration.txt
 
     - name: Download unit coverage from test job
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: coverage-report
         path: ./unit-coverage
@@ -105,7 +105,7 @@ jobs:
         flags: combined
 
     - name: Upload all coverage profiles as artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: coverage-all-profiles
         path: |
