@@ -16,6 +16,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-29
 - N/A (stateless execution; log persistence deferred to M5) (009-job-execution-mvp)
 - Go 1.24+ + Cobra (CLI), Docker SDK, testcontainers-go (testing) (010-m35-cleanup)
 - N/A (stateless, reads Docker labels) (010-m35-cleanup)
+- Go 1.24+ + Docker SDK v28.5.2 (`github.com/docker/docker`), including `pkg/stdcopy` (already a transitive dependency) (011-critical-bug-fixes)
 
 - Go 1.24.6 + Standard library (`reflect`, `strings`, `strconv`, `time`), `github.com/docker/go-units` (for byte size parsing) (001-config-schema)
 
@@ -35,9 +36,9 @@ tests/
 Go 1.24.6: Follow standard conventions
 
 ## Recent Changes
+- 011-critical-bug-fixes: Added Go 1.24+ + Docker SDK v28.5.2 (`github.com/docker/docker`), including `pkg/stdcopy` (already a transitive dependency)
 - 010-m35-cleanup: Added Go 1.24+ + Cobra (CLI), Docker SDK, testcontainers-go (testing)
 - 009-job-execution-mvp: Added Go 1.24+
-- 008-strict-golangci-lint: Added Go 1.24+ + golangci-lint (dev tool), no runtime dependencies affected
 
 
 <!-- MANUAL ADDITIONS START -->

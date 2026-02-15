@@ -5,7 +5,6 @@ package testutil
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,6 +14,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -89,11 +89,8 @@ func DumpLogs(t *testing.T, ctx context.Context, project, outDir string) {
 			t.Logf("create log file %s: %v", fp, err)
 			continue
 		}
-		// TODO: BUG - Same as runner.go: missing stdcopy.StdCopy demultiplexing!
-		// Docker logs have 8-byte headers when TTY=false, io.Copy produces corrupted output.
-		// Fix: Use github.com/docker/docker/pkg/stdcopy.StdCopy
-		// See: wip_smell_runner_run_investigation
-		_, err = io.Copy(f, rc)
+		// Demultiplex Docker log stream — both stdout and stderr written to same file.
+		_, err = stdcopy.StdCopy(f, f, rc)
 		if err != nil {
 			t.Logf("copy logs to %s: %v", fp, err)
 		}

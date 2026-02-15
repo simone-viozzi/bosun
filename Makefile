@@ -1,5 +1,6 @@
 APP := bosun
 PKG := github.com/simone-viozzi/bosun
+COVERAGE_DIR := coverage
 
 .PHONY: build run test coverage coverage-html it itv it-cover coverage-integration coverage-all tidy fmt vet docs
 build:
@@ -12,15 +13,15 @@ test:
 	go test ./...
 
 coverage:
-	@mkdir -p covdata-unit
-	go test ./... -coverprofile=coverage.out -coverpkg=./...
+	@mkdir -p $(COVERAGE_DIR)
+	go test ./... -coverprofile=$(COVERAGE_DIR)/coverage.out -coverpkg=./...
 	@echo ""
 	@echo "Coverage Summary:"
-	go tool cover -func coverage.out | tee coverage.txt
+	go tool cover -func $(COVERAGE_DIR)/coverage.out | tee $(COVERAGE_DIR)/coverage.txt
 
 coverage-html: coverage
-	go tool cover -html coverage.out -o coverage.html
-	@echo "Generated coverage.html"
+	go tool cover -html $(COVERAGE_DIR)/coverage.out -o $(COVERAGE_DIR)/coverage.html
+	@echo "Generated $(COVERAGE_DIR)/coverage.html"
 
 it:
 	go test -tags=integration -parallel 6 -timeout=20m ./integration/...
@@ -30,38 +31,38 @@ itv:
 
 it-cover:
 	@echo "Running integration tests with coverage..."
-	@mkdir -p covdata-integration
-	@rm -rf covdata-integration/*
-	BOSUN_TEST_COVERAGE=1 GOCOVERDIR=$(PWD)/covdata-integration go test -tags=integration -parallel 6 -timeout=20m ./integration/...
+	@mkdir -p $(COVERAGE_DIR)/covdata-integration
+	@rm -rf $(COVERAGE_DIR)/covdata-integration/*
+	BOSUN_TEST_COVERAGE=1 GOCOVERDIR=$(PWD)/$(COVERAGE_DIR)/covdata-integration go test -tags=integration -parallel 6 -timeout=20m ./integration/...
 	@$(MAKE) coverage-integration
 
 coverage-integration:
 	@echo "Converting integration coverage data..."
-	@if [ -d "covdata-integration" ] && [ -n "$$(ls -A covdata-integration 2>/dev/null)" ]; then \
-		go tool covdata textfmt -i=covdata-integration -o coverage.integration.out; \
-		go tool cover -func coverage.integration.out | tail -n 1; \
+	@if [ -d "$(COVERAGE_DIR)/covdata-integration" ] && [ -n "$$(ls -A $(COVERAGE_DIR)/covdata-integration 2>/dev/null)" ]; then \
+		go tool covdata textfmt -i=$(COVERAGE_DIR)/covdata-integration -o $(COVERAGE_DIR)/coverage.integration.out; \
+		go tool cover -func $(COVERAGE_DIR)/coverage.integration.out | tail -n 1; \
 	else \
-		echo "No integration coverage data found (covdata-integration directory missing or empty)"; \
+		echo "No integration coverage data found ($(COVERAGE_DIR)/covdata-integration directory missing or empty)"; \
 		exit 1; \
 	fi
 
 coverage-all: coverage it-cover
 	@echo "Merging coverage profiles using Go native tooling..."
-	@mkdir -p covdata-unit covdata-merged
-	@rm -rf covdata-unit/* covdata-merged/*
+	@mkdir -p $(COVERAGE_DIR)/covdata-unit $(COVERAGE_DIR)/covdata-merged
+	@rm -rf $(COVERAGE_DIR)/covdata-unit/* $(COVERAGE_DIR)/covdata-merged/*
 	@# Convert unit test profile to covdata format
-	go tool covdata textfmt -i=covdata-unit -o /dev/null 2>/dev/null || \
+	go tool covdata textfmt -i=$(COVERAGE_DIR)/covdata-unit -o /dev/null 2>/dev/null || \
 		(echo "Converting unit coverage to covdata format..." && \
-		 go test ./... -coverpkg=./... -test.gocoverdir=$(PWD)/covdata-unit > /dev/null 2>&1)
+		 go test ./... -coverpkg=./... -test.gocoverdir=$(PWD)/$(COVERAGE_DIR)/covdata-unit > /dev/null 2>&1)
 	@# Merge both covdata directories
-	go tool covdata merge -i=covdata-unit,covdata-integration -o=covdata-merged
+	go tool covdata merge -i=$(COVERAGE_DIR)/covdata-unit,$(COVERAGE_DIR)/covdata-integration -o=$(COVERAGE_DIR)/covdata-merged
 	@# Convert merged result to profile
-	go tool covdata textfmt -i=covdata-merged -o coverage.all.out
+	go tool covdata textfmt -i=$(COVERAGE_DIR)/covdata-merged -o $(COVERAGE_DIR)/coverage.all.out
 	@echo ""
 	@echo "Combined Coverage Summary:"
-	go tool cover -func coverage.all.out | tee coverage.all.txt
-	go tool cover -html coverage.all.out -o coverage.all.html
-	@echo "Generated coverage.all.html"
+	go tool cover -func $(COVERAGE_DIR)/coverage.all.out | tee $(COVERAGE_DIR)/coverage.all.txt
+	go tool cover -html $(COVERAGE_DIR)/coverage.all.out -o $(COVERAGE_DIR)/coverage.all.html
+	@echo "Generated $(COVERAGE_DIR)/coverage.all.html"
 
 tidy:
 	go mod tidy
