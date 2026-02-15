@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -31,7 +30,7 @@ func Test_Integration_ConfigValidate_ValidConfig(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run bosun config validate
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -65,7 +64,7 @@ func Test_Integration_ConfigValidate_InvalidConfig(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Use --strict to treat unknown keys as errors; test also validates other errors (invalid duration, etc.) still fail.
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate", "--strict")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate", "--strict")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -110,7 +109,7 @@ func Test_Integration_ConfigValidate_LenientMode(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run bosun config validate WITHOUT --strict (lenient mode)
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -154,7 +153,7 @@ func Test_Integration_ConfigValidate_PrintFlag(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run bosun config validate --print
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate", "--print")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate", "--print")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -194,7 +193,7 @@ func Test_Integration_ConfigValidate_ScopeFlag(t *testing.T) {
 
 	// Run bosun config validate --scope container
 	// This should FAIL because the container has invalid labels (unknown key, bad duration, bad enum)
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate", "--scope", "container")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate", "--scope", "container")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -213,48 +212,23 @@ func Test_Integration_ConfigValidate_ScopeFlag(t *testing.T) {
 	}
 }
 
-// buildBosun compiles the bosun binary for testing
+// buildBosun builds the bosun binary with coverage support if BOSUN_TEST_COVERAGE=1
+// Returns the binary path.
 func buildBosun(t *testing.T) string {
 	t.Helper()
-
-	// Create temp directory for binary
-	tmpDir := t.TempDir()
-	binPath := tmpDir + "/bosun"
-
-	// Build the binary
-	cmd := exec.Command("go", "build", "-o", binPath, "./cmd/bosun")
-	cmd.Dir = findProjectRoot(t)
-	cmd.Env = append(os.Environ(), "CGO_ENABLED=0")
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Fatalf("Failed to build bosun: %v\n%s", err, output)
-	}
-
+	binPath, _ := testutil.BuildBosunBinary(t, coverageEnabled())
 	return binPath
 }
 
-// findProjectRoot finds the project root directory
-func findProjectRoot(t *testing.T) string {
+// runBosun executes the bosun binary with the given arguments.
+// Automatically enables coverage collection if BOSUN_TEST_COVERAGE=1.
+// Returns an *exec.Cmd that should be configured and run by the caller.
+func runBosun(ctx context.Context, t *testing.T, binPath string, args ...string) *exec.Cmd {
 	t.Helper()
 
-	// Start from current directory and walk up
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Failed to get working directory: %v", err)
-	}
-
-	// Look for go.mod
-	for {
-		if _, err := os.Stat(dir + "/go.mod"); err == nil {
-			return dir
-		}
-		parent := dir[:strings.LastIndex(dir, "/")]
-		if parent == dir {
-			t.Fatal("Could not find project root (no go.mod found)")
-		}
-		dir = parent
-	}
+	// Use the global coverage directory if coverage is enabled
+	// Each test writes to the same directory; Go's coverage system handles merging
+	return testutil.RunBosunWithCoverage(ctx, binPath, globalCoverDir, args...)
 }
 
 // Test_Integration_ConfigValidate_JobLabelsInvalid verifies that job label validation
@@ -273,7 +247,7 @@ func Test_Integration_ConfigValidate_JobLabelsInvalid(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run bosun config validate
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -329,7 +303,7 @@ func Test_Integration_ConfigValidate_JobLabelsValid(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run bosun config validate
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -366,7 +340,7 @@ func Test_Integration_ConfigValidate_OrphanedVolumeWarning(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run bosun config validate
-	cmd := exec.CommandContext(ctx, bosunBin, "config", "validate")
+	cmd := runBosun(ctx, t, bosunBin, "config", "validate")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

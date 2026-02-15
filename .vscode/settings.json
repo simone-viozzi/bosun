@@ -67,6 +67,14 @@
         ],
         "ui.semanticTokens": true
     },
+    "go.coverOnSave": false,
+    "go.coverageDecorator": {
+        "type": "gutter",
+        "coveredHighlightColor": "rgba(64,128,64,0.5)",
+        "uncoveredHighlightColor": "rgba(128,64,64,0.5)",
+        "coveredGutterStyle": "blockgreen",
+        "uncoveredGutterStyle": "blockred"
+    },
     "makefile.configureOnOpen": false,
     "editor.stickyScroll.enabled": true,
     "editor.suggest.matchOnWordStartOnly": false,

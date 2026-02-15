@@ -109,7 +109,7 @@ func generateMarkdown(spec schema.Spec, title string) ([]byte, error) {
 			return fields[i].Key < fields[j].Key
 		})
 
-		var rows []FieldRow
+		rows := make([]FieldRow, 0, len(fields))
 		for _, f := range fields {
 			rows = append(rows, fieldSpecToRow(f))
 		}

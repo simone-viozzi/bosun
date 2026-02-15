@@ -19,13 +19,25 @@ jobs:
         cache-dependency-path: go.sum
 
     - name: Run tests
-      run: go test -v ./... -coverprofile=coverage.out
+      run: |
+        go test -v ./... -coverprofile=coverage.out -coverpkg=./...
+        go tool cover -func coverage.out | tee coverage.txt
+        go tool cover -html coverage.out -o coverage.html
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
         files: ./coverage.out
         token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: |
+          coverage.out
+          coverage.txt
+          coverage.html
 
   lint:
     runs-on: ubuntu-latest
@@ -42,7 +54,7 @@ jobs:
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v9
       with:
-        version: latest
+        version: v2.8.0
 
   integration:
     runs-on: ubuntu-latest
@@ -60,5 +72,48 @@ jobs:
     - name: Ensure worker image available
       run: docker pull alpine:latest
 
-    - name: Run integration tests
-      run: go test -tags=integration -parallel 6 -timeout=20m -v ./integration/...
+    - name: Run integration tests with coverage
+      run: |
+        mkdir -p covdata-integration
+        BOSUN_TEST_COVERAGE=1 GOCOVERDIR=$PWD/covdata-integration go test -tags=integration -parallel 6 -timeout=20m -v ./integration/...
+        go tool covdata textfmt -i=covdata-integration -o coverage.integration.out
+        go tool cover -func coverage.integration.out | tee coverage.integration.txt
+
+    - name: Download unit coverage from test job
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-report
+        path: ./unit-coverage
+
+    - name: Merge coverage profiles
+      run: |
+        # Run unit tests again with covdata format for merging
+        mkdir -p covdata-unit covdata-merged
+        go test ./... -coverpkg=./... -test.gocoverdir=$PWD/covdata-unit
+        # Merge both covdata directories using Go native tooling
+        go tool covdata merge -i=covdata-unit,covdata-integration -o=covdata-merged
+        # Convert merged result to profile
+        go tool covdata textfmt -i=covdata-merged -o coverage.all.out
+        go tool cover -func coverage.all.out | tee coverage.all.txt
+        go tool cover -html coverage.all.out -o coverage.all.html
+
+    - name: Upload merged coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.all.out
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: combined
+
+    - name: Upload all coverage profiles as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-all-profiles
+        path: |
+          unit-coverage/coverage.out
+          unit-coverage/coverage.txt
+          unit-coverage/coverage.html
+          coverage.integration.out
+          coverage.integration.txt
+          coverage.all.out
+          coverage.all.txt
+          coverage.all.html

@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"os/exec"
 	"strings"
 	"testing"
 	"time"
@@ -38,7 +37,7 @@ func Test_Integration_PlanList_TextFormat(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan list --project <project>` for isolation
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "list", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -82,7 +81,7 @@ func Test_Integration_PlanList_JSONFormat(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan list --format json --project <project>` for isolation
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--format", "json", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "list", "--format", "json", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -143,7 +142,7 @@ func Test_Integration_PlanList_YAMLFormat(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan list --format yaml --project <project>` for isolation
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--format", "yaml", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "list", "--format", "yaml", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -185,7 +184,7 @@ func Test_Integration_PlanList_NoJobs(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan list --project <project>` - this project has no job labels
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "list", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "list", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -219,7 +218,7 @@ func Test_Integration_PlanShow_TextFormat(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan show daily-backup --project <project>` for isolation
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "show", "daily-backup", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -269,7 +268,7 @@ func Test_Integration_PlanShow_JSONFormat(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan show daily-backup --format json --project <project>` for isolation
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--format", "json", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "show", "daily-backup", "--format", "json", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -341,7 +340,7 @@ func Test_Integration_PlanShow_JobNotFound(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan show nonexistent-job --project <project>` for isolation
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "nonexistent-job", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "show", "nonexistent-job", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -379,7 +378,7 @@ func Test_Integration_PlanShow_YAMLFormat(t *testing.T) {
 	bosunBin := buildBosun(t)
 
 	// Run `bosun plan show daily-backup --format yaml --project <project>` for isolation
-	cmd := exec.CommandContext(ctx, bosunBin, "plan", "show", "daily-backup", "--format", "yaml", "--project", stack.Project)
+	cmd := runBosun(ctx, t, bosunBin, "plan", "show", "daily-backup", "--format", "yaml", "--project", stack.Project)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

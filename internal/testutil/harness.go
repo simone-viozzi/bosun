@@ -98,7 +98,9 @@ func StartCompose(t *testing.T, ctx context.Context, files ...string) *Stack {
 
 // composeArgs builds the docker compose command arguments.
 func (s *Stack) composeArgs(subcommand string, extraArgs ...string) []string {
-	args := []string{"compose", "-p", s.Project}
+	// Preallocate: 3 (compose, -p, project) + 2*len(Files) (-f, file pairs) + 1 (subcommand) + extraArgs
+	args := make([]string, 0, 4+2*len(s.Files)+len(extraArgs))
+	args = append(args, "compose", "-p", s.Project)
 	for _, f := range s.Files {
 		args = append(args, "-f", f)
 	}
