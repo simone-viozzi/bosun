@@ -11,12 +11,6 @@ Go coding standards and project conventions.
 - `golangci-lint` for comprehensive linting
 - Naming: exported = Capital, unexported = lowercase, camelCase
 
-### Architecture Rules
-- Business logic in `internal/domain/` - no external dependencies
-- Interfaces in `internal/ports/` - contracts only
-- Implementations in `internal/adapters/` - external integrations
-- Dependencies point inward (domain ← ports ← adapters)
-
 ### File Organization
 - One package per directory
 - Test files alongside source (`*_test.go`)

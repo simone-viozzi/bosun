@@ -23,10 +23,12 @@ Unit and integration testing patterns, testutil harness, and test organization.
 - `DumpLogs(t, ctx, project, outDir)` - Save logs for debugging
 
 #### Compose Files (`internal/testutil/compose/`)
-- `docker-compose.yaml` - Basic smoke test
-- `dockerlabels-compose.yaml` - Label discovery tests
-- `joblabels-compose.yaml` - Job discovery tests
-- `validate-*.yaml` - Config validation tests
+Test compose files follow the naming convention `*-compose.yaml` or `validate-*.yaml`.
+List them with `ls internal/testutil/compose/` to see the current set.
+Each compose file targets a specific integration test scenario (smoke, label discovery, job execution, validation, etc.).
+
+#### Worker Image (`internal/testutil/worker/`)
+Contains a `Dockerfile` used to build the test worker image for integration tests.
 
 ### Integration Test Pattern
 ```go
@@ -45,10 +47,14 @@ func TestFeature(t *testing.T) {
 }
 ```
 
+### CI Notes
+- CI pre-pulls `alpine:latest` before integration tests (worker image must exist locally; Bosun follows BYOI — Bring Your Own Image).
+
 ### Troubleshooting
 - Docker not running: Ensure daemon is active
 - Port collisions: Use dynamic ports (`"80"` not `"8080:80"`)
 - Stale resources: `docker container/network/volume prune -f`
+- Missing worker image: `docker pull alpine:latest` (CI does this automatically)
 
 ## Why
 Integration tests with real Docker provide high confidence; testutil harness keeps tests concise (~10-20 lines).
