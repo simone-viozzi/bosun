@@ -7,7 +7,7 @@ handoffs:
   - label: Write Commit Message
     agent: agent
     prompt: Write a commit message
-model: Claude Sonnet 4.5 (copilot)
+model: Claude Sonnet 4.6 (copilot)
 ---
 You are an IMPLEMENTATION AGENT. Global Copilot instructions apply; do not restate them.
 

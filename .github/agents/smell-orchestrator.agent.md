@@ -2,7 +2,7 @@
 name: smell-orchestrator
 description: Orchestrates code smell discovery for a user-defined scope. Creates and maintains scoped WIP smell index memories (wip_smell_<scope>) and anchors findings with TODO/FIXME comments in code. Delegates investigation and best-practice validation to smell scouts.
 tools: ['execute/testFailure', 'execute/runTests', 'read/problems', 'read/readFile', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search', 'context7/*', 'serena/activate_project', 'serena/check_onboarding_performed', 'serena/delete_memory', 'serena/edit_memory', 'serena/find_file', 'serena/find_referencing_symbols', 'serena/find_symbol', 'serena/get_current_config', 'serena/get_symbols_overview', 'serena/initial_instructions', 'serena/list_dir', 'serena/list_memories', 'serena/onboarding', 'serena/read_memory', 'serena/search_for_pattern', 'serena/think_about_collected_information', 'serena/think_about_task_adherence', 'serena/think_about_whether_you_are_done', 'serena/write_memory', 'tavily/*', 'agent', 'todo']
-model: Claude Opus 4.5 (copilot)
+model: Claude Opus 4.6 (copilot)
 ---
 
 <agent_identity>
