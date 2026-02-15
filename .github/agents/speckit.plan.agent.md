@@ -1,6 +1,6 @@
 ---
 description: Execute the implementation planning workflow using the plan template to generate design artifacts.
-tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'search/readFile', 'search/codebase', 'context7/*', 'serena/*', 'tavily/*', 'runCommands', 'runTasks', 'problems', 'changes', 'testFailure', 'todos', 'runSubagent', 'runTests']
+tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'read/readFile', 'search/codebase', 'context7/*', 'serena/*', 'tavily/*', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'execute/createAndRunTask', 'read/problems', 'search/changes', 'execute/testFailure', 'todo', 'agent', 'execute/runTests']
 handoffs:
   - label: Create Tasks
     agent: speckit.tasks

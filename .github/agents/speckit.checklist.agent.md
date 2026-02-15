@@ -1,6 +1,6 @@
 ---
 description: Generate a custom checklist for the current feature based on user requirements.
-tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'search/readFile', 'search/codebase', 'runCommands', 'runTasks', 'context7/*', 'serena/*', 'tavily/*', 'problems', 'changes', 'testFailure', 'todos', 'runSubagent']
+tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search/listDirectory', 'read/readFile', 'search/codebase', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'execute/createAndRunTask', 'context7/*', 'serena/*', 'tavily/*', 'read/problems', 'search/changes', 'execute/testFailure', 'todo', 'agent']
 ---
 
 ## Checklist Purpose: "Unit Tests for English"
