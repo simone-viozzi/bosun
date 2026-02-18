@@ -204,7 +204,7 @@ func TestScheduler_AddJob_ValidCron(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("daily-backup", "0 0 3 * * *") // seconds-based: every day at 03:00:00
+	job := testJob("daily-backup", "0 3 * * *") // every day at 03:00
 	err := s.AddJob(ctx, job)
 	if err != nil {
 		t.Fatalf("AddJob() error = %v, want nil", err)
@@ -254,7 +254,7 @@ func TestScheduler_AddJob_DefaultOverlapPolicy(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("no-policy", "0 0 * * * *")
+	job := testJob("no-policy", "0 0 * * *")
 	job.OverlapPolicy = "" // empty
 	err := s.AddJob(ctx, job)
 	if err != nil {
@@ -277,7 +277,7 @@ func TestScheduler_RemoveJob(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	_ = s.AddJob(ctx, testJob("temp-job", "0 0 * * * *"))
+	_ = s.AddJob(ctx, testJob("temp-job", "0 0 * * *"))
 
 	// Remove it.
 	err := s.RemoveJob(ctx, "temp-job")
@@ -314,7 +314,7 @@ func TestScheduler_ExecuteJob_Success(t *testing.T) {
 	ctx := context.Background()
 
 	// Use a fast schedule that fires soon.
-	job := testJob("fast-job", "* * * * * *") // every second
+	job := testJob("fast-job", "@every 500ms") // fires every 500ms
 	err := s.AddJob(ctx, job)
 	if err != nil {
 		t.Fatalf("AddJob() error = %v", err)
@@ -362,7 +362,7 @@ func TestScheduler_ExecuteJob_Failure(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("fail-job", "* * * * * *")
+	job := testJob("fail-job", "@every 500ms")
 	err := s.AddJob(ctx, job)
 	if err != nil {
 		t.Fatalf("AddJob() error = %v", err)
@@ -410,7 +410,7 @@ func TestScheduler_ExecuteJob_ResetsFailureOnSuccess(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("flaky-job", "* * * * * *")
+	job := testJob("flaky-job", "@every 500ms")
 	err := s.AddJob(ctx, job)
 	if err != nil {
 		t.Fatalf("AddJob() error = %v", err)
@@ -453,7 +453,7 @@ func TestScheduler_CircuitBreaker_DisablesAfterThreeFailures(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("unstable-job", "* * * * * *")
+	job := testJob("unstable-job", "@every 500ms")
 	err := s.AddJob(ctx, job)
 	if err != nil {
 		t.Fatalf("AddJob() error = %v", err)
@@ -511,7 +511,7 @@ func TestScheduler_CircuitBreaker_NoDisableUnderThreshold(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("recovering-job", "* * * * * *")
+	job := testJob("recovering-job", "@every 500ms")
 	err := s.AddJob(ctx, job)
 	if err != nil {
 		t.Fatalf("AddJob() error = %v", err)
@@ -562,9 +562,9 @@ func TestScheduler_ListJobs_MultipleJobs(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	_ = s.AddJob(ctx, testJob("job-a", "0 0 * * * *"))
-	_ = s.AddJob(ctx, testJob("job-b", "0 30 * * * *"))
-	_ = s.AddJob(ctx, testJob("job-c", "0 0 3 * * *"))
+	_ = s.AddJob(ctx, testJob("job-a", "0 0 * * *"))
+	_ = s.AddJob(ctx, testJob("job-b", "30 * * * *"))
+	_ = s.AddJob(ctx, testJob("job-c", "0 3 * * *"))
 
 	listed := s.ListJobs()
 	if len(listed) != 3 {
@@ -606,7 +606,7 @@ func TestScheduler_OverlapQueue_SecondBlocksUntilFirstCompletes(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("queue-job", "* * * * * *") // every second
+	job := testJob("queue-job", "@every 500ms") // fires every 500ms
 	job.OverlapPolicy = "queue"
 	err := s.AddJob(ctx, job)
 	if err != nil {
@@ -623,7 +623,7 @@ func TestScheduler_OverlapQueue_SecondBlocksUntilFirstCompletes(t *testing.T) {
 		t.Fatal("timeout waiting for first execution")
 	}
 
-	// Wait for a second tick to fire (the cron fires every second).
+	// Wait for a second tick to fire (the cron fires every 500ms).
 	// The second execution should be queued (blocked) because the first is still running.
 	time.Sleep(1500 * time.Millisecond)
 
@@ -672,7 +672,7 @@ func TestScheduler_OverlapSkip_SecondInvocationDropped(t *testing.T) {
 	s := newTestScheduler(exec, ev, store)
 	ctx := context.Background()
 
-	job := testJob("skip-job", "* * * * * *") // every second
+	job := testJob("skip-job", "@every 500ms") // fires every 500ms
 	job.OverlapPolicy = "skip"
 	err := s.AddJob(ctx, job)
 	if err != nil {
@@ -741,9 +741,9 @@ func TestScheduler_GlobalSemaphore_Serial(t *testing.T) {
 	s := scheduler.New(exec, ev, store, scheduler.Options{Parallelism: 1}, slog.Default())
 	ctx := context.Background()
 
-	// Add 3 jobs that fire every second.
+	// Add 3 jobs that fire every 500ms.
 	for _, name := range []string{"job-1", "job-2", "job-3"} {
-		_ = s.AddJob(ctx, testJob(name, "* * * * * *"))
+		_ = s.AddJob(ctx, testJob(name, "@every 500ms"))
 	}
 
 	s.StartCron()
@@ -785,9 +785,9 @@ func TestScheduler_GlobalSemaphore_AllowsConcurrent(t *testing.T) {
 	s := scheduler.New(exec, ev, store, scheduler.Options{Parallelism: 3}, slog.Default())
 	ctx := context.Background()
 
-	// Add 3 jobs that all fire every second.
+	// Add 3 jobs that all fire every 500ms.
 	for _, name := range []string{"job-a", "job-b", "job-c"} {
-		_ = s.AddJob(ctx, testJob(name, "* * * * * *"))
+		_ = s.AddJob(ctx, testJob(name, "@every 500ms"))
 	}
 
 	s.StartCron()
@@ -821,12 +821,12 @@ func TestScheduler_DisabledJobNotScheduled(t *testing.T) {
 
 	enabledJob := jobs.Job{
 		Name:     "enabled-backup",
-		Schedule: "0 0 3 * * *",
+		Schedule: "0 3 * * *",
 		Enabled:  true,
 	}
 	disabledJob := jobs.Job{
 		Name:     "disabled-backup",
-		Schedule: "0 0 3 * * *",
+		Schedule: "0 3 * * *",
 		Enabled:  false,
 	}
 

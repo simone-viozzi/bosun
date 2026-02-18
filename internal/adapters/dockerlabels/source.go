@@ -37,6 +37,12 @@ func NewFromEnv() (*DockerLabelSource, error) {
 	return &DockerLabelSource{CLI: cli}, nil
 }
 
+// NewFromClient creates a DockerLabelSource using an existing Docker client.
+// This allows sharing a single Docker client instance across the application.
+func NewFromClient(cli *client.Client) *DockerLabelSource {
+	return &DockerLabelSource{CLI: cli}
+}
+
 // buildLabelFilters constructs Docker API filters for ProjectFilter and StackFilter.
 // Multiple values in each filter are OR'd (match any), but ProjectFilter and StackFilter
 // together are AND'd (must match at least one from each if both specified).

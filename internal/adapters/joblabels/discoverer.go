@@ -132,7 +132,16 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 
 		// Merge overlap policy (detect conflicts)
 		if overlapPolicy := entity.Labels[schema.LabelJobOverlapPolicy]; overlapPolicy != "" {
-			if builder.overlapPolicy != "" && builder.overlapPolicy != overlapPolicy {
+			// Validate the overlap policy value before merging.
+			if err := jobs.ValidateOverlapPolicy(jobs.OverlapPolicy(overlapPolicy)); err != nil {
+				validationErrors = append(validationErrors, ports.ValidationError{
+					EntityKind: string(entity.Kind),
+					EntityID:   entity.ID,
+					EntityName: entity.Name,
+					Field:      schema.LabelJobOverlapPolicy,
+					Message:    err.Error(),
+				})
+			} else if builder.overlapPolicy != "" && builder.overlapPolicy != overlapPolicy {
 				validationErrors = append(validationErrors, ports.ValidationError{
 					EntityKind: string(entity.Kind),
 					EntityID:   entity.ID,

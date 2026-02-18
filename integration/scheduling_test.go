@@ -160,10 +160,10 @@ func TestIntegration_Scheduler_RealCronFiring(t *testing.T) {
 	s := scheduler.New(exec, ev, store, scheduler.Options{Parallelism: 2}, slog.Default())
 	ctx := context.Background()
 
-	// Register a job that fires every second (seconds-based cron).
+	// Register a job that fires every minute (5-field cron).
 	job := jobs.Job{
 		Name:     "every-second-job",
-		Schedule: "* * * * * *",
+		Schedule: "@every 500ms",
 		Enabled:  true,
 	}
 	if err := s.AddJob(ctx, job); err != nil {
@@ -215,7 +215,7 @@ func TestIntegration_Scheduler_MultipleJobsFiring(t *testing.T) {
 	for _, name := range jobNames {
 		job := jobs.Job{
 			Name:     name,
-			Schedule: "* * * * * *",
+			Schedule: "@every 500ms",
 			Enabled:  true,
 		}
 		if err := s.AddJob(ctx, job); err != nil {

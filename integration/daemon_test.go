@@ -27,7 +27,7 @@ func TestIntegration_DaemonLifecycle_GracefulShutdown(t *testing.T) {
 	// Register a job.
 	job := jobs.Job{
 		Name:     "lifecycle-job",
-		Schedule: "* * * * * *",
+		Schedule: "@every 500ms",
 		Enabled:  true,
 	}
 	if err := s.AddJob(ctx, job); err != nil {

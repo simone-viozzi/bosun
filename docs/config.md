@@ -34,7 +34,7 @@
 
 | Key | Type | Default | Required | Allowed Values | Description |
 |-----|------|---------|----------|----------------|-------------|
-| `bosun.job.enabled` | boolean | - | Yes | true \| false | Enable job scheduling on this container |
+| `bosun.job.enabled` | boolean | false | No | true \| false | Enable job scheduling on this container |
 | `bosun.job.name` | string | - | Yes (when enabled) | - | Unique job identifier |
 | `bosun.job.schedule` | cron | `0 0 * * *` | No | 5-field cron | Cron schedule (minute hour dom month dow) |
 | `bosun.job.overlap-policy` | enum | queue | No | queue \| skip | Behavior when a job fires while previous run is active |

@@ -85,11 +85,7 @@ func Bootstrap(_ context.Context, opts BootstrapOptions) (*Services, error) {
 	}
 
 	// 2. Instantiate adapters
-	labelSource, err := dockerlabels.NewFromEnv()
-	if err != nil {
-		_ = dockerClient.Close()
-		return nil, fmt.Errorf("failed to create label source: %w", err)
-	}
+	labelSource := dockerlabels.NewFromClient(dockerClient)
 
 	discoverer := joblabels.NewDiscoverer()
 	composeCtrl := compose.NewController(dockerClient)

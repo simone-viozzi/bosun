@@ -138,13 +138,13 @@ func TestDiffJobs_DetectsNewJobs(t *testing.T) {
 	ctx := context.Background()
 
 	// Register job A.
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
 
 	// Discover jobs A and B (B is new).
-	jobB := makeTestJob("job-b", "0 30 * * * *")
+	jobB := makeTestJob("job-b", "30 * * * *")
 	diff := sched.diffJobs([]jobs.Job{jobA, jobB})
 
 	if len(diff.Added) != 1 {
@@ -170,8 +170,8 @@ func TestDiffJobs_DetectsRemovedJobs(t *testing.T) {
 	ctx := context.Background()
 
 	// Register jobs A and B.
-	jobA := makeTestJob("job-a", "0 0 * * * *")
-	jobB := makeTestJob("job-b", "0 30 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
+	jobB := makeTestJob("job-b", "30 * * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob A: %v", err)
 	}
@@ -197,13 +197,13 @@ func TestDiffJobs_DetectsChangedSchedule(t *testing.T) {
 	ctx := context.Background()
 
 	// Register job A with original schedule.
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
 
 	// Discover job A with changed schedule.
-	changedA := makeTestJob("job-a", "0 15 * * * *")
+	changedA := makeTestJob("job-a", "15 * * * *")
 	diff := sched.diffJobs([]jobs.Job{changedA})
 
 	if len(diff.Changed) != 1 {
@@ -212,11 +212,11 @@ func TestDiffJobs_DetectsChangedSchedule(t *testing.T) {
 	if diff.Changed[0].NewJob.Name != "job-a" {
 		t.Errorf("changed job = %q, want %q", diff.Changed[0].NewJob.Name, "job-a")
 	}
-	if diff.Changed[0].OldSchedule != "0 0 * * * *" {
-		t.Errorf("old schedule = %q, want %q", diff.Changed[0].OldSchedule, "0 0 * * * *")
+	if diff.Changed[0].OldSchedule != "0 0 * * *" {
+		t.Errorf("old schedule = %q, want %q", diff.Changed[0].OldSchedule, "0 0 * * *")
 	}
-	if diff.Changed[0].NewJob.Schedule != "0 15 * * * *" {
-		t.Errorf("new schedule = %q, want %q", diff.Changed[0].NewJob.Schedule, "0 15 * * * *")
+	if diff.Changed[0].NewJob.Schedule != "15 * * * *" {
+		t.Errorf("new schedule = %q, want %q", diff.Changed[0].NewJob.Schedule, "15 * * * *")
 	}
 }
 
@@ -227,14 +227,14 @@ func TestDiffJobs_DetectsChangedOverlapPolicy(t *testing.T) {
 	ctx := context.Background()
 
 	// Register job A with queue policy.
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	jobA.OverlapPolicy = jobs.OverlapPolicyQueue
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
 
 	// Discover job A with skip policy.
-	changedA := makeTestJob("job-a", "0 0 * * * *")
+	changedA := makeTestJob("job-a", "0 0 * * *")
 	changedA.OverlapPolicy = jobs.OverlapPolicySkip
 	diff := sched.diffJobs([]jobs.Job{changedA})
 
@@ -255,7 +255,7 @@ func TestDiffJobs_NoChanges(t *testing.T) {
 	sched := newTestScheduler(t)
 	ctx := context.Background()
 
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
@@ -276,7 +276,7 @@ func TestDiffJobs_CircuitBrokenNotReEnabled(t *testing.T) {
 	ctx := context.Background()
 
 	// Register a job, then mark it circuit-broken.
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
@@ -285,7 +285,7 @@ func TestDiffJobs_CircuitBrokenNotReEnabled(t *testing.T) {
 	sched.mu.Unlock()
 
 	// Discovery returns job-a with a changed schedule.
-	changedA := makeTestJob("job-a", "0 30 * * * *")
+	changedA := makeTestJob("job-a", "30 * * * *")
 	diff := sched.diffJobs([]jobs.Job{changedA})
 
 	// Circuit-broken job should NOT appear in changed list.
@@ -304,7 +304,7 @@ func TestDiffJobs_CircuitBrokenCanBeRemoved(t *testing.T) {
 	sched := newTestScheduler(t)
 	ctx := context.Background()
 
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
@@ -333,8 +333,8 @@ func TestApplyRefresh_AddsAndRemovesJobs(t *testing.T) {
 	events := sched.events.(*refreshMockEvents)
 
 	// Register jobs A and B.
-	jobA := makeTestJob("job-a", "0 0 * * * *")
-	jobB := makeTestJob("job-b", "0 30 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
+	jobB := makeTestJob("job-b", "30 * * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob A: %v", err)
 	}
@@ -343,7 +343,7 @@ func TestApplyRefresh_AddsAndRemovesJobs(t *testing.T) {
 	}
 
 	// Refresh discovers A (unchanged), C (new). B is removed.
-	jobC := makeTestJob("job-c", "0 45 * * * *")
+	jobC := makeTestJob("job-c", "45 * * * *")
 	diff := sched.ApplyRefresh(ctx, []jobs.Job{jobA, jobC})
 
 	if len(diff.Added) != 1 || diff.Added[0].Name != "job-c" {
@@ -369,13 +369,13 @@ func TestApplyRefresh_ChangedJobEmitsEvent(t *testing.T) {
 	ctx := context.Background()
 	events := sched.events.(*refreshMockEvents)
 
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
 
 	// Refresh with changed schedule.
-	changedA := makeTestJob("job-a", "0 30 * * * *")
+	changedA := makeTestJob("job-a", "30 * * * *")
 	diff := sched.ApplyRefresh(ctx, []jobs.Job{changedA})
 
 	if len(diff.Changed) != 1 {
@@ -400,7 +400,7 @@ func TestStartRefreshLoop_PeriodicDiscovery(t *testing.T) {
 		c := atomic.AddInt32(&callCount, 1)
 		// Return a new job on the 2nd call.
 		if c >= 2 {
-			return []jobs.Job{makeTestJob("dynamic-job", "0 0 * * * *")}, nil
+			return []jobs.Job{makeTestJob("dynamic-job", "0 0 * * *")}, nil
 		}
 		return []jobs.Job{}, nil
 	}
@@ -480,7 +480,7 @@ func TestDiffJobs_EnabledToDisabled_RemovesJob(t *testing.T) {
 	ctx := context.Background()
 
 	// Register an enabled job.
-	job := makeTestJob("backup-db", "0 0 3 * * *")
+	job := makeTestJob("backup-db", "0 3 * * *")
 	if err := sched.AddJob(ctx, job); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
@@ -510,7 +510,7 @@ func TestDiffJobs_DisabledToEnabled_AddsJob(t *testing.T) {
 	// Initially no jobs registered (the job was disabled).
 	// After enabling via label, the discoverer now returns it.
 	discovered := []jobs.Job{
-		makeTestJob("backup-db", "0 0 3 * * *"),
+		makeTestJob("backup-db", "0 3 * * *"),
 	}
 
 	diff := sched.diffJobs(discovered)
@@ -533,13 +533,13 @@ func TestApplyRefresh_EnableDisableTransitions(t *testing.T) {
 	ctx := context.Background()
 
 	// Start with one enabled job.
-	jobA := makeTestJob("job-a", "0 0 * * * *")
+	jobA := makeTestJob("job-a", "0 0 * * *")
 	if err := sched.AddJob(ctx, jobA); err != nil {
 		t.Fatalf("AddJob: %v", err)
 	}
 
 	// Simulate: job-a gets disabled (disappears), job-b gets enabled (appears).
-	jobB := makeTestJob("job-b", "0 30 * * * *")
+	jobB := makeTestJob("job-b", "30 * * * *")
 	discovered := []jobs.Job{jobB}
 
 	sched.ApplyRefresh(ctx, discovered)

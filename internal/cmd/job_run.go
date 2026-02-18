@@ -3,6 +3,10 @@ package cmd
 // TODO(#141): Move adapter wiring to internal/app/factory or internal/bootstrap,
 // CLI should only parse args and call app-layer services.
 // See smells #16-18 in wip_smell_milestone3
+//
+// NOTE: This command still creates its own adapters directly despite M4
+// introducing app.Bootstrap(). This should be migrated to use Bootstrap
+// to fully resolve #141, but is deferred to avoid expanding M4 scope.
 
 import (
 	"context"

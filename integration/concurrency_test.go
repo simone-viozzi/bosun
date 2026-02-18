@@ -53,7 +53,7 @@ func TestIntegration_PerStackMutex_Serialization(t *testing.T) {
 	for _, name := range []string{"stack-job-a", "stack-job-b"} {
 		job := jobs.Job{
 			Name:         name,
-			Schedule:     "* * * * * *",
+			Schedule:     "@every 500ms",
 			Enabled:      true,
 			TargetStacks: []string{"shared-stack"},
 		}
@@ -121,7 +121,7 @@ func TestIntegration_GlobalSemaphore_LimitsParallelism(t *testing.T) {
 		for _, name := range []string{"serial-a", "serial-b"} {
 			job := jobs.Job{
 				Name:     name,
-				Schedule: "* * * * * *",
+				Schedule: "@every 500ms",
 				Enabled:  true,
 			}
 			if err := s.AddJob(ctx, job); err != nil {
@@ -158,7 +158,7 @@ func TestIntegration_GlobalSemaphore_LimitsParallelism(t *testing.T) {
 		for _, name := range []string{"par-a", "par-b", "par-c"} {
 			job := jobs.Job{
 				Name:     name,
-				Schedule: "* * * * * *",
+				Schedule: "@every 500ms",
 				Enabled:  true,
 			}
 			if err := s.AddJob(ctx, job); err != nil {

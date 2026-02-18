@@ -99,9 +99,10 @@ func (m *StackLockManager) Unlock(stackName string) {
 }
 
 // UnlockAll releases locks for multiple stacks.
-// Safe to call multiple times (idempotent).
+// Deduplicates the input to prevent calling Unlock multiple times on the same stack.
 func (m *StackLockManager) UnlockAll(stacks []string) {
-	for _, stack := range stacks {
+	deduped := dedupSort(stacks)
+	for _, stack := range deduped {
 		m.Unlock(stack)
 	}
 }

@@ -6,8 +6,8 @@
 * [internal/app/planner/planner.go:49](internal/app/planner/planner.go#L49): DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if
 
 ## internal/cmd/job_run.go
-* [internal/cmd/job_run.go:420](internal/cmd/job_run.go#L420): DESIGN ISSUE - Plan rendering is in CLI instead of planner/app layer.
-* [internal/cmd/job_run.go:439](internal/cmd/job_run.go#L439): why we have printDryRunText here instead of in the planner itself? what happens if the schema of the planner changes? do we need to also change this function here?
+* [internal/cmd/job_run.go:424](internal/cmd/job_run.go#L424): DESIGN ISSUE - Plan rendering is in CLI instead of planner/app layer.
+* [internal/cmd/job_run.go:443](internal/cmd/job_run.go#L443): why we have printDryRunText here instead of in the planner itself? what happens if the schema of the planner changes? do we need to also change this function here?
 
 ## internal/domain/labels/types.go
 * [internal/domain/labels/types.go:9](internal/domain/labels/types.go#L9): Consider a better way of handling shared label constants.

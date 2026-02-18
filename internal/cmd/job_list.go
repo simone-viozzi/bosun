@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/simone-viozzi/bosun/internal/app"
+	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
 )
 
@@ -23,7 +24,7 @@ func NewJobListCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List scheduled jobs and their status",
+		Short: "List jobs discovered from Docker labels",
 		Long: `Lists all jobs discovered from Docker labels, showing:
   - Job name and cron schedule
   - Overlap policy (queue or skip)
@@ -65,7 +66,9 @@ func runJobList(ctx context.Context, format string, w io.Writer) error {
 	}
 	defer func() { _ = svc.Close() }()
 
-	snapshot, err := svc.LabelSource.Snapshot(ctx, ports.Selector{})
+	snapshot, err := svc.LabelSource.Snapshot(ctx, ports.Selector{
+		Prefixes: []string{dlabels.DefaultLabelPrefix},
+	})
 	if err != nil {
 		return fmt.Errorf("label snapshot failed: %w", err)
 	}

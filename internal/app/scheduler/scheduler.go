@@ -71,6 +71,10 @@ type Scheduler struct {
 	logger     *slog.Logger
 	opts       Options
 
+	// Lifecycle context for propagating cancellation to running jobs.
+	ctx    context.Context
+	cancel context.CancelFunc
+
 	// mu protects entries and statusMap.
 	mu        sync.RWMutex
 	entries   map[string]*entry         // jobName -> entry
@@ -93,8 +97,12 @@ func New(
 		parallelism = 1
 	}
 
+	// Initialize ctx with Background as a safe default.
+	// Start() will override with a child context when called.
+	ctx, cancel := context.WithCancel(context.Background())
+
 	return &Scheduler{
-		cron:       cron.New(cron.WithSeconds()),
+		cron:       cron.New(),
 		executor:   executor,
 		events:     events,
 		stateStore: stateStore,
@@ -102,6 +110,8 @@ func New(
 		globalSem:  semaphore.NewWeighted(parallelism),
 		logger:     logger,
 		opts:       opts,
+		ctx:        ctx,
+		cancel:     cancel,
 		entries:    make(map[string]*entry),
 		statusMap:  make(map[string]jobs.JobStatus),
 	}
@@ -120,6 +130,11 @@ func (s *Scheduler) AddJob(ctx context.Context, job jobs.Job) error {
 		policy = jobs.DefaultOverlapPolicy
 	}
 
+	// Validate overlap policy.
+	if err := jobs.ValidateOverlapPolicy(policy); err != nil {
+		return fmt.Errorf("invalid overlap policy for job %q: %w", job.Name, err)
+	}
+
 	// Build the cron job function.
 	jobFunc := s.makeJobFunc(job)
 
@@ -129,9 +144,6 @@ func (s *Scheduler) AddJob(ctx context.Context, job jobs.Job) error {
 	case jobs.OverlapPolicySkip:
 		wrappedJob = s.skipIfRunning(job.Name)(jobFunc)
 	case jobs.OverlapPolicyQueue:
-		wrappedJob = cron.DelayIfStillRunning(cron.DefaultLogger)(jobFunc)
-	default:
-		// Unknown policy — treat as queue (safe default).
 		wrappedJob = cron.DelayIfStillRunning(cron.DefaultLogger)(jobFunc)
 	}
 
@@ -253,7 +265,7 @@ func (s *Scheduler) executeJob(ctx context.Context, job jobs.Job) {
 // makeJobFunc returns a cron.FuncJob that executes the given job.
 func (s *Scheduler) makeJobFunc(job jobs.Job) cron.FuncJob {
 	return func() {
-		s.executeJob(context.Background(), job)
+		s.executeJob(s.ctx, job)
 	}
 }
 
@@ -265,8 +277,8 @@ func (s *Scheduler) skipIfRunning(jobName string) cron.JobWrapper {
 		var running int32 // 0 = idle, 1 = running
 		return cron.FuncJob(func() {
 			if !atomic.CompareAndSwapInt32(&running, 0, 1) {
-				s.events.EmitJobSkipped(context.Background(), jobName, "overlap-policy=skip: previous run still active")
-				s.logger.InfoContext(context.Background(), "job skipped: still running",
+				s.events.EmitJobSkipped(s.ctx, jobName, "overlap-policy=skip: previous run still active")
+				s.logger.InfoContext(s.ctx, "job skipped: still running",
 					slog.String("job", jobName),
 				)
 				return
@@ -369,6 +381,13 @@ func (s *Scheduler) handleFailure(ctx context.Context, jobName, errMsg string, f
 
 // Start begins the cron scheduler. It blocks until ctx is cancelled.
 func (s *Scheduler) Start(ctx context.Context) error {
+	// Cancel the default Background context from New() before replacing.
+	if s.cancel != nil {
+		s.cancel()
+	}
+	// Create a child context for job execution that we can cancel on shutdown.
+	s.ctx, s.cancel = context.WithCancel(ctx)
+
 	s.cron.Start()
 	s.logger.InfoContext(ctx, "scheduler started")
 
@@ -387,6 +406,11 @@ func (s *Scheduler) Start(ctx context.Context) error {
 // It stops the cron scheduler and waits for all running jobs to complete.
 func (s *Scheduler) Stop(ctx context.Context) error {
 	s.logger.InfoContext(ctx, "scheduler stopping")
+
+	// Cancel the job execution context to interrupt any blocked waits.
+	if s.cancel != nil {
+		s.cancel()
+	}
 
 	// Stop scheduling new jobs.
 	cronCtx := s.cron.Stop()

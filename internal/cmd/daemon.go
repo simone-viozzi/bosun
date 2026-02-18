@@ -14,6 +14,7 @@ import (
 	"github.com/simone-viozzi/bosun/internal/app"
 	"github.com/simone-viozzi/bosun/internal/app/scheduler"
 	"github.com/simone-viozzi/bosun/internal/domain/jobs"
+	dlabels "github.com/simone-viozzi/bosun/internal/domain/labels"
 	"github.com/simone-viozzi/bosun/internal/ports"
 )
 
@@ -174,7 +175,9 @@ func runWithSignalHandling(ctx context.Context, sched runnableScheduler, logger 
 // discoverAndRegisterJobs discovers jobs from Docker labels and registers them with the scheduler.
 func discoverAndRegisterJobs(ctx context.Context, svc *app.Services, sched *scheduler.Scheduler, logger *slog.Logger) error {
 	// 1. Take a label snapshot.
-	snapshot, err := svc.LabelSource.Snapshot(ctx, ports.Selector{})
+	snapshot, err := svc.LabelSource.Snapshot(ctx, ports.Selector{
+		Prefixes: []string{dlabels.DefaultLabelPrefix},
+	})
 	if err != nil {
 		return fmt.Errorf("label snapshot failed: %w", err)
 	}
@@ -225,7 +228,9 @@ func discoverAndRegisterJobs(ctx context.Context, svc *app.Services, sched *sche
 // discover enabled jobs from Docker labels. Used by the scheduler's refresh loop.
 func makeDiscoverFunc(svc *app.Services, logger *slog.Logger) scheduler.DiscoverFunc {
 	return func(ctx context.Context) ([]jobs.Job, error) {
-		snapshot, err := svc.LabelSource.Snapshot(ctx, ports.Selector{})
+		snapshot, err := svc.LabelSource.Snapshot(ctx, ports.Selector{
+			Prefixes: []string{dlabels.DefaultLabelPrefix},
+		})
 		if err != nil {
 			return nil, fmt.Errorf("label snapshot failed: %w", err)
 		}
