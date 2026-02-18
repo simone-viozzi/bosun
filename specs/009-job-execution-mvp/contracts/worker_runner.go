@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Package ports defines the WorkerRunner interface.
 // This file is a contract definition for implementation in #119.
 //

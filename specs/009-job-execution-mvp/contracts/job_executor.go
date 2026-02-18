@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Package ports defines the JobExecutor interface.
 // This file is a contract definition for implementation in #121.
 //

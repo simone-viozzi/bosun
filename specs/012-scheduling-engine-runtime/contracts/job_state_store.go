@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Package contracts defines the port interfaces for M4 Scheduling Engine.
 package contracts
 
