@@ -29,7 +29,9 @@ type Discoverer struct {
 func NewDiscoverer() *Discoverer {
 	return &Discoverer{
 		// Use standard 5-field cron parser (minute hour dom month dow)
-		cronParser: cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow),
+		// Must match the scheduler's cron.New() default: standard 5-field expressions
+		// plus descriptors (@every, @daily, @hourly, etc.).
+		cronParser: cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor),
 	}
 }
 

@@ -29,8 +29,10 @@ func NewJobListCmd() *cobra.Command {
   - Job name and cron schedule
   - Overlap policy (queue or skip)
   - Enabled status
+  - Target stacks
 
-Discovers jobs by reading Docker container labels.`,
+Discovers jobs by reading Docker container labels.
+Note: this command performs label discovery only; it does not query daemon runtime state.`,
 		Example: `  # List jobs as text table
   bosun job list
 

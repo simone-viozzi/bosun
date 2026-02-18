@@ -29,6 +29,9 @@ func New(
 	docker *client.Client,
 	events ports.EventEmitter,
 ) *Executor {
+	if events == nil {
+		events = noopEventEmitter{}
+	}
 	return &Executor{
 		planner: planner,
 		compose: compose,

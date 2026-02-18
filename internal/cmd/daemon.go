@@ -139,8 +139,15 @@ func runWithSignalHandling(ctx context.Context, sched runnableScheduler, logger 
 
 	logger.InfoContext(ctx, "daemon started: scheduler running")
 
-	// Wait for first signal (graceful shutdown).
-	<-sigCtx.Done()
+	// Wait for first signal (graceful shutdown) or scheduler startup failure.
+	select {
+	case err := <-schedErr:
+		if err != nil {
+			logger.ErrorContext(ctx, "scheduler failed to start", slog.String("error", err.Error()))
+			return err
+		}
+	case <-sigCtx.Done():
+	}
 	logger.InfoContext(ctx, "shutdown initiated: received signal")
 	stop() // Reset signal handling for double-signal behavior.
 

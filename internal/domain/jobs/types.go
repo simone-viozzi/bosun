@@ -33,7 +33,7 @@ type Job struct {
 	OverlapPolicy OverlapPolicy `json:"overlapPolicy"`
 
 	// Enabled indicates whether this job should be scheduled.
-	// Default: true. When false, the job is skipped during discovery.
+	// Default: false. Containers without the bosun.job.enabled=true label are not discovered.
 	Enabled bool `json:"enabled"`
 
 	// TargetContainers lists container IDs that participate in this job.

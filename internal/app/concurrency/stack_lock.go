@@ -44,9 +44,12 @@ func (m *StackLockManager) Lock(ctx context.Context, stackName string) error {
 	case <-acquired:
 		return nil
 	case <-ctx.Done():
-		// Context cancelled before lock acquired.
-		// We need to clean up the goroutine: it will eventually acquire the lock
-		// and we need to release it.
+		// Context cancelled before lock acquired. The background goroutine above
+		// will eventually acquire the lock and immediately release it.
+		// Limitation: if the current lock holder itself is cancelled and never
+		// unlocks (e.g., a cascading cancellation deadlock), this cleanup goroutine
+		// will block indefinitely. In practice this is bounded: executeJob always
+		// releases stack locks via defer, so holders always unlock eventually.
 		go func() {
 			<-acquired
 			mu.Unlock()
@@ -81,20 +84,17 @@ func (m *StackLockManager) LockAll(ctx context.Context, stacks []string) error {
 	return nil
 }
 
-// Unlock releases the lock for a single stack.
-// Safe to call multiple times (idempotent via TryLock check).
-// If the stack was never locked, this is a no-op.
+// Unlock releases the lock for the named stack.
+// It must be called exactly once per successful Lock acquisition for a given stack.
+// Calling Unlock on a stack that is not currently locked will panic (sync.Mutex semantics).
+// Callers should rely on proper Lock/Unlock pairing; use UnlockAll with deduplicated
+// input to avoid accidental double-unlocks.
 func (m *StackLockManager) Unlock(stackName string) {
 	val, ok := m.locks.Load(stackName)
 	if !ok {
 		return
 	}
 	mu := val.(*sync.Mutex)
-	// TryLock+Unlock is a safe idempotent unlock pattern:
-	// If already unlocked, TryLock succeeds and we immediately unlock.
-	// If locked (by us), we just unlock directly.
-	// However, sync.Mutex.Unlock panics if not locked, so we just unlock directly
-	// and rely on callers using Lock/Unlock in proper pairs.
 	mu.Unlock()
 }
 

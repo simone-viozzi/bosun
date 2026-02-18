@@ -1,6 +1,6 @@
 # TODO
 ## internal/app/executor/executor.go
-* [internal/app/executor/executor.go:319](internal/app/executor/executor.go#L319): Add worker env vars from labels (bosun.job.worker.env.*)
+* [internal/app/executor/executor.go:322](internal/app/executor/executor.go#L322): Add worker env vars from labels (bosun.job.worker.env.*)
 
 ## internal/app/planner/planner.go
 * [internal/app/planner/planner.go:49](internal/app/planner/planner.go#L49): DESIGN ISSUE - Current logic is simplistic: assumes useCompose=true if

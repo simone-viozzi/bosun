@@ -397,9 +397,13 @@ func (s *Scheduler) Start(ctx context.Context) error {
 	}
 
 	// Block until context is cancelled.
+	// NOTE: We do NOT call Stop() here intentionally. The caller (daemon) owns
+	// the shutdown lifecycle and calls Stop() with a fresh timeout context so
+	// that running jobs are given time to complete. Calling Stop(ctx) here would
+	// use the already-cancelled ctx, defeating graceful shutdown.
 	<-ctx.Done()
 
-	return s.Stop(ctx)
+	return nil
 }
 
 // Stop gracefully shuts down the scheduler.

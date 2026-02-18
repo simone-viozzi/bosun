@@ -100,7 +100,7 @@ func (s *Scheduler) ApplyRefresh(ctx context.Context, discovered []jobs.Job) Dif
 			)
 			continue
 		}
-		s.events.EmitJobRemoved(ctx, name)
+		// NOTE: EmitJobRemoved is already called inside RemoveJob; no duplicate emit here.
 	}
 
 	// T059: Handle changed jobs (remove + re-add with new config).
