@@ -4,16 +4,27 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    claude-code.url = "github:sadjow/claude-code-nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, claude-code }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays = [ claude-code.overlays.default ];
+        };
       in
       {
         devShells.default = pkgs.mkShell {
           name = "bosun-go-dev";
+
+          packages = [
+            pkgs.claude-code        # native -> `claude`
+            # pkgs.claude-code-node # -> `claude-node`
+            # pkgs.claude-code-bun  # -> `claude-bun`
+          ];
 
           buildInputs = with pkgs; [
             # Go toolchain + LSP + debug
