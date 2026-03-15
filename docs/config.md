@@ -43,7 +43,7 @@
 | `bosun.job.mount-path` | string | `/mnt/<volume>` | No | - | Mount path inside the worker container |
 | `bosun.job.mount-mode` | enum | ro | No | ro \| rw | Mount mode for attached volumes |
 | `bosun.job.stop-timeout` | duration | 30s | No | - | Timeout for stopping containers before backup |
-| `bosun.job.start-timeout` | duration | 60s | No | - | Timeout for restarting containers after backup |
+| `bosun.job.start-timeout` | duration | 30s | No | - | Timeout for restarting containers after backup |
 | `bosun.job.timeout` | duration | 1h | No | - | Overall job execution timeout |
 
 ### Overlap Policies
