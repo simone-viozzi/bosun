@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Package ports defines contract interfaces for M3 job execution.
 //
 // This file contains the ComposeController interface contract

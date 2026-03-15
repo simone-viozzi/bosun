@@ -178,9 +178,9 @@ func TestJobSpecByScope(t *testing.T) {
 	containerKeys := scopes[ScopeContainer]
 	volumeKeys := scopes[ScopeVolume]
 
-	// Container scope should have: enabled, name, schedule, worker.image, stop-timeout, start-timeout, timeout
-	if len(containerKeys) != 7 {
-		t.Errorf("Container scope keys = %d, want 7", len(containerKeys))
+	// Container scope should have: enabled, name, schedule, overlap-policy, worker.image, stop-timeout, start-timeout, timeout
+	if len(containerKeys) != 8 {
+		t.Errorf("Container scope keys = %d, want 8", len(containerKeys))
 	}
 
 	// Volume scope should have: attach, mount.path, mount.mode

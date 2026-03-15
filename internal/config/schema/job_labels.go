@@ -28,6 +28,11 @@ type JobLabelConfig struct {
 	// WorkerImage specifies the Docker image to use for executing the job.
 	WorkerImage string `bosun:"key=bosun.job.worker.image,scope=container,type=string,default=bosun-worker:local,doc='Docker image for worker'"`
 
+	// M4 addition: Overlap policy
+	// OverlapPolicy specifies behavior when a job is scheduled while a previous run is active.
+	// Valid values: "queue" (delay next run), "skip" (drop next run).
+	OverlapPolicy string `bosun:"key=bosun.job.overlap-policy,scope=container,type=enum,enum=queue|skip,default=queue,doc='Behavior when job overlaps: queue (default) or skip'"`
+
 	// M3 additions: Timeout configurations
 	// StopTimeout specifies the timeout for stopping containers before worker execution.
 	StopTimeout time.Duration `bosun:"key=bosun.job.stop-timeout,scope=container,type=duration,default=30s,doc='Timeout for stopping each container (default: 30s)'"`
@@ -86,6 +91,9 @@ const (
 	LabelJobName        = "bosun.job.name"
 	LabelJobSchedule    = "bosun.job.schedule"
 	LabelJobWorkerImage = "bosun.job.worker.image"
+
+	// M4 addition: Overlap policy label
+	LabelJobOverlapPolicy = "bosun.job.overlap-policy"
 
 	// M3 additions: Timeout labels
 	LabelJobStopTimeout   = "bosun.job.stop-timeout"

@@ -89,7 +89,7 @@ func (m *mockWorkerRunner) Run(ctx context.Context, config ports.WorkerConfig) (
 }
 
 func TestNew(t *testing.T) {
-	exec := New(&mockPlanner{}, &mockComposeController{}, &mockWorkerRunner{}, nil)
+	exec := New(&mockPlanner{}, &mockComposeController{}, &mockWorkerRunner{}, nil, nil)
 	if exec == nil {
 		t.Fatal("New() returned nil")
 	}
@@ -108,7 +108,7 @@ func TestDryRun_Success(t *testing.T) {
 	compose := &mockComposeController{}
 	worker := &mockWorkerRunner{}
 
-	exec := New(planner, compose, worker, nil)
+	exec := New(planner, compose, worker, nil, nil)
 
 	job := jobs.Job{
 		Name:         "test-job",
@@ -145,7 +145,7 @@ func TestDryRun_PlannerError(t *testing.T) {
 	plannerErr := errors.New("planner failed")
 	planner := &mockPlanner{planErr: plannerErr}
 
-	exec := New(planner, &mockComposeController{}, &mockWorkerRunner{}, nil)
+	exec := New(planner, &mockComposeController{}, &mockWorkerRunner{}, nil, nil)
 
 	job := jobs.Job{Name: "test-job", TargetStacks: []string{"mystack"}}
 
@@ -160,7 +160,7 @@ func TestExecute_PlannerError(t *testing.T) {
 	planner := &mockPlanner{planErr: plannerErr}
 	compose := &mockComposeController{}
 
-	exec := New(planner, compose, &mockWorkerRunner{}, nil)
+	exec := New(planner, compose, &mockWorkerRunner{}, nil, nil)
 
 	job := jobs.Job{
 		Name:         "test-job",
@@ -480,7 +480,7 @@ func TestDryRun_NoSideEffects(t *testing.T) {
 		},
 	}
 
-	exec := New(planner, compose, worker, nil)
+	exec := New(planner, compose, worker, nil, nil)
 
 	job := jobs.Job{
 		Name:         "test-job",

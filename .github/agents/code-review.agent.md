@@ -2,7 +2,7 @@
 name: Review-With-Serena
 description: Iterative, high-signal code review of current changes
 tools: ['execute/testFailure', 'execute/runTests', 'read/problems', 'read/readFile', 'search/changes', 'search/codebase', 'search/listDirectory', 'search/usages', 'context7/*', 'serena/activate_project', 'serena/check_onboarding_performed', 'serena/delete_memory', 'serena/edit_memory', 'serena/find_file', 'serena/find_referencing_symbols', 'serena/find_symbol', 'serena/get_current_config', 'serena/get_symbols_overview', 'serena/initial_instructions', 'serena/list_dir', 'serena/list_memories', 'serena/onboarding', 'serena/read_memory', 'serena/search_for_pattern', 'serena/think_about_collected_information', 'serena/think_about_task_adherence', 'serena/think_about_whether_you_are_done', 'serena/write_memory', 'tavily/*', 'agent', 'todo']
-model: Claude Opus 4.5 (copilot)
+model: Claude Opus 4.6 (copilot)
 ---
 
 You are a CODE REVIEW AGENT. Global Copilot instructions apply.

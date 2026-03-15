@@ -29,7 +29,9 @@ type Discoverer struct {
 func NewDiscoverer() *Discoverer {
 	return &Discoverer{
 		// Use standard 5-field cron parser (minute hour dom month dow)
-		cronParser: cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow),
+		// Must match the scheduler's cron.New() default: standard 5-field expressions
+		// plus descriptors (@every, @daily, @hourly, etc.).
+		cronParser: cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor),
 	}
 }
 
@@ -129,6 +131,30 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 				builder.workerImage = workerImage
 			}
 		}
+
+		// Merge overlap policy (detect conflicts)
+		if overlapPolicy := entity.Labels[schema.LabelJobOverlapPolicy]; overlapPolicy != "" {
+			// Validate the overlap policy value before merging.
+			if err := jobs.ValidateOverlapPolicy(jobs.OverlapPolicy(overlapPolicy)); err != nil {
+				validationErrors = append(validationErrors, ports.ValidationError{
+					EntityKind: string(entity.Kind),
+					EntityID:   entity.ID,
+					EntityName: entity.Name,
+					Field:      schema.LabelJobOverlapPolicy,
+					Message:    err.Error(),
+				})
+			} else if builder.overlapPolicy != "" && builder.overlapPolicy != overlapPolicy {
+				validationErrors = append(validationErrors, ports.ValidationError{
+					EntityKind: string(entity.Kind),
+					EntityID:   entity.ID,
+					EntityName: entity.Name,
+					Field:      schema.LabelJobOverlapPolicy,
+					Message:    fmt.Sprintf("conflicting overlap policy %q (previously %q)", overlapPolicy, builder.overlapPolicy),
+				})
+			} else {
+				builder.overlapPolicy = overlapPolicy
+			}
+		}
 	}
 
 	// Phase 2: Attach volumes to jobs
@@ -208,6 +234,8 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 		job := jobs.Job{
 			Name:             name,
 			Schedule:         schedule,
+			OverlapPolicy:    jobs.ParseOverlapPolicy(builder.overlapPolicy),
+			Enabled:          true, // Only enabled containers reach this point.
 			TargetContainers: builder.targetContainers,
 			TargetStacks:     targetStacks,
 			WorkerImage:      workerImage,
@@ -225,6 +253,7 @@ func (d *Discoverer) DiscoverJobs(ctx context.Context, snapshot labels.Snapshot)
 type jobBuilder struct {
 	name             string
 	schedule         string
+	overlapPolicy    string
 	workerImage      string
 	sourceContainers []string
 	targetContainers []string

@@ -18,6 +18,7 @@ type Executor struct {
 	compose ports.ComposeController
 	worker  ports.WorkerRunner
 	docker  *client.Client
+	events  ports.EventEmitter
 }
 
 // New creates a new Executor with dependency injection.
@@ -26,12 +27,17 @@ func New(
 	compose ports.ComposeController,
 	worker ports.WorkerRunner,
 	docker *client.Client,
+	events ports.EventEmitter,
 ) *Executor {
+	if events == nil {
+		events = noopEventEmitter{}
+	}
 	return &Executor{
 		planner: planner,
 		compose: compose,
 		worker:  worker,
 		docker:  docker,
+		events:  events,
 	}
 }
 

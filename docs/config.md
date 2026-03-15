@@ -30,6 +30,51 @@
 |-----|------|---------|----------|----------------|-------------|
 | `bosun.network.priority` | integer | 100 | No | - | Network priority (lower = higher priority) |
 
+## Job Configuration (M4)
+
+| Key | Type | Default | Required | Allowed Values | Description |
+|-----|------|---------|----------|----------------|-------------|
+| `bosun.job.enabled` | boolean | false | No | true \| false | Enable job scheduling on this container |
+| `bosun.job.name` | string | - | Yes (when enabled) | - | Unique job identifier |
+| `bosun.job.schedule` | cron | `0 0 * * *` | No | 5-field cron | Cron schedule (minute hour dom month dow) |
+| `bosun.job.overlap-policy` | enum | queue | No | queue \| skip | Behavior when a job fires while previous run is active |
+| `bosun.job.worker.image` | string | `busybox:latest` | No | - | Docker image used to run the backup worker |
+| `bosun.job.attach` | string | - | No | - | Attach this volume to the named job (volume scope) |
+| `bosun.job.mount-path` | string | `/mnt/<volume>` | No | - | Mount path inside the worker container |
+| `bosun.job.mount-mode` | enum | ro | No | ro \| rw | Mount mode for attached volumes |
+| `bosun.job.stop-timeout` | duration | 30s | No | - | Timeout for stopping containers before backup |
+| `bosun.job.start-timeout` | duration | 30s | No | - | Timeout for restarting containers after backup |
+| `bosun.job.timeout` | duration | 1h | No | - | Overall job execution timeout |
+
+### Overlap Policies
+
+- **queue** (default): If a job fires while the previous run is still active, the new run waits in a queue until the previous run completes.
+- **skip**: If a job fires while the previous run is still active, the new run is skipped and a `JobSkipped` event is emitted.
+
+## Daemon Command
+
+The `bosun daemon` command starts the scheduling engine that monitors Docker labels and runs backup jobs on their configured schedules.
+
+```
+bosun daemon [flags]
+```
+
+### Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--parallelism` | int | 1 | Maximum number of jobs running concurrently |
+| `--refresh-interval` | duration | 5m | How often to re-scan Docker labels for configuration changes |
+
+### Features
+
+- **Automatic discovery**: Jobs are discovered from Docker container labels on startup and on each refresh interval.
+- **Graceful shutdown**: On SIGINT/SIGTERM, the daemon stops scheduling new jobs and waits for running jobs to complete (60s timeout). A second signal forces immediate exit.
+- **Config refresh**: Periodically re-scans Docker labels to detect added, removed, or changed jobs.
+- **Circuit breaker**: Jobs that fail 3 consecutive times are auto-disabled until manually re-enabled.
+- **Per-stack serialization**: Jobs targeting the same Docker Compose stack are serialized to avoid conflicts.
+- **Global concurrency control**: The `--parallelism` flag limits the total number of concurrently executing jobs.
+
 ## Value Formats
 
 ### Duration
